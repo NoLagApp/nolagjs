@@ -1,0 +1,39 @@
+{
+  "name": "nolagjs",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=8.0.0",
+    "npm": ">=5.0.0"
+  },
+  "description": "JavaScript WebSocket SDK for NoLag App",
+  "main": "index.js",
+  "bin": {
+    "nolagjs": "bin/index.js"
+  },
+  "scripts": {
+    "lint": "eslint --fix src/ cli/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoLagApp/nolagjs.git"
+  },
+  "keywords": [
+    "WebSocket",
+    "Real-Time",
+    "Microservices",
+    "NoLag"
+  ],
+  "author": "NoLag",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NoLagApp/nolagjs/issues"
+  },
+  "homepage": "https://github.com/NoLagApp/nolagjs#readme",
+  "dependencies": {
+    "ws": "^7.3.1"
+  },
+  "devDependencies": {
+    "eslint": "6.5.1"
+  }
+}
