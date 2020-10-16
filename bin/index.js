@@ -2,33 +2,44 @@
 
 const WebSocketNode = require('ws');
 
-module.exports = class NoLagJs {
-  constructor({...options}) {
-    this._options = options;
+module.exports = function ({
+  ...options
+},connected, close) {
+  class NoLagJs {
+    constructor({...options}) {
+      this._options = {...options};
+      this._events = {};
+      this._saveEvents = [];
 
-    return this.connect();
-  }
+      this.connect();
+    }
 
-  connect() {
+    connect() {
+      (this.isBrowser) ? this.browserInstance() : this.nodeInstance();
+    }
+
+    // on(wsEvent, callback) {
+    //   if (typeof this.wsEvents[wsEvent] !== 'undefined') {
+    //     this.wsEvents[wsEvent] = callback;
+    //   }
+    // }
+
+    // triggerEvent(wsEvent) {
+    //   let callback = this.wsEvents[wsEvent];
+    //   // callback()
+    //   console.log(callback);
+    // }
+
+    browserInstance() {
     // eslint-disable-next-line no-undef
-    return (this.isBrowser) ? this.browserInstance() : this.nodeInstance();
-  }
-
-  browserInstance() {
-    
-    return new Promise((res, rej) => {
-    
-      // eslint-disable-next-line no-undef
       this._ws = new WebSocket(`ws://${this._options.server}`);
 
       this._ws.onopen = event => {
         this.onOpen(event);
-        res(this);
       };
 
       this._ws.onclose = event => {
         this.onError(event);
-        rej(event);
       };
 
       this._ws.addEventListener("message", event => {
@@ -38,18 +49,13 @@ module.exports = class NoLagJs {
       this._ws.addEventListener("error", event => {
         this.onError(event);
       });
-    });
-  }
+    }
 
-  nodeInstance() {
-
-    return new Promise((res, rej) => {
-
+    nodeInstance() {
       this._ws = new WebSocketNode(`ws://${this._options.server}`);
 
       this._ws.on('open', function open(event) {
         this.onOpen(event);
-        res(this);
       });
 
       this._ws.on('message', function incoming(event) {
@@ -58,81 +64,130 @@ module.exports = class NoLagJs {
 
       this._ws.on('close', function incoming(event) {
         this.onError(event);
-        rej(event);
       });
+    }
 
-    });
-  }
+    get isBrowser() {
+      let isNode = true;
+      if (typeof process === 'object') {
+        if (typeof process.versions === 'object') {
+          if (typeof process.versions.node !== 'undefined') {
+            isNode = false;
+          }
+        }
+      }
+      return isNode;
+    }
 
-  get isBrowser() {
-    let isNode = true;
-    if (typeof process === 'object') {
-      if (typeof process.versions === 'object') {
-        if (typeof process.versions.node !== 'undefined') {
-          isNode = false;
+    isFunction(obj) {
+      return !!(obj && obj.constructor && obj.call && obj.apply);
+    }
+
+    onOpen() {
+      this.authenticate();
+    }
+
+    event(name, action, options) {
+      if (this.isFunction(action)) {
+      
+        // this._saveEvents.push({
+        //   name: name,
+        //   action: action,
+        //   options: options
+        // });
+
+        this._events[name] = action;
+        this.send({
+          header: {
+            event: name
+          },
+          options: options
+        });
+      } else {
+        this.send({
+          header: {
+            event: name
+          },
+          options: options,
+          data: action
+        });
+      }
+    }
+
+    onReceive(event) {
+      try {
+        const receive = this.jsonParse(event.data);
+        if (
+          receive !== null &&
+        typeof receive.header !== 'undefined' &&
+        typeof receive.header.event !== 'undefined' &&
+        typeof this._events[receive.header.event] !== 'undefined'
+        ) {
+          let callback = this._events[receive.header.event];
+          callback(receive.data);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    onError(event) {
+      this._connected = false;
+      // setTimeout(async () => {
+      // if(!this.connected) {
+      // await this.connect();
+      // } else {
+      //   clearInterval(reconnect);
+      // }
+      // }, 7000);
+      close();
+      console.log(event);
+    }
+
+    authenticate() {
+      if (typeof this._options.collactionKey === 'undefined') console.error('Collection Key not "undefined');
+
+      this._connected = true;
+      this.send({
+        header: {
+          key: this._options.collactionKey
+        }
+      });
+      console.log('fun', this.connected);
+      connected();
+      this.resetEvents();
+    }
+
+    resetEvents() {
+      if (this._saveEvents.length !== 0) {
+        for (let event of this._saveEvents) {
+          this.event(event.name, event.action, event.options);
         }
       }
     }
-    return isNode;
-  }
 
-  isFunction(obj) {
-    return !!(obj && obj.constructor && obj.call && obj.apply);
-  }
+    send(transport) {
+      this._ws.send(this.jsonStringify(transport));
+    }
 
-  onOpen() {
-    this.authenticate();
-  }
+    jsonParse(string) {
+      try {
+        return JSON.parse(string);
+      } catch(e) {
+        throw null;
+      }
+    }
 
-  event(name, action, options) {
-    if (this.isFunction(action)) {
-      this.events[name] = action;
-      this.send({
-        header: {
-          event: name
-        }
-      });
-    } else {
-      this.send({
-        header: {
-          event: name
-        },
-        options: options,
-        data: action
-      });
+    jsonStringify(object) {
+      try {
+        return JSON.stringify(object);
+      } catch (e) {
+        throw null;
+      }
     }
   }
 
-  onReceive(event) {
-    try {
-      this.data = JSON.parse(event.data);
-      let callback = this.events[this.data.header.event];
-      callback(this.data.data);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  onError(event) {
-    console.log(event);
-  }
-
-  authenticate() {
-    this.connected = true;
-    console.log(this._options.collactionKey);
-    console.log({
-      header: {
-        key: this._options.collactionKey
-      }
-    });
-    this.send({
-      header: {
-        key: this._options.collactionKey
-      }
-    });
-  }
-
-  send(transport) {
-    this._ws.send(JSON.stringify(transport));
-  }
+  return new NoLagJs({
+    ...options
+  });
 };
