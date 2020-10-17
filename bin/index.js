@@ -4,10 +4,14 @@ const WebSocketNode = require('ws');
 
 module.exports = function ({
   ...options
-},connected, close) {
+}, connected, close) {
   class NoLagJs {
-    constructor({...options}) {
-      this._options = {...options};
+    constructor({
+      ...options
+    }) {
+      this._options = {
+        ...options
+      };
       this._events = {};
       this._saveEvents = [];
 
@@ -15,7 +19,7 @@ module.exports = function ({
     }
 
     connect() {
-      (this.isBrowser) ? this.browserInstance() : this.nodeInstance();
+      (this.isBrowser) ? this.browserInstance(): this.nodeInstance();
     }
 
     // on(wsEvent, callback) {
@@ -31,7 +35,7 @@ module.exports = function ({
     // }
 
     browserInstance() {
-    // eslint-disable-next-line no-undef
+      // eslint-disable-next-line no-undef
       this._ws = new WebSocket(`ws://${this._options.server}`);
 
       this._ws.onopen = event => {
@@ -89,7 +93,7 @@ module.exports = function ({
 
     event(name, action, options) {
       if (this.isFunction(action)) {
-      
+
         // this._saveEvents.push({
         //   name: name,
         //   action: action,
@@ -119,12 +123,17 @@ module.exports = function ({
         const receive = this.jsonParse(event.data);
         if (
           receive !== null &&
-        typeof receive.header !== 'undefined' &&
-        typeof receive.header.event !== 'undefined' &&
-        typeof this._events[receive.header.event] !== 'undefined'
+          typeof receive.header !== 'undefined' &&
+          typeof receive.header.event !== 'undefined' &&
+          typeof this._events[receive.header.event] !== 'undefined'
         ) {
           let callback = this._events[receive.header.event];
           callback(receive.data);
+        } else if (receive !== null &&
+          typeof receive.header !== 'undefined' &&
+          typeof receive.header.id !== 'undefined') {
+          // eslint-disable-next-line no-undef
+          window.document.cookie = `_nl_id=${receive.header.id}`;
         }
       } catch (e) {
         console.error(e);
@@ -133,13 +142,13 @@ module.exports = function ({
 
     onError(event) {
       this._connected = false;
-      // setTimeout(async () => {
-      // if(!this.connected) {
-      // await this.connect();
-      // } else {
-      //   clearInterval(reconnect);
-      // }
-      // }, 7000);
+      setTimeout(async () => {
+        if(!this.connected) {
+          await this.connect();
+        } else {
+          // clearInterval(reconnect);
+        }
+      }, 7000);
       close();
       console.log(event);
     }
@@ -148,12 +157,18 @@ module.exports = function ({
       if (typeof this._options.collactionKey === 'undefined') console.error('Collection Key not "undefined');
 
       this._connected = true;
+      let header = {
+        key: this._options.collactionKey
+      };
+      let connectId = this.getCookie('_nl_id');
+      
+      if (connectId) {
+        header.id = connectId;
+      }
       this.send({
-        header: {
-          key: this._options.collactionKey
-        }
+        header: header
       });
-      console.log('fun', this.connected);
+      
       connected();
       this.resetEvents();
     }
@@ -173,7 +188,7 @@ module.exports = function ({
     jsonParse(string) {
       try {
         return JSON.parse(string);
-      } catch(e) {
+      } catch (e) {
         throw null;
       }
     }
@@ -184,6 +199,23 @@ module.exports = function ({
       } catch (e) {
         throw null;
       }
+    }
+
+    getCookie(cname) {
+      var name = cname + "=";
+      // eslint-disable-next-line no-undef
+      var decodedCookie = decodeURIComponent(window.document.cookie);
+      var ca = decodedCookie.split(';');
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return null;
     }
   }
 
