@@ -4,7 +4,7 @@ const WebSocketNode = require('ws');
 
 module.exports = function ({
   ...options
-}, connected, close) {
+}, connectedCallback, close) {
   class NoLagJs {
     constructor({
       ...options
@@ -133,7 +133,7 @@ module.exports = function ({
           typeof receive.header !== 'undefined' &&
           typeof receive.header.id !== 'undefined') {
           // eslint-disable-next-line no-undef
-          window.document.cookie = `_nl_id=${receive.header.id}`;
+          this._connectionId = receive.header.id;
         }
       } catch (e) {
         console.error(e);
@@ -160,16 +160,17 @@ module.exports = function ({
       let header = {
         key: this._options.collactionKey
       };
-      let connectId = this.getCookie('_nl_id');
       
-      if (connectId) {
-        header.id = connectId;
+      if (typeof this._options.auth !== 'undefined') header.auth = this._options.auth;
+      
+      if (this._connectionId) {
+        header.id = this._connectionId;
       }
       this.send({
         header: header
       });
       
-      connected();
+      connectedCallback();
       this.resetEvents();
     }
 
@@ -187,7 +188,11 @@ module.exports = function ({
 
     jsonParse(string) {
       try {
-        return JSON.parse(string);
+        let parse = {};
+        if (string !== '') {
+          parse = JSON.parse(string);
+        }
+        return parse;
       } catch (e) {
         throw null;
       }
@@ -199,23 +204,6 @@ module.exports = function ({
       } catch (e) {
         throw null;
       }
-    }
-
-    getCookie(cname) {
-      var name = cname + "=";
-      // eslint-disable-next-line no-undef
-      var decodedCookie = decodeURIComponent(window.document.cookie);
-      var ca = decodedCookie.split(';');
-      for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-          c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-          return c.substring(name.length, c.length);
-        }
-      }
-      return null;
     }
   }
 
