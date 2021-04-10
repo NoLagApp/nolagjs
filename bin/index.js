@@ -108,6 +108,14 @@ module.exports = function ({
           options: options
         });
       } else {
+
+        // Cast to string
+        if (action instanceof Object) {
+          action = JSON.stringify(action);
+        } else {
+          action = String(action);
+        }
+
         this.send({
           header: {
             event: name
@@ -128,6 +136,7 @@ module.exports = function ({
           typeof this._events[receive.header.event] !== 'undefined'
         ) {
           let callback = this._events[receive.header.event];
+
           callback(receive.data);
         } else if (receive !== null &&
           typeof receive.header !== 'undefined' &&
