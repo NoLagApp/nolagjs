@@ -142,7 +142,7 @@ module.exports = function ({
           typeof receive.header !== 'undefined' &&
           typeof receive.header.id !== 'undefined') {
           // eslint-disable-next-line no-undef
-          this._connectionId = receive.header.id;
+          this._tunnelId = receive.header.id;
         }
       } catch (e) {
         console.error(e);
@@ -163,17 +163,17 @@ module.exports = function ({
     }
 
     authenticate() {
-      if (typeof this._options.collactionKey === 'undefined') console.error('Collection Key not "undefined');
+      if (typeof this._options.tunnelKey === 'undefined') console.error('Tunnel Key not defined');
 
       this._connected = true;
       let header = {
-        key: this._options.collactionKey
+        key: this._options.tunnelKey
       };
       
       if (typeof this._options.auth !== 'undefined') header.auth = this._options.auth;
       
-      if (this._connectionId) {
-        header.id = this._connectionId;
+      if (this._tunnelId) {
+        header.id = this._tunnelId;
       }
       this.send({
         header: header
