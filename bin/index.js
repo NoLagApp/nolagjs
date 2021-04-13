@@ -101,11 +101,11 @@ module.exports = function ({
         // });
 
         this._events[name] = action;
-        this.send({
+        this.send({...{
           header: {
             event: name
-          },
-          options: options
+          }
+        }, ...options
         });
       } else {
 
@@ -116,13 +116,12 @@ module.exports = function ({
           action = String(action);
         }
 
-        this.send({
+        this.send({...{
           header: {
             event: name
           },
-          options: options,
           data: action
-        });
+        }, ...options});
       }
     }
 
