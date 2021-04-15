@@ -168,6 +168,10 @@ module.exports = function ({
       let header = {
         key: this._options.tunnelKey
       };
+
+      if (typeof this._options.devMode !== 'undefined') {
+        header.devMode = this._options.devMode;
+      }
       
       if (typeof this._options.auth !== 'undefined') header.auth = this._options.auth;
       
