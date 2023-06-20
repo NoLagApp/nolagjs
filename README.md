@@ -1,6 +1,6 @@
 # NoLag JS
 
-The following package will help you get started with [NoLag](https://nolag.app/JavaScript) for your next or current Realtime application.
+The following package will help you get started with [NoLag](https://nolag.app) for your next or current Realtime application.
 
 For more detailed information on using NoLag please visit our [developer wiki](https://developer.nolag.app/#introduction).
 
