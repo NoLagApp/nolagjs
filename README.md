@@ -12,9 +12,9 @@ import {
   WebSocketClient,
   stringToArrayBuffer,
   uint8ArrayToString,
-} from "nolag";
+} from "nolagjs";
 
-import type { ITopic, ITunnel, IResponse } from "nolag";
+import type { ITopic, ITunnel, IResponse } from "nolagjs";
 
 const accessToken: string = "<your_access_token_goes_here>";
 
