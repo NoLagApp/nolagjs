@@ -1,6 +1,6 @@
 {
   "name": "nolagjs",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "engines": {
     "node": ">=8.0.0",
     "npm": ">=5.0.0"
