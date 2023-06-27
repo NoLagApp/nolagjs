@@ -145,5 +145,5 @@ export interface IErrorsModel {
     errors?: IErrorsModel[] | undefined;
 }
 export interface INqlIdentifiers {
-    AND?: string[];
+    OR?: string[];
 }

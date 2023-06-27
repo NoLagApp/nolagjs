@@ -9,8 +9,8 @@ class Topic {
         this.identifiers = [];
         this.setConnection(connection);
         this.topicName = topicName;
-        this.saveIdentifiers((_a = identifiers === null || identifiers === void 0 ? void 0 : identifiers.AND) !== null && _a !== void 0 ? _a : []);
-        this.subscribe((_b = identifiers === null || identifiers === void 0 ? void 0 : identifiers.AND) !== null && _b !== void 0 ? _b : []);
+        this.saveIdentifiers((_a = identifiers === null || identifiers === void 0 ? void 0 : identifiers.OR) !== null && _a !== void 0 ? _a : []);
+        this.subscribe((_b = identifiers === null || identifiers === void 0 ? void 0 : identifiers.OR) !== null && _b !== void 0 ? _b : []);
     }
     findSavedIdentifier(identifier) {
         var _a, _b;
@@ -55,7 +55,7 @@ class Topic {
     }
     reSubscribe() {
         this.addIdentifiers({
-            AND: this.identifiers
+            OR: this.identifiers
         });
     }
     setConnection(connection) {
@@ -74,9 +74,9 @@ class Topic {
     }
     addIdentifiers(identifiers) {
         var _a;
-        this.saveIdentifiers((_a = identifiers.AND) !== null && _a !== void 0 ? _a : []);
+        this.saveIdentifiers((_a = identifiers.OR) !== null && _a !== void 0 ? _a : []);
         const topicName = (0, transport_1.topicPayload)(this.topicName);
-        const nql = (0, transport_1.nqlPayload)((0, transport_1.arrayOfString)(identifiers.AND), enum_1.EAction.Add);
+        const nql = (0, transport_1.nqlPayload)((0, transport_1.arrayOfString)(identifiers.OR), enum_1.EAction.Add);
         const records = (0, transport_1.toRecordSeparator)([topicName, nql]);
         if (this.connection) {
             this.connection.send(records.buffer);
@@ -85,9 +85,9 @@ class Topic {
     }
     removeIdentifiers(identifiers) {
         var _a;
-        this.deleteSavedIdentifiers((_a = identifiers.AND) !== null && _a !== void 0 ? _a : []);
+        this.deleteSavedIdentifiers((_a = identifiers.OR) !== null && _a !== void 0 ? _a : []);
         const topicName = (0, transport_1.topicPayload)(this.topicName);
-        const nql = (0, transport_1.nqlPayload)((0, transport_1.arrayOfString)(identifiers.AND), enum_1.EAction.Delete);
+        const nql = (0, transport_1.nqlPayload)((0, transport_1.arrayOfString)(identifiers.OR), enum_1.EAction.Delete);
         const records = (0, transport_1.toRecordSeparator)([topicName, nql]);
         if (this.connection) {
             this.connection.send(records.buffer);

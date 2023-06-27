@@ -162,5 +162,5 @@ export interface IErrorsModel {
 
 export interface INqlIdentifiers {
   OR?: string[];
-  // OR: string[];
+  // AND: string[];
 }
