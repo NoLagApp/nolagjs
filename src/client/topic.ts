@@ -63,8 +63,8 @@ export class Topic implements ITopic {
   ) {
     this.setConnection(connection);
     this.topicName = topicName;
-    this.saveIdentifiers(identifiers?.AND ?? []);
-    this.subscribe(identifiers?.AND ?? []);
+    this.saveIdentifiers(identifiers?.OR ?? []);
+    this.subscribe(identifiers?.OR ?? []);
   }
 
   private findSavedIdentifier(identifier: string) {
@@ -114,7 +114,7 @@ export class Topic implements ITopic {
 
   public reSubscribe() {
     this.addIdentifiers({
-      AND: this.identifiers
+      OR: this.identifiers
     });
   }
 
@@ -136,9 +136,9 @@ export class Topic implements ITopic {
   }
 
   public addIdentifiers(identifiers: INqlIdentifiers): Topic {
-    this.saveIdentifiers(identifiers.AND ?? []);
+    this.saveIdentifiers(identifiers.OR ?? []);
     const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers.AND), EAction.Add);
+    const nql = nqlPayload(arrayOfString(identifiers.OR), EAction.Add);
 
     const records = toRecordSeparator([topicName, nql]);
 
@@ -150,10 +150,10 @@ export class Topic implements ITopic {
   }
 
   public removeIdentifiers(identifiers: INqlIdentifiers): Topic {
-    this.deleteSavedIdentifiers(identifiers.AND ?? []);
+    this.deleteSavedIdentifiers(identifiers.OR ?? []);
 
     const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers.AND), EAction.Delete);
+    const nql = nqlPayload(arrayOfString(identifiers.OR), EAction.Delete);
 
     const records = toRecordSeparator([topicName, nql]);
 
