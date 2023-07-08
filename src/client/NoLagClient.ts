@@ -157,7 +157,7 @@ export class NoLagClient implements INoLagClient {
         return;
       }
 
-      this.wsInstance = new WebSocketNode(`${this.protocol}://${this.host}`);
+      this.wsInstance = new WebSocketNode(`${this.protocol}://${this.host}${this.url}`);
 
       this.wsInstance.on("open", (event: any) => {
         this._onOpen(event);

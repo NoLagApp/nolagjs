@@ -134,7 +134,7 @@ class NoLagClient {
             if (this.connectionStatus === enum_1.EConnectionStatus.Connected) {
                 return;
             }
-            this.wsInstance = new WebSocketNode(`${this.protocol}://${this.host}`);
+            this.wsInstance = new WebSocketNode(`${this.protocol}://${this.host}${this.url}`);
             this.wsInstance.on("open", (event) => {
                 this._onOpen(event);
             });
