@@ -55,7 +55,7 @@ class Topic {
     }
     reSubscribe() {
         this.addIdentifiers({
-            OR: this.identifiers
+            OR: this.identifiers,
         });
     }
     setConnection(connection) {
@@ -84,10 +84,9 @@ class Topic {
         return this;
     }
     removeIdentifiers(identifiers) {
-        var _a;
-        this.deleteSavedIdentifiers((_a = identifiers.OR) !== null && _a !== void 0 ? _a : []);
+        this.deleteSavedIdentifiers(identifiers !== null && identifiers !== void 0 ? identifiers : []);
         const topicName = (0, transport_1.topicPayload)(this.topicName);
-        const nql = (0, transport_1.nqlPayload)((0, transport_1.arrayOfString)(identifiers.OR), enum_1.EAction.Delete);
+        const nql = (0, transport_1.nqlPayload)((0, transport_1.arrayOfString)(identifiers), enum_1.EAction.Delete);
         const records = (0, transport_1.toRecordSeparator)([topicName, nql]);
         if (this.connection) {
             this.connection.send(records.buffer);

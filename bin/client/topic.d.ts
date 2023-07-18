@@ -11,7 +11,7 @@ export interface ITopic {
      * Remove saved NQL identifiers
      * @param INqlIdentifiers identifiers - List of reverse NQL query items
      */
-    removeIdentifiers(identifiers: INqlIdentifiers): Topic;
+    removeIdentifiers(identifiers: string[]): Topic;
     /**
      * Unsubscribe from current Topic. You will not onReceive messages from this
      * Topic in the future
@@ -55,7 +55,7 @@ export declare class Topic implements ITopic {
     _onReceiveMessage(data: IResponse): ITopic;
     onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;
     addIdentifiers(identifiers: INqlIdentifiers): Topic;
-    removeIdentifiers(identifiers: INqlIdentifiers): Topic;
+    removeIdentifiers(identifiers: string[]): Topic;
     unsubscribe(): boolean;
     publish(data: ArrayBuffer, identifiers: string[]): Topic;
 }

@@ -21,7 +21,7 @@ export interface ITopic {
    * Remove saved NQL identifiers
    * @param INqlIdentifiers identifiers - List of reverse NQL query items
    */
-  removeIdentifiers(identifiers: INqlIdentifiers): Topic;
+  removeIdentifiers(identifiers: string[]): Topic;
   /**
    * Unsubscribe from current Topic. You will not onReceive messages from this
    * Topic in the future
@@ -114,7 +114,7 @@ export class Topic implements ITopic {
 
   public reSubscribe() {
     this.addIdentifiers({
-      OR: this.identifiers
+      OR: this.identifiers,
     });
   }
 
@@ -149,11 +149,11 @@ export class Topic implements ITopic {
     return this;
   }
 
-  public removeIdentifiers(identifiers: INqlIdentifiers): Topic {
-    this.deleteSavedIdentifiers(identifiers.OR ?? []);
+  public removeIdentifiers(identifiers: string[]): Topic {
+    this.deleteSavedIdentifiers(identifiers ?? []);
 
     const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers.OR), EAction.Delete);
+    const nql = nqlPayload(arrayOfString(identifiers), EAction.Delete);
 
     const records = toRecordSeparator([topicName, nql]);
 
