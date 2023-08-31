@@ -10,7 +10,7 @@ import { dataType, FConnection, TData } from "../shared/constants";
 import { ITopic, Topic } from "./topic";
 
 import { NoLagClient } from "./NoLagClient";
-import { EVisibilityState } from "../shared/enum";
+import { ESocketType, EVisibilityState } from "../shared/enum";
 import { generateTransport } from "../shared/utils/transport";
 export * from "../shared/utils/Encodings";
 
@@ -100,6 +100,7 @@ export class Tunnel implements ITunnel {
 
   constructor(
     authToken: string,
+    socketType: ESocketType,
     options?: ITunnelOptions,
     connectOptions?: IConnectOptions,
   ) {
@@ -108,7 +109,7 @@ export class Tunnel implements ITunnel {
       this.defaultCheckConnectionInterval;
     this.connectOptions = connectOptions ?? undefined;
     this.authToken = authToken;
-    this.noLagClient = new NoLagClient(this.authToken, this.connectOptions);
+    this.noLagClient = new NoLagClient(this.authToken, socketType, this.connectOptions);
     this.onClose();
     this.onError();
     this.onReceiveMessage();
@@ -316,6 +317,15 @@ export const WebSocketClient = async (
   options?: ITunnelOptions,
   connectOptions?: IConnectOptions,
 ): Promise<ITunnel> => {
-  const instance = new Tunnel(authToken, options, connectOptions);
+  const instance = new Tunnel(authToken, ESocketType.WebSocket, options, connectOptions);
+  return instance.initiate();
+};
+
+export const TcpSocketClient = async (
+  authToken: string,
+  options?: ITunnelOptions,
+  connectOptions?: IConnectOptions,
+): Promise<ITunnel> => {
+  const instance = new Tunnel(authToken, ESocketType.TcpSocket, options, connectOptions);
   return instance.initiate();
 };

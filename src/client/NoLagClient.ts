@@ -9,6 +9,7 @@ import {
   EEncoding,
   EEnvironment,
   ESeparator,
+  ESocketType,
 } from "../shared/enum";
 import {
   stringToArrayBuffer,
@@ -24,10 +25,13 @@ interface INoLagClient {
 }
 
 export class NoLagClient implements INoLagClient {
+  private socketType: ESocketType;
   private host: string;
   private authToken: string;
   public wsInstance: any | null = null;
+  public tcpInstance: any | null = null;
   private protocol: string;
+  private port: number;
   private url: string;
   private deviceConnectionId: string | undefined = undefined;
   private environment: EEnvironment | undefined;
@@ -47,10 +51,12 @@ export class NoLagClient implements INoLagClient {
   // status of current socket connection
   private connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
 
-  constructor(authToken: string, connectOptions?: IConnectOptions) {
+  constructor(authToken: string, socketType: ESocketType, connectOptions?: IConnectOptions) {
+    this.socketType = socketType;
     this.authToken = authToken ?? "";
     this.host = connectOptions?.host ?? CONSTANT.DefaultWsHost;
     this.protocol = connectOptions?.protocol ?? CONSTANT.DefaultWsProtocol;
+    this.port = connectOptions?.port ?? CONSTANT.DefaultPort;
     this.url = CONSTANT.DefaultWsUrl;
     this.checkConnectionInterval =
       connectOptions?.checkConnectionInterval ??
@@ -73,6 +79,17 @@ export class NoLagClient implements INoLagClient {
     return isNode;
   }
 
+  private initiateSocketType() {
+    switch (this.socketType) {
+      case ESocketType.WebSocket:
+        this.isBrowser() ? this.browserInstance() : this.nodeWebSocketInstance();
+        break;
+        case ESocketType.TcpSocket:
+          this.nodeTcpInstance();
+        break;
+    }
+  }
+
   /**
    * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
    * @param callbackMain used as a event trigger
@@ -80,7 +97,9 @@ export class NoLagClient implements INoLagClient {
    */
   connect(): Promise<NoLagClient> {
     this.connectionStatus = EConnectionStatus.Idle;
-    this.isBrowser() ? this.browserInstance() : this.nodeInstance();
+
+    this.initiateSocketType();
+   
     return new Promise((resolve, reject) => {
       const checkConnection = setInterval(() => {
         if (this.connectionStatus === EConnectionStatus.Connected) {
@@ -108,6 +127,8 @@ export class NoLagClient implements INoLagClient {
    * wsInstance
    */
   browserInstance() {
+    this.host = this.host ?? CONSTANT.DefaultWsHost;
+
     this.environment = EEnvironment.Browser;
 
     // prevent the re-initiation of a socket connection when the 
@@ -145,7 +166,7 @@ export class NoLagClient implements INoLagClient {
   /**
    * Node WebSocket connection with package "ws"
    */
-  nodeInstance() {
+  nodeWebSocketInstance() {
     import("ws").then((loadedWebSocketNode) => {
       const WebSocketNode = loadedWebSocketNode.default;
 
@@ -167,6 +188,42 @@ export class NoLagClient implements INoLagClient {
       });
       this.wsInstance.on("close", (event: any) => {
         this._onError(event);
+      });
+    });
+  }
+
+  /**
+   * Node TCP socket connection with package "net"
+   */
+  nodeTcpInstance() {
+    this.host = this.host ?? CONSTANT.DefaultTcpHost;
+
+    this.environment = EEnvironment.Nodejs;
+
+    import("net").then((loadedNodejsNet) => {
+      const net = loadedNodejsNet.default;
+
+      this.environment = EEnvironment.Nodejs;
+
+      // prevent the re-initiation of a socket connection when the 
+      // reconnect function calls this method again
+      if(this.connectionStatus === EConnectionStatus.Connected) {
+        return;
+      }
+
+      this.tcpInstance = net.createConnection(this.port, this.host, () => {
+        this.tcpInstance.on("ready", (event: any) => {
+          this._onOpen(event);
+        });
+        this.tcpInstance.on("data", (event: any) => {
+          this._onReceive(event);
+        });
+        this.tcpInstance.on("close", (event: any) => {
+          this._onClose(event);
+        });
+        this.tcpInstance.on("error", (event: any) => {
+          this._onError(event);
+        });
       });
     });
   }
@@ -337,12 +394,16 @@ export class NoLagClient implements INoLagClient {
   public send(transport: ArrayBuffer) {
     if (this.wsInstance) {
       this.wsInstance.send(transport as any);
+    } else if(this.tcpInstance) {
+      this.tcpInstance.write(transport as any);
     }
   }
 
   public heartbeat() {
     if (this.wsInstance) {
       this.wsInstance.send(new ArrayBuffer(0));
+    } else if(this.tcpInstance) {
+      this.tcpInstance.write(new ArrayBuffer(0));
     }
   }
 }

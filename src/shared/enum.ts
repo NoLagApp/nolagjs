@@ -59,3 +59,8 @@ export enum ETopicType {
   Standard = "standard",
   Api = "api",
 }
+
+export enum ESocketType {
+  WebSocket = "webSocket",
+  TcpSocket = "tcpSocket",
+}

@@ -1,5 +1,6 @@
 export const CONSTANT = {
   DefaultWsHost: "tunnel.nolag.app",
+  DefaultTcpHost: "tunnel.nolag.app",
   DefaultApiHost: "api.nolag.app",
   DefaultWsUrl: "/ws",
   DefaultPort: 443,
