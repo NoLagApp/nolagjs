@@ -49,3 +49,7 @@ export declare enum ETopicType {
     Standard = "standard",
     Api = "api"
 }
+export declare enum ESocketType {
+    WebSocket = "webSocket",
+    TcpSocket = "tcpSocket"
+}

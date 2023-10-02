@@ -1,5 +1,6 @@
 export declare const CONSTANT: {
     DefaultWsHost: string;
+    DefaultTcpHost: string;
     DefaultApiHost: string;
     DefaultWsUrl: string;
     DefaultPort: number;

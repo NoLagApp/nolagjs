@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WebSocketClient = exports.Tunnel = void 0;
+exports.TcpSocketClient = exports.WebSocketClient = exports.Tunnel = void 0;
 const topic_1 = require("./topic");
 const NoLagClient_1 = require("./NoLagClient");
 const enum_1 = require("../shared/enum");
@@ -26,7 +26,7 @@ __exportStar(require("../shared/utils/Encodings"), exports);
  * Topic instance and publish to a topic
  */
 class Tunnel {
-    constructor(authToken, options, connectOptions) {
+    constructor(authToken, socketType, options, connectOptions) {
         var _a;
         // topics
         this.topics = {};
@@ -42,7 +42,7 @@ class Tunnel {
             (_a = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionInterval) !== null && _a !== void 0 ? _a : this.defaultCheckConnectionInterval;
         this.connectOptions = connectOptions !== null && connectOptions !== void 0 ? connectOptions : undefined;
         this.authToken = authToken;
-        this.noLagClient = new NoLagClient_1.NoLagClient(this.authToken, this.connectOptions);
+        this.noLagClient = new NoLagClient_1.NoLagClient(this.authToken, socketType, this.connectOptions);
         this.onClose();
         this.onError();
         this.onReceiveMessage();
@@ -217,8 +217,13 @@ class Tunnel {
 }
 exports.Tunnel = Tunnel;
 const WebSocketClient = async (authToken, options, connectOptions) => {
-    const instance = new Tunnel(authToken, options, connectOptions);
+    const instance = new Tunnel(authToken, enum_1.ESocketType.WebSocket, options, connectOptions);
     return instance.initiate();
 };
 exports.WebSocketClient = WebSocketClient;
+const TcpSocketClient = async (authToken, options, connectOptions) => {
+    const instance = new Tunnel(authToken, enum_1.ESocketType.TcpSocket, options, connectOptions);
+    return instance.initiate();
+};
+exports.TcpSocketClient = TcpSocketClient;
 //# sourceMappingURL=index.js.map

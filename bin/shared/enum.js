@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ETopicType = exports.EStatus = exports.EAccessPermission = exports.ESeparator = exports.EVisibilityState = exports.EEncoding = exports.EAction = exports.EEnvironment = exports.EConnectionStatus = void 0;
+exports.ESocketType = exports.ETopicType = exports.EStatus = exports.EAccessPermission = exports.ESeparator = exports.EVisibilityState = exports.EEncoding = exports.EAction = exports.EEnvironment = exports.EConnectionStatus = void 0;
 var EConnectionStatus;
 (function (EConnectionStatus) {
     EConnectionStatus["Idle"] = "idle";
@@ -63,4 +63,9 @@ var ETopicType;
     ETopicType["Standard"] = "standard";
     ETopicType["Api"] = "api";
 })(ETopicType = exports.ETopicType || (exports.ETopicType = {}));
+var ESocketType;
+(function (ESocketType) {
+    ESocketType["WebSocket"] = "webSocket";
+    ESocketType["TcpSocket"] = "tcpSocket";
+})(ESocketType = exports.ESocketType || (exports.ESocketType = {}));
 //# sourceMappingURL=enum.js.map

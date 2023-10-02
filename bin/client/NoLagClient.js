@@ -28,9 +28,10 @@ const constants_1 = require("../shared/constants");
 const enum_1 = require("../shared/enum");
 const Encodings_1 = require("../shared/utils/Encodings");
 class NoLagClient {
-    constructor(authToken, connectOptions) {
-        var _a, _b, _c, _d;
+    constructor(authToken, socketType, connectOptions) {
+        var _a, _b, _c, _d, _e;
         this.wsInstance = null;
+        this.tcpInstance = null;
         this.deviceConnectionId = undefined;
         this.deviceTokenId = null;
         //  check connection
@@ -43,14 +44,16 @@ class NoLagClient {
         this.callbackOnError = () => { };
         // status of current socket connection
         this.connectionStatus = enum_1.EConnectionStatus.Idle;
+        this.socketType = socketType;
         this.authToken = authToken !== null && authToken !== void 0 ? authToken : "";
         this.host = (_a = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.host) !== null && _a !== void 0 ? _a : constants_1.CONSTANT.DefaultWsHost;
         this.protocol = (_b = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.protocol) !== null && _b !== void 0 ? _b : constants_1.CONSTANT.DefaultWsProtocol;
+        this.port = (_c = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.port) !== null && _c !== void 0 ? _c : constants_1.CONSTANT.DefaultPort;
         this.url = constants_1.CONSTANT.DefaultWsUrl;
         this.checkConnectionInterval =
-            (_c = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionInterval) !== null && _c !== void 0 ? _c : this.defaultCheckConnectionInterval;
+            (_d = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionInterval) !== null && _d !== void 0 ? _d : this.defaultCheckConnectionInterval;
         this.checkConnectionTimeout =
-            (_d = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionTimeout) !== null && _d !== void 0 ? _d : this.defaultCheckConnectionTimeout;
+            (_e = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionTimeout) !== null && _e !== void 0 ? _e : this.defaultCheckConnectionTimeout;
     }
     // Check so see if we are in a browser or backend environment
     isBrowser() {
@@ -64,6 +67,16 @@ class NoLagClient {
         }
         return isNode;
     }
+    initiateSocketType() {
+        switch (this.socketType) {
+            case enum_1.ESocketType.WebSocket:
+                this.isBrowser() ? this.browserInstance() : this.nodeWebSocketInstance();
+                break;
+            case enum_1.ESocketType.TcpSocket:
+                this.nodeTcpInstance();
+                break;
+        }
+    }
     /**
      * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
      * @param callbackMain used as a event trigger
@@ -71,7 +84,7 @@ class NoLagClient {
      */
     connect() {
         this.connectionStatus = enum_1.EConnectionStatus.Idle;
-        this.isBrowser() ? this.browserInstance() : this.nodeInstance();
+        this.initiateSocketType();
         return new Promise((resolve, reject) => {
             const checkConnection = setInterval(() => {
                 if (this.connectionStatus === enum_1.EConnectionStatus.Connected) {
@@ -97,6 +110,8 @@ class NoLagClient {
      * wsInstance
      */
     browserInstance() {
+        var _a;
+        this.host = (_a = this.host) !== null && _a !== void 0 ? _a : constants_1.CONSTANT.DefaultWsHost;
         this.environment = enum_1.EEnvironment.Browser;
         // prevent the re-initiation of a socket connection when the 
         // reconnect function calls this method again
@@ -125,7 +140,7 @@ class NoLagClient {
     /**
      * Node WebSocket connection with package "ws"
      */
-    nodeInstance() {
+    nodeWebSocketInstance() {
         Promise.resolve().then(() => __importStar(require("ws"))).then((loadedWebSocketNode) => {
             const WebSocketNode = loadedWebSocketNode.default;
             this.environment = enum_1.EEnvironment.Nodejs;
@@ -143,6 +158,37 @@ class NoLagClient {
             });
             this.wsInstance.on("close", (event) => {
                 this._onError(event);
+            });
+        });
+    }
+    /**
+     * Node TCP socket connection with package "net"
+     */
+    nodeTcpInstance() {
+        var _a;
+        this.host = (_a = this.host) !== null && _a !== void 0 ? _a : constants_1.CONSTANT.DefaultTcpHost;
+        this.environment = enum_1.EEnvironment.Nodejs;
+        Promise.resolve().then(() => __importStar(require("net"))).then((loadedNodejsNet) => {
+            const net = loadedNodejsNet.default;
+            this.environment = enum_1.EEnvironment.Nodejs;
+            // prevent the re-initiation of a socket connection when the 
+            // reconnect function calls this method again
+            if (this.connectionStatus === enum_1.EConnectionStatus.Connected) {
+                return;
+            }
+            this.tcpInstance = net.createConnection(this.port, this.host, () => {
+                this.tcpInstance.on("ready", (event) => {
+                    this._onOpen(event);
+                });
+                this.tcpInstance.on("data", (event) => {
+                    this._onReceive(event);
+                });
+                this.tcpInstance.on("close", (event) => {
+                    this._onClose(event);
+                });
+                this.tcpInstance.on("error", (event) => {
+                    this._onError(event);
+                });
             });
         });
     }
@@ -275,10 +321,16 @@ class NoLagClient {
         if (this.wsInstance) {
             this.wsInstance.send(transport);
         }
+        else if (this.tcpInstance) {
+            this.tcpInstance.write(transport);
+        }
     }
     heartbeat() {
         if (this.wsInstance) {
             this.wsInstance.send(new ArrayBuffer(0));
+        }
+        else if (this.tcpInstance) {
+            this.tcpInstance.write(new ArrayBuffer(0));
         }
     }
 }

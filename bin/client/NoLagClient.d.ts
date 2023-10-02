@@ -1,5 +1,6 @@
 import { IConnectOptions } from "../shared/interfaces";
 import { FConnection } from "../shared/constants";
+import { ESocketType } from "../shared/enum";
 interface INoLagClient {
     connect(): Promise<NoLagClient>;
     onOpen(callback: FConnection): void;
@@ -8,10 +9,13 @@ interface INoLagClient {
     onError(callback: FConnection): void;
 }
 export declare class NoLagClient implements INoLagClient {
+    private socketType;
     private host;
     private authToken;
     wsInstance: any | null;
+    tcpInstance: any | null;
     private protocol;
+    private port;
     private url;
     private deviceConnectionId;
     private environment;
@@ -25,8 +29,9 @@ export declare class NoLagClient implements INoLagClient {
     private callbackOnClose;
     private callbackOnError;
     private connectionStatus;
-    constructor(authToken: string, connectOptions?: IConnectOptions);
+    constructor(authToken: string, socketType: ESocketType, connectOptions?: IConnectOptions);
     isBrowser(): boolean;
+    private initiateSocketType;
     /**
      * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
      * @param callbackMain used as a event trigger
@@ -42,7 +47,11 @@ export declare class NoLagClient implements INoLagClient {
     /**
      * Node WebSocket connection with package "ws"
      */
-    nodeInstance(): void;
+    nodeWebSocketInstance(): void;
+    /**
+     * Node TCP socket connection with package "net"
+     */
+    nodeTcpInstance(): void;
     /**
      * Get the status of the connection to the server
      */

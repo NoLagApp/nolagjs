@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONSTANT = void 0;
 exports.CONSTANT = {
     DefaultWsHost: "tunnel.nolag.app",
+    DefaultTcpHost: "tunnel.nolag.app",
     DefaultApiHost: "api.nolag.app",
     DefaultWsUrl: "/ws",
     DefaultPort: 443,

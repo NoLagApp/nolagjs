@@ -1,6 +1,7 @@
 import { IConnectOptions, IErrorMessage, INqlIdentifiers, IResponse, ITunnelOptions } from "../shared/interfaces";
 import { FConnection } from "../shared/constants";
 import { ITopic } from "./topic";
+import { ESocketType } from "../shared/enum";
 export * from "../shared/utils/Encodings";
 export interface ITunnel {
     /**
@@ -70,7 +71,7 @@ export declare class Tunnel implements ITunnel {
     private callbackOnDisconnect;
     private callbackOnReconnect;
     private callbackOnReceivedError;
-    constructor(authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions);
+    constructor(authToken: string, socketType: ESocketType, options?: ITunnelOptions, connectOptions?: IConnectOptions);
     get deviceTokenId(): string | null | undefined;
     private startHeartbeat;
     private stopHeartbeat;
@@ -96,3 +97,4 @@ export declare class Tunnel implements ITunnel {
     get status(): string | null;
 }
 export declare const WebSocketClient: (authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions) => Promise<ITunnel>;
+export declare const TcpSocketClient: (authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions) => Promise<ITunnel>;
