@@ -261,6 +261,12 @@ export class Tunnel implements ITunnel {
   }
 
   public getTopic(topicName: string): ITopic | undefined {
+    // if you are trying to get the specific topic but its not been set
+    // set it now
+    if (!this.topics[topicName] && this.noLagClient) {
+      this.topics[topicName] = new Topic(this.noLagClient, topicName, {});
+    }
+
     return this.topics[topicName];
   }
 
