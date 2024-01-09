@@ -179,6 +179,11 @@ class Tunnel {
         this.callbackOnReceivedError = callback;
     }
     getTopic(topicName) {
+        // if you are trying to get the specific topic but its not been set
+        // set it now
+        if (!this.topics[topicName] && this.noLagClient) {
+            this.topics[topicName] = new topic_1.Topic(this.noLagClient, topicName, {});
+        }
         return this.topics[topicName];
     }
     unsubscribe(topicName) {
