@@ -1,8 +1,3 @@
-import {
-  IConnectOptions,
-  IErrorMessage,
-  IResponse,
-} from "../shared/interfaces";
 import { CONSTANT, FConnection } from "../shared/constants";
 import {
   EConnectionStatus,
@@ -10,6 +5,11 @@ import {
   EEnvironment,
   ESeparator,
 } from "../shared/enum";
+import {
+  IConnectOptions,
+  IErrorMessage,
+  IResponse,
+} from "../shared/interfaces";
 import {
   stringToArrayBuffer,
   uint8ArrayToString,
@@ -110,9 +110,9 @@ export class NoLagClient implements INoLagClient {
   browserInstance() {
     this.environment = EEnvironment.Browser;
 
-    // prevent the re-initiation of a socket connection when the 
+    // prevent the re-initiation of a socket connection when the
     // reconnect function calls this method again
-    if(this.connectionStatus === EConnectionStatus.Connected) {
+    if (this.connectionStatus === EConnectionStatus.Connected) {
       return;
     }
 
@@ -151,13 +151,15 @@ export class NoLagClient implements INoLagClient {
 
       this.environment = EEnvironment.Nodejs;
 
-      // prevent the re-initiation of a socket connection when the 
+      // prevent the re-initiation of a socket connection when the
       // reconnect function calls this method again
-      if(this.connectionStatus === EConnectionStatus.Connected) {
+      if (this.connectionStatus === EConnectionStatus.Connected) {
         return;
       }
 
-      this.wsInstance = new WebSocketNode(`${this.protocol}://${this.host}${this.url}`);
+      this.wsInstance = new WebSocketNode(
+        `${this.protocol}://${this.host}${this.url}`,
+      );
 
       this.wsInstance.on("open", (event: any) => {
         this._onOpen(event);
@@ -263,7 +265,7 @@ export class NoLagClient implements INoLagClient {
     const nqlIdentifiers = uint8ArrayToString(
       payload.slice(sliceIndex + 1, payload.length),
     )
-      .split("|")
+      .split("\u000b")
       .filter((i) => i !== "");
 
     return {

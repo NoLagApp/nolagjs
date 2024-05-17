@@ -1,5 +1,5 @@
-import { IConnectOptions } from "../shared/interfaces";
 import { FConnection } from "../shared/constants";
+import { IConnectOptions } from "../shared/interfaces";
 interface INoLagClient {
     connect(): Promise<NoLagClient>;
     onOpen(callback: FConnection): void;
