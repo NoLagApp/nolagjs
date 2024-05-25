@@ -192,8 +192,8 @@ export class NoLagClient implements INoLagClient {
   authenticate() {
     this.connectionStatus = EConnectionStatus.Connecting;
 
-    const { authToken: auth, deviceConnectionId: id } = this;
-    this.send(stringToArrayBuffer(auth));
+    const { authToken } = this;
+    this.send(stringToArrayBuffer(authToken));
   }
 
   public onOpen(callback: FConnection) {
