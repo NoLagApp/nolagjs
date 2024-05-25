@@ -1,3 +1,4 @@
+import { FConnection, dataType } from "../shared/constants";
 import {
   IConnectOptions,
   IErrorMessage,
@@ -5,13 +6,12 @@ import {
   IResponse,
   ITunnelOptions,
 } from "../shared/interfaces";
-import { dataType, FConnection, TData } from "../shared/constants";
 
 import { ITopic, Topic } from "./topic";
 
-import { NoLagClient } from "./NoLagClient";
 import { EVisibilityState } from "../shared/enum";
 import { generateTransport } from "../shared/utils/transport";
+import { NoLagClient } from "./NoLagClient";
 export * from "../shared/utils/Encodings";
 
 export interface ITunnel {
@@ -135,19 +135,12 @@ export class Tunnel implements ITunnel {
     clearInterval(this.heartbeatTimer);
   }
 
-  private reSubscribe(): void {
-    Object.values(this.topics).map((topic) => {
-      topic.reSubscribe();
-    });
-  }
-
   // connect to NoLag with Tunnel credentials
   public async initiate() {
     if (this.noLagClient) {
       await this.noLagClient.connect();
       this.resetConnectAttempts();
       this.startHeartbeat();
-      this.reSubscribe();
     }
     return this;
   }
@@ -175,7 +168,12 @@ export class Tunnel implements ITunnel {
   private onReceiveMessage() {
     if (this.noLagClient) {
       this.noLagClient?.onReceiveMessage((err: any, data: IResponse) => {
-        const { topicName } = data;
+        const { topicName, nqlIdentifiers } = data;
+        if (this.noLagClient && !this.topics[topicName]) {
+          this.topics[topicName] = new Topic(this.noLagClient, topicName, {
+            OR: nqlIdentifiers,
+          });
+        }
         if (topicName && this.topics[topicName]) {
           this.topics[topicName]?._onReceiveMessage(data);
         }
@@ -244,7 +242,7 @@ export class Tunnel implements ITunnel {
   }
 
   public disconnect(): void {
-    this.reconnectAttempts = 5;
+    this.reconnectAttempts = this.maxReconnectAttempts;
     this.noLagClient?.disconnect();
   }
 
@@ -284,9 +282,7 @@ export class Tunnel implements ITunnel {
   ): ITopic | undefined {
     if (this.noLagClient) {
       if (this.topics[topicName]) {
-        const topic = this.topics[topicName];
-        topic?.reSubscribe();
-        return topic;
+        return this.topics[topicName];
       } else {
         this.topics[topicName] = new Topic(
           this.noLagClient,

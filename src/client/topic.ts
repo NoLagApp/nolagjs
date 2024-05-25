@@ -1,13 +1,12 @@
 import { TData } from "../shared/constants";
-import { EAction, ESeparator } from "../shared/enum";
+import { EAction } from "../shared/enum";
 import { INqlIdentifiers, IResponse } from "../shared/interfaces";
 import {
   arrayOfString,
   generateTransport,
   nqlPayload,
-  topicPayload,
   toRecordSeparator,
-  toTransportSeparator,
+  topicPayload,
 } from "../shared/utils/transport";
 import { NoLagClient } from "./NoLagClient";
 
@@ -40,10 +39,6 @@ export interface ITopic {
    * @returns
    */
   publish(data: TData, identifiers: string[]): Topic;
-  /**
-   * Trigger the reconnect procedure
-   */
-  reSubscribe(): void;
   /**
    * PRIVATE Inject messages into the Topic instance
    * @param data
@@ -110,12 +105,6 @@ export class Topic implements ITopic {
     if (this.connection) {
       this.connection.send(records.buffer);
     }
-  }
-
-  public reSubscribe() {
-    this.addIdentifiers({
-      OR: this.identifiers,
-    });
   }
 
   public setConnection(connection: NoLagClient): Topic {

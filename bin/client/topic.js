@@ -53,11 +53,6 @@ class Topic {
             this.connection.send(records.buffer);
         }
     }
-    reSubscribe() {
-        this.addIdentifiers({
-            OR: this.identifiers,
-        });
-    }
     setConnection(connection) {
         this.connection = connection;
         return this;

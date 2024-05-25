@@ -31,10 +31,6 @@ export interface ITopic {
      */
     publish(data: TData, identifiers: string[]): Topic;
     /**
-     * Trigger the reconnect procedure
-     */
-    reSubscribe(): void;
-    /**
      * PRIVATE Inject messages into the Topic instance
      * @param data
      */
@@ -50,7 +46,6 @@ export declare class Topic implements ITopic {
     private saveIdentifiers;
     private deleteSavedIdentifiers;
     private subscribe;
-    reSubscribe(): void;
     setConnection(connection: NoLagClient): Topic;
     _onReceiveMessage(data: IResponse): ITopic;
     onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;

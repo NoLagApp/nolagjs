@@ -1,5 +1,5 @@
-import { IConnectOptions, IErrorMessage, INqlIdentifiers, IResponse, ITunnelOptions } from "../shared/interfaces";
 import { FConnection } from "../shared/constants";
+import { IConnectOptions, IErrorMessage, INqlIdentifiers, IResponse, ITunnelOptions } from "../shared/interfaces";
 import { ITopic } from "./topic";
 export * from "../shared/utils/Encodings";
 export interface ITunnel {
@@ -74,7 +74,6 @@ export declare class Tunnel implements ITunnel {
     get deviceTokenId(): string | null | undefined;
     private startHeartbeat;
     private stopHeartbeat;
-    private reSubscribe;
     initiate(): Promise<this>;
     private resetConnectAttempts;
     private onVisibilityChange;

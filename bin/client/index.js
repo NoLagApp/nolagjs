@@ -16,9 +16,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebSocketClient = exports.Tunnel = void 0;
 const topic_1 = require("./topic");
-const NoLagClient_1 = require("./NoLagClient");
 const enum_1 = require("../shared/enum");
 const transport_1 = require("../shared/utils/transport");
+const NoLagClient_1 = require("./NoLagClient");
 __exportStar(require("../shared/utils/Encodings"), exports);
 /**
  * To get access NoLag message broker you need access to a Tunnel
@@ -65,18 +65,12 @@ class Tunnel {
     stopHeartbeat() {
         clearInterval(this.heartbeatTimer);
     }
-    reSubscribe() {
-        Object.values(this.topics).map((topic) => {
-            topic.reSubscribe();
-        });
-    }
     // connect to NoLag with Tunnel credentials
     async initiate() {
         if (this.noLagClient) {
             await this.noLagClient.connect();
             this.resetConnectAttempts();
             this.startHeartbeat();
-            this.reSubscribe();
         }
         return this;
     }
@@ -104,7 +98,12 @@ class Tunnel {
         if (this.noLagClient) {
             (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.onReceiveMessage((err, data) => {
                 var _a;
-                const { topicName } = data;
+                const { topicName, nqlIdentifiers } = data;
+                if (this.noLagClient && !this.topics[topicName]) {
+                    this.topics[topicName] = new topic_1.Topic(this.noLagClient, topicName, {
+                        OR: nqlIdentifiers,
+                    });
+                }
                 if (topicName && this.topics[topicName]) {
                     (_a = this.topics[topicName]) === null || _a === void 0 ? void 0 : _a._onReceiveMessage(data);
                 }
@@ -166,7 +165,7 @@ class Tunnel {
     }
     disconnect() {
         var _a;
-        this.reconnectAttempts = 5;
+        this.reconnectAttempts = this.maxReconnectAttempts;
         (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.disconnect();
     }
     onDisconnect(callback) {
@@ -197,9 +196,7 @@ class Tunnel {
     subscribe(topicName, identifiers = {}) {
         if (this.noLagClient) {
             if (this.topics[topicName]) {
-                const topic = this.topics[topicName];
-                topic === null || topic === void 0 ? void 0 : topic.reSubscribe();
-                return topic;
+                return this.topics[topicName];
             }
             else {
                 this.topics[topicName] = new topic_1.Topic(this.noLagClient, topicName, identifiers);
