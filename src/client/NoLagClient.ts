@@ -204,7 +204,6 @@ export class NoLagClient implements INoLagClient {
     if (this.reConnect) {
       authBuffer = authStringToReConnectBuffer(authToken);
     }
-    console.log(this.reConnect);
     this.send(authBuffer);
   }
 

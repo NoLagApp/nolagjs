@@ -24,6 +24,5 @@ export const authStringToReConnectBuffer = (str: string): ArrayBuffer => {
     bufView[i] = str.charCodeAt(i);
   }
   bufView[str.length] = ESeparator.SynchronousIdle;
-  console.log(bufView);
   return buf;
 };
