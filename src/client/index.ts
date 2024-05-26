@@ -136,8 +136,9 @@ export class Tunnel implements ITunnel {
   }
 
   // connect to NoLag with Tunnel credentials
-  public async initiate() {
+  public async initiate(reconnect?: boolean) {
     if (this.noLagClient) {
+      this.noLagClient.setReConnect(reconnect);
       await this.noLagClient.connect();
       this.resetConnectAttempts();
       this.startHeartbeat();
@@ -158,7 +159,7 @@ export class Tunnel implements ITunnel {
             this.noLagClient?.disconnect();
             break;
           case EVisibilityState.Visible:
-            await this.initiate();
+            await this.initiate(true);
             break;
         }
       });
