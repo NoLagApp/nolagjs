@@ -1,8 +1,3 @@
-import {
-  IConnectOptions,
-  IErrorMessage,
-  IResponse,
-} from "../shared/interfaces";
 import { CONSTANT, FConnection } from "../shared/constants";
 import {
   EConnectionStatus,
@@ -11,12 +6,19 @@ import {
   ESeparator,
 } from "../shared/enum";
 import {
+  IConnectOptions,
+  IErrorMessage,
+  IResponse,
+} from "../shared/interfaces";
+import {
+  authStringToReConnectBuffer,
   stringToArrayBuffer,
   uint8ArrayToString,
 } from "../shared/utils/Encodings";
 
 interface INoLagClient {
   connect(): Promise<NoLagClient>;
+  setReConnect(): void;
   onOpen(callback: FConnection): void;
   onReceiveMessage(callback: FConnection): void;
   onClose(callback: FConnection): void;
@@ -37,6 +39,7 @@ export class NoLagClient implements INoLagClient {
   private defaultCheckConnectionTimeout = 10000;
   private checkConnectionInterval: number;
   private checkConnectionTimeout: number;
+  private reConnect: boolean = false;
 
   // callback function used to return the connection result
   private callbackOnOpen: FConnection = () => {};
@@ -58,6 +61,10 @@ export class NoLagClient implements INoLagClient {
     this.checkConnectionTimeout =
       connectOptions?.checkConnectionTimeout ??
       this.defaultCheckConnectionTimeout;
+  }
+
+  setReConnect(reConnect?: boolean) {
+    if (reConnect) this.reConnect = reConnect;
   }
 
   // Check so see if we are in a browser or backend environment
@@ -110,9 +117,9 @@ export class NoLagClient implements INoLagClient {
   browserInstance() {
     this.environment = EEnvironment.Browser;
 
-    // prevent the re-initiation of a socket connection when the 
+    // prevent the re-initiation of a socket connection when the
     // reconnect function calls this method again
-    if(this.connectionStatus === EConnectionStatus.Connected) {
+    if (this.connectionStatus === EConnectionStatus.Connected) {
       return;
     }
 
@@ -151,13 +158,15 @@ export class NoLagClient implements INoLagClient {
 
       this.environment = EEnvironment.Nodejs;
 
-      // prevent the re-initiation of a socket connection when the 
+      // prevent the re-initiation of a socket connection when the
       // reconnect function calls this method again
-      if(this.connectionStatus === EConnectionStatus.Connected) {
+      if (this.connectionStatus === EConnectionStatus.Connected) {
         return;
       }
 
-      this.wsInstance = new WebSocketNode(`${this.protocol}://${this.host}${this.url}`);
+      this.wsInstance = new WebSocketNode(
+        `${this.protocol}://${this.host}${this.url}`,
+      );
 
       this.wsInstance.on("open", (event: any) => {
         this._onOpen(event);
@@ -190,8 +199,12 @@ export class NoLagClient implements INoLagClient {
   authenticate() {
     this.connectionStatus = EConnectionStatus.Connecting;
 
-    const { authToken: auth, deviceConnectionId: id } = this;
-    this.send(stringToArrayBuffer(auth));
+    const { authToken } = this;
+    let authBuffer = stringToArrayBuffer(authToken);
+    if (this.reConnect) {
+      authBuffer = authStringToReConnectBuffer(authToken);
+    }
+    this.send(authBuffer);
   }
 
   public onOpen(callback: FConnection) {
@@ -263,7 +276,7 @@ export class NoLagClient implements INoLagClient {
     const nqlIdentifiers = uint8ArrayToString(
       payload.slice(sliceIndex + 1, payload.length),
     )
-      .split("|")
+      .split("\u000b")
       .filter((i) => i !== "");
 
     return {

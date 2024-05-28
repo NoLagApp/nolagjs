@@ -36,6 +36,8 @@ export enum ESeparator {
   Vertical = 11,
   NegativeAck = 21,
   BellAlert = 7,
+  // send this when we try to reconnect to Message Broker
+  SynchronousIdle = 22,
 }
 
 /**

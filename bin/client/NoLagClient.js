@@ -98,7 +98,7 @@ class NoLagClient {
      */
     browserInstance() {
         this.environment = enum_1.EEnvironment.Browser;
-        // prevent the re-initiation of a socket connection when the 
+        // prevent the re-initiation of a socket connection when the
         // reconnect function calls this method again
         if (this.connectionStatus === enum_1.EConnectionStatus.Connected) {
             return;
@@ -129,7 +129,7 @@ class NoLagClient {
         Promise.resolve().then(() => __importStar(require("ws"))).then((loadedWebSocketNode) => {
             const WebSocketNode = loadedWebSocketNode.default;
             this.environment = enum_1.EEnvironment.Nodejs;
-            // prevent the re-initiation of a socket connection when the 
+            // prevent the re-initiation of a socket connection when the
             // reconnect function calls this method again
             if (this.connectionStatus === enum_1.EConnectionStatus.Connected) {
                 return;
@@ -215,7 +215,7 @@ class NoLagClient {
         const topicName = (0, Encodings_1.uint8ArrayToString)(payload.slice(0, sliceIndex));
         // extract NQL identifiers
         const nqlIdentifiers = (0, Encodings_1.uint8ArrayToString)(payload.slice(sliceIndex + 1, payload.length))
-            .split("|")
+            .split("\u000b")
             .filter((i) => i !== "");
         return {
             topicName,

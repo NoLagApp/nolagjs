@@ -3,11 +3,11 @@ import { EAction, ESeparator } from "../enum";
 export const toUnitSeparator = (unitArray: string[]): Uint8Array => {
   let byteLength = 0;
 
-  // add space for seporator
+  // add space for separator
   if (unitArray[0] && unitArray[1]) {
     // total byte data
     byteLength = unitArray[0]?.length + unitArray[1]?.length;
-    // add byte length for seporator
+    // add byte length for separator
     byteLength = byteLength + 1;
   } else if (unitArray[0]) {
     byteLength = unitArray[0]?.length;
@@ -51,7 +51,7 @@ export const nqlPayload = (
   identifiers: Uint8Array,
   action?: EAction,
 ): Uint8Array => {
-  const seporator = 31;
+  const separator = 31;
 
   const actionString = new Uint8Array(action?.length ?? 0);
 
@@ -59,23 +59,23 @@ export const nqlPayload = (
     actionString[0] = action.charCodeAt(0);
   }
 
-  return toTransportSeparator([identifiers, actionString], seporator);
+  return toTransportSeparator([identifiers, actionString], separator);
 };
 
 export const toTransportSeparator = (
   recordArray: Uint8Array[],
-  seporator: number,
+  separator: number,
 ): Uint8Array => {
   let byteLength = 0;
 
-  const seporatorArray = new Uint8Array(1);
-  seporatorArray[0] = seporator;
+  const separatorArray = new Uint8Array(1);
+  separatorArray[0] = separator;
 
-  // add space for seporator
+  // add space for separator
   if (recordArray[0] && recordArray[1] && recordArray[1][0] !== undefined) {
     // total byte data
     byteLength = recordArray[0]?.byteLength + recordArray[1]?.byteLength;
-    // add byte byteLength for seporator
+    // add byte byteLength for separator
     byteLength = byteLength + 1;
   } else if (recordArray[0]) {
     byteLength = recordArray[0]?.byteLength;
@@ -85,7 +85,7 @@ export const toTransportSeparator = (
 
   if (recordArray[0] && recordArray[1] && recordArray[1][0] !== undefined) {
     recordData.set(recordArray[0], 0);
-    recordData.set(seporatorArray, recordArray[0].byteLength);
+    recordData.set(separatorArray, recordArray[0].byteLength);
     recordData.set(recordArray[1], recordArray[0].byteLength + 1);
   } else if (recordArray[0]) {
     recordData.set(recordArray[0], 0);
@@ -104,11 +104,11 @@ export const arrayOfString = (identifiers: string[] = []): Uint8Array => {
     .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
   // get the number of NQL separators
-  // ex. 2 identifiers will need one seporator
+  // ex. 2 identifiers will need one separator
   // we need this number to construct the Uint8Array
-  const seporatorLength = identifiers.length <= 1 ? 0 : identifiers.length - 1;
+  const separatorLength = identifiers.length <= 1 ? 0 : identifiers.length - 1;
 
-  const uint8Length = identifiersLength + seporatorLength;
+  const uint8Length = identifiersLength + separatorLength;
 
   const bufView = new Uint8Array(uint8Length);
   let arrayCount = 0;
@@ -142,15 +142,15 @@ export const stringToUint8Array = (str: string): Uint8Array => {
 };
 
 export const toGroupSeparator = (records: Uint8Array, data: ArrayBuffer) => {
-  const seporatorArray = new Uint8Array(1);
-  seporatorArray[0] = ESeparator.Group;
+  const separatorArray = new Uint8Array(1);
+  separatorArray[0] = ESeparator.Group;
 
   const bitLength =
-    records.byteLength + seporatorArray.byteLength + data.byteLength;
+    records.byteLength + separatorArray.byteLength + data.byteLength;
   const buf = new ArrayBuffer(bitLength);
   let tmp = new Uint8Array(buf);
   tmp.set(new Uint8Array(records), 0);
-  tmp.set(seporatorArray, records.byteLength);
+  tmp.set(separatorArray, records.byteLength);
   tmp.set(new Uint8Array(data), records.byteLength + 1);
   return tmp.buffer;
 };
