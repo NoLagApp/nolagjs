@@ -5,16 +5,15 @@ import {
   EEnvironment,
   ESeparator,
 } from "../shared/enum";
+import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import {
   IConnectOptions,
   IErrorMessage,
   IResponse,
 } from "../shared/interfaces";
-import {
-  authStringToReConnectBuffer,
-  stringToArrayBuffer,
-  uint8ArrayToString,
-} from "../shared/utils/Encodings";
+import { Commands } from "../shared/utils/Commands";
+import { uint8ArrayToString } from "../shared/utils/Encodings";
+import { NqlTransport } from "../shared/utils/transport_v2";
 
 interface INoLagClient {
   connect(): Promise<NoLagClient>;
@@ -49,6 +48,7 @@ export class NoLagClient implements INoLagClient {
 
   // status of current socket connection
   private connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
+  private buffer: ArrayBuffer[] = [];
 
   constructor(authToken: string, connectOptions?: IConnectOptions) {
     this.authToken = authToken ?? "";
@@ -61,6 +61,20 @@ export class NoLagClient implements INoLagClient {
     this.checkConnectionTimeout =
       connectOptions?.checkConnectionTimeout ??
       this.defaultCheckConnectionTimeout;
+    this.startSender();
+  }
+
+  startSender() {
+    setInterval(() => {
+      const sendTransport = this.buffer.shift();
+      if (!sendTransport) return;
+      if (!this.wsInstance) return;
+      this.wsInstance.send(sendTransport);
+    }, 0);
+  }
+
+  addToBuffer(buffer: ArrayBuffer) {
+    this.buffer.push(buffer);
   }
 
   setReConnect(reConnect?: boolean) {
@@ -200,11 +214,16 @@ export class NoLagClient implements INoLagClient {
     this.connectionStatus = EConnectionStatus.Connecting;
 
     const { authToken } = this;
-    let authBuffer = stringToArrayBuffer(authToken);
+    const commands = Commands.init().setCommand(
+      ETransportCommand.Authenticate,
+      authToken,
+    );
+
     if (this.reConnect) {
-      authBuffer = authStringToReConnectBuffer(authToken);
+      commands.setCommand(ETransportCommand.Reconnect);
     }
-    this.send(authBuffer);
+
+    this.send(NqlTransport.encode(commands));
   }
 
   public onOpen(callback: FConnection) {
@@ -348,9 +367,7 @@ export class NoLagClient implements INoLagClient {
   }
 
   public send(transport: ArrayBuffer) {
-    if (this.wsInstance) {
-      this.wsInstance.send(transport as any);
-    }
+    this.addToBuffer(transport);
   }
 
   public heartbeat() {

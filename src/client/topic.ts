@@ -1,13 +1,8 @@
 import { TData } from "../shared/constants";
-import { EAction } from "../shared/enum";
+import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import { INqlIdentifiers, IResponse } from "../shared/interfaces";
-import {
-  arrayOfString,
-  generateTransport,
-  nqlPayload,
-  toRecordSeparator,
-  topicPayload,
-} from "../shared/utils/transport";
+import { Commands } from "../shared/utils/Commands";
+import { NqlTransport } from "../shared/utils/transport_v2";
 import { NoLagClient } from "./NoLagClient";
 
 export interface ITopic {
@@ -97,14 +92,19 @@ export class Topic implements ITopic {
   }
 
   private subscribe(identifiers: string[]) {
-    const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers), EAction.Add);
+    const commands = Commands.init().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
 
-    const records = toRecordSeparator([topicName, nql]);
+    identifiers.map((identifier: string) => {
+      commands.setCommand(ETransportCommand.Identifier, identifier);
+    });
+    commands.setCommand(ETransportCommand.AddAction);
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
-    }
+    const transport = NqlTransport.encode(commands);
+
+    this.send(transport);
   }
 
   public setConnection(connection: NoLagClient): Topic {
@@ -126,14 +126,20 @@ export class Topic implements ITopic {
 
   public addIdentifiers(identifiers: INqlIdentifiers): Topic {
     this.saveIdentifiers(identifiers.OR ?? []);
-    const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers.OR), EAction.Add);
+    const commands = Commands.init().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
 
-    const records = toRecordSeparator([topicName, nql]);
+    identifiers?.OR?.map((identifier: string) => {
+      commands.setCommand(ETransportCommand.Identifier, identifier);
+    });
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
-    }
+    commands.setCommand(ETransportCommand.AddAction);
+
+    const transport = NqlTransport.encode(commands);
+
+    this.send(transport);
 
     return this;
   }
@@ -141,37 +147,55 @@ export class Topic implements ITopic {
   public removeIdentifiers(identifiers: string[]): Topic {
     this.deleteSavedIdentifiers(identifiers ?? []);
 
-    const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers), EAction.Delete);
+    const commands = Commands.init().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
 
-    const records = toRecordSeparator([topicName, nql]);
+    identifiers.map((identifier: string) => {
+      commands.setCommand(ETransportCommand.Identifier, identifier);
+    });
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
-    }
+    commands.setCommand(ETransportCommand.DeleteAction);
+
+    const transport = NqlTransport.encode(commands);
+
+    this.send(transport);
 
     return this;
   }
 
   unsubscribe(): boolean {
-    const topicName = topicPayload(this.topicName, EAction.Delete);
-    const nql = nqlPayload(new Uint8Array(0));
+    const commands = Commands.init()
+      .setCommand(ETransportCommand.Topic, this.topicName)
+      .setCommand(ETransportCommand.DeleteAction);
 
-    const records = toRecordSeparator([topicName, nql]);
+    const transport = NqlTransport.encode(commands);
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
-    }
+    this.send(transport);
     return true;
   }
 
   public publish(data: ArrayBuffer, identifiers: string[]): Topic {
-    const transport = generateTransport(data, this.topicName, identifiers);
+    const commands = Commands.init().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
 
+    identifiers.map((identifier: string) => {
+      commands.setCommand(ETransportCommand.Identifier, identifier);
+    });
+
+    const transport = NqlTransport.encode(commands, data);
+
+    this.send(transport);
+
+    return this;
+  }
+
+  private send(transport: ArrayBuffer) {
     if (this.connection) {
       this.connection.send(transport);
     }
-
-    return this;
   }
 }
