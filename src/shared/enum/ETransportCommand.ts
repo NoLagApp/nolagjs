@@ -26,4 +26,6 @@ export enum ETransportCommand {
   DeleteAction = 16,
   // Server details
   Server = 24,
+  // payload command separator
+  payload = 29,
 }

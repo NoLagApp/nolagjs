@@ -1,32 +1,25 @@
 import { ETransportCommand } from "../enum/ETransportCommand";
 import { stringToArrayBuffer } from "./Encodings";
 
-export interface ICommands {
-  /**
-   * Initializes a new instance of the Commands class.
-   *
-   * @return {Commands} A new instance of the Commands class.
-   */
-  init(): ICommands;
+export interface ITransportCommands {
   /**
    * Set command and optional command action.
    * We will build there out into a command array.
    * @param command
    * @param commandAction
    */
-  setCommand(command: ETransportCommand, commandAction?: string): ICommands;
+  setCommand(
+    command: ETransportCommand,
+    commandAction?: string,
+  ): ITransportCommands;
   /**
    * Builds the command array into a command buffer.
    */
   build(): ArrayBuffer;
 }
 
-export class Commands {
+export class TransportCommands {
   private commandsBuffer: number[] = [];
-
-  static init() {
-    return new Commands();
-  }
 
   /**
    * Sets a command and optional command action. The command and command action are added to the commands buffer.
@@ -58,3 +51,5 @@ export class Commands {
     return new Uint8Array(this.commandsBuffer);
   }
 }
+
+export const transportCommands = () => new TransportCommands();

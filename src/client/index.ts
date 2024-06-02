@@ -7,7 +7,7 @@ import {
   ITunnelOptions,
 } from "../shared/interfaces";
 
-import { ITopic, Topic } from "./topic";
+import { ITopic, Topic } from "../shared/models/Topic";
 
 import { EVisibilityState } from "../shared/enum";
 import { generateTransport } from "../shared/utils/transport";
@@ -108,7 +108,10 @@ export class Tunnel implements ITunnel {
       this.defaultCheckConnectionInterval;
     this.connectOptions = connectOptions ?? undefined;
     this.authToken = authToken;
+
+    // initiate NoLag client connection
     this.noLagClient = new NoLagClient(this.authToken, this.connectOptions);
+
     this.onClose();
     this.onError();
     this.onReceiveMessage();
@@ -157,6 +160,7 @@ export class Tunnel implements ITunnel {
         switch (this.visibilityState) {
           case EVisibilityState.Hidden:
             this.noLagClient?.disconnect();
+            this.stopHeartbeat();
             break;
           case EVisibilityState.Visible:
             await this.initiate(true);
@@ -189,7 +193,7 @@ export class Tunnel implements ITunnel {
     this.stopHeartbeat();
     setTimeout(async () => {
       this.reconnectAttempts++;
-      await this.initiate();
+      await this.initiate(true);
       if (typeof this.callbackOnReconnect === "function") {
         this.callbackOnReconnect();
       }

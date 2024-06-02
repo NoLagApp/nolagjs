@@ -1,23 +1,25 @@
-import { Commands, ICommands } from "./Commands";
+import { ETransportCommand } from "../enum/ETransportCommand";
+import { uint8ArrayToString } from "./Encodings";
+import { TransportCommands } from "./TransportCommands";
 
 export interface IDecode {
-  commands: ICommands;
-  payload: Uint8Array;
+  commands: Record<ETransportCommand, string>;
+  payload: ArrayBuffer;
 }
 export interface INqlTransport {
-  encode(commands: Commands, payload: Uint8Array): Uint8Array;
+  encode(TransportCommands: TransportCommands, payload: Uint8Array): Uint8Array;
   decode(data: Uint8Array): IDecode;
 }
 
 export class NqlTransport {
-  static encode(commands: Commands, payload?: ArrayBuffer) {
+  static encode(TransportCommands: TransportCommands, payload?: ArrayBuffer) {
     if (!payload) {
       payload = new ArrayBuffer(0);
     }
 
-    const commandsUintArray = commands.build();
+    const TransportCommandsUintArray = TransportCommands.build();
 
-    const commandLength = commandsUintArray.byteLength;
+    const commandLength = TransportCommandsUintArray.byteLength;
     const payloadLength = payload.byteLength;
 
     const bitLength = commandLength + payloadLength;
@@ -25,11 +27,53 @@ export class NqlTransport {
     const buf = new ArrayBuffer(bitLength);
 
     let tmp = new Uint8Array(buf);
-    tmp.set(commandsUintArray, 0);
+    tmp.set(TransportCommandsUintArray, 0);
     tmp.set(new Uint8Array(payload), commandLength);
 
     return tmp.buffer;
   }
 
-  static decode() {}
+  static decode(transport: ArrayBuffer): IDecode {
+    const totalTransportBytes = transport.byteLength;
+    const transportBufferViewer = new Uint8Array(transport);
+    const payloadSeparatorIndex = transportBufferViewer.indexOf(
+      ETransportCommand.payload,
+    );
+    const commands = transportBufferViewer.slice(0, payloadSeparatorIndex);
+    const payloadStartIndex = payloadSeparatorIndex + 1;
+
+    const extractedCommands = this.extractCommands(commands);
+
+    return {
+      commands: extractedCommands,
+      payload: transport.slice(payloadStartIndex, totalTransportBytes),
+    };
+  }
+
+  static extractCommands(commands: Uint8Array) {
+    const commandByteGroup: any = {};
+
+    let commandBeingAssigned: ETransportCommand | null = null;
+
+    for (let index = 0; index < commands.length; index++) {
+      const byte = commands[index];
+      if (!byte) return;
+      if (Object.values(ETransportCommand).indexOf(byte))
+        commandBeingAssigned = byte;
+      if (commandBeingAssigned && !commandByteGroup[commandBeingAssigned]) {
+        commandByteGroup[commandBeingAssigned] = [];
+      }
+      if (commandBeingAssigned && commandByteGroup[commandBeingAssigned]) {
+        commandByteGroup[commandBeingAssigned].push(byte);
+      }
+    }
+
+    Object.keys(commandByteGroup).forEach((key) => {
+      commandByteGroup[key] = uint8ArrayToString(
+        new Uint8Array(commandByteGroup[key]),
+      );
+    });
+
+    return commandByteGroup;
+  }
 }

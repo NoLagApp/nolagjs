@@ -1,9 +1,9 @@
-import { TData } from "../shared/constants";
-import { ETransportCommand } from "../shared/enum/ETransportCommand";
-import { INqlIdentifiers, IResponse } from "../shared/interfaces";
-import { Commands } from "../shared/utils/Commands";
-import { NqlTransport } from "../shared/utils/transport_v2";
-import { NoLagClient } from "./NoLagClient";
+import { NoLagClient } from "../../client/NoLagClient";
+import { TData } from "../constants";
+import { ETransportCommand } from "../enum/ETransportCommand";
+import { INqlIdentifiers, IResponse } from "../interfaces";
+import { transportCommands } from "../utils/TransportCommands";
+import { NqlTransport } from "../utils/transport_v2";
 
 export interface ITopic {
   /**
@@ -92,7 +92,7 @@ export class Topic implements ITopic {
   }
 
   private subscribe(identifiers: string[]) {
-    const commands = Commands.init().setCommand(
+    const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,
     );
@@ -126,7 +126,7 @@ export class Topic implements ITopic {
 
   public addIdentifiers(identifiers: INqlIdentifiers): Topic {
     this.saveIdentifiers(identifiers.OR ?? []);
-    const commands = Commands.init().setCommand(
+    const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,
     );
@@ -147,7 +147,7 @@ export class Topic implements ITopic {
   public removeIdentifiers(identifiers: string[]): Topic {
     this.deleteSavedIdentifiers(identifiers ?? []);
 
-    const commands = Commands.init().setCommand(
+    const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,
     );
@@ -166,7 +166,7 @@ export class Topic implements ITopic {
   }
 
   unsubscribe(): boolean {
-    const commands = Commands.init()
+    const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, this.topicName)
       .setCommand(ETransportCommand.DeleteAction);
 
@@ -177,7 +177,7 @@ export class Topic implements ITopic {
   }
 
   public publish(data: ArrayBuffer, identifiers: string[]): Topic {
-    const commands = Commands.init().setCommand(
+    const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,
     );

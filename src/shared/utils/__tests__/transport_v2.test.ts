@@ -1,6 +1,6 @@
 import { ETransportCommand } from "../../../shared/enum/ETransportCommand";
-import { Commands } from "../Commands";
 import { stringToArrayBuffer } from "../Encodings";
+import { transportCommands } from "../TransportCommands";
 import { NqlTransport } from "../transport_v2";
 
 describe("Transport", () => {
@@ -79,7 +79,7 @@ describe("Transport", () => {
   ];
 
   test("Authenticate Command", () => {
-    const commands = Commands.init().setCommand(
+    const commands = transportCommands().setCommand(
       ETransportCommand.Authenticate,
       tokenIdString,
     );
@@ -90,7 +90,7 @@ describe("Transport", () => {
   });
 
   test("Reconnect Command", () => {
-    const commands = Commands.init()
+    const commands = transportCommands()
       .setCommand(ETransportCommand.Authenticate, tokenIdString)
       .setCommand(ETransportCommand.Reconnect);
 
@@ -100,7 +100,7 @@ describe("Transport", () => {
   });
 
   test("Subscribe to Topic Command", () => {
-    const commands = Commands.init()
+    const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
       .setCommand(ETransportCommand.AddAction);
 
@@ -112,7 +112,7 @@ describe("Transport", () => {
   });
 
   test("Subscribe to Topic and Identifiers Command", () => {
-    const commands = Commands.init()
+    const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
       .setCommand(ETransportCommand.Identifier, identifierOneString)
       .setCommand(ETransportCommand.Identifier, identifierTwoString)
@@ -126,7 +126,7 @@ describe("Transport", () => {
   });
 
   test("Unsubscribe to Topic only", () => {
-    const commands = Commands.init()
+    const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
       .setCommand(ETransportCommand.DeleteAction);
 
@@ -138,7 +138,7 @@ describe("Transport", () => {
   });
 
   test("Unsubscribe to Topic Identifiers", () => {
-    const commands = Commands.init()
+    const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
       .setCommand(ETransportCommand.Identifier, identifierOneString)
       .setCommand(ETransportCommand.Identifier, identifierTwoString)
@@ -152,7 +152,7 @@ describe("Transport", () => {
   });
 
   test("Publish to Topic Identifiers", () => {
-    const commands = Commands.init()
+    const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
       .setCommand(ETransportCommand.Identifier, identifierOneString)
       .setCommand(ETransportCommand.Identifier, identifierTwoString);
@@ -160,5 +160,19 @@ describe("Transport", () => {
     const encodedBuffer = NqlTransport.encode(commands, payload);
 
     expect(Array.from(new Uint8Array(encodedBuffer))).toEqual(publishPayload);
+  });
+
+  test("Decode transport", () => {
+    const commands = transportCommands()
+      .setCommand(ETransportCommand.Topic, topicNameString)
+      .setCommand(ETransportCommand.Identifier, identifierOneString);
+
+    const encodedBuffer = NqlTransport.encode(commands, payload);
+    const decoded = NqlTransport.decode(encodedBuffer);
+
+    expect(decoded.commands).toEqual({
+      [ETransportCommand.Topic]: topicNameString,
+      [ETransportCommand.Identifier]: identifierOneString,
+    });
   });
 });

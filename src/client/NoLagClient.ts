@@ -11,8 +11,8 @@ import {
   IErrorMessage,
   IResponse,
 } from "../shared/interfaces";
-import { Commands } from "../shared/utils/Commands";
 import { uint8ArrayToString } from "../shared/utils/Encodings";
+import { Commands } from "../shared/utils/TransportCommands";
 import { NqlTransport } from "../shared/utils/transport_v2";
 
 interface INoLagClient {
@@ -47,8 +47,10 @@ export class NoLagClient implements INoLagClient {
   private callbackOnError: FConnection = () => {};
 
   // status of current socket connection
-  private connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
+  public connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
   private buffer: ArrayBuffer[] = [];
+  private backpressureSendInterval = 0;
+  private senderInterval: any = 0;
 
   constructor(authToken: string, connectOptions?: IConnectOptions) {
     this.authToken = authToken ?? "";
@@ -65,12 +67,21 @@ export class NoLagClient implements INoLagClient {
   }
 
   startSender() {
-    setInterval(() => {
+    this.senderInterval = setInterval(() => {
+      // get the first message in the buffer
       const sendTransport = this.buffer.shift();
       if (!sendTransport) return;
       if (!this.wsInstance) return;
+      // send the first message in the buffer
       this.wsInstance.send(sendTransport);
-    }, 0);
+    }, this.backpressureSendInterval);
+  }
+
+  // to elevate the backpressure we increase the send interval
+  slowDownSender(backpressureInterval: number) {
+    clearInterval(this.senderInterval);
+    this.backpressureSendInterval = backpressureInterval;
+    this.startSender();
   }
 
   addToBuffer(buffer: ArrayBuffer) {
@@ -194,22 +205,6 @@ export class NoLagClient implements INoLagClient {
     });
   }
 
-  /**
-   * Get the status of the connection to the server
-   */
-  get status(): string {
-    switch (this.connectionStatus) {
-      case EConnectionStatus.Connecting:
-        return "Connecting";
-      case EConnectionStatus.Connected:
-        return "Connected";
-      case EConnectionStatus.Disconnected:
-        return "Disconnected";
-      default:
-        return EConnectionStatus.Idle;
-    }
-  }
-
   authenticate() {
     this.connectionStatus = EConnectionStatus.Connecting;
 
@@ -320,11 +315,11 @@ export class NoLagClient implements INoLagClient {
     switch (this.environment) {
       case EEnvironment.Browser:
         const arrayBuffer = await event.data;
-        data = new Uint8Array(arrayBuffer);
+        data = arrayBuffer;
         break;
 
       case EEnvironment.Nodejs:
-        data = new Uint8Array(event);
+        data = event;
         break;
     }
 
@@ -332,8 +327,10 @@ export class NoLagClient implements INoLagClient {
       return;
     }
 
+    const decodedData = NqlTransport.decode(data);
+
     if (
-      data[0] === EConnectionStatus.Connecting &&
+      decodedData[] === EConnectionStatus.Connecting &&
       this.connectionStatus === EConnectionStatus.Idle
     ) {
       this.authenticate();
