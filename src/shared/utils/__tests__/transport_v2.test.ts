@@ -3,81 +3,81 @@ import { stringToArrayBuffer } from "../Encodings";
 import { transportCommands } from "../TransportCommands";
 import { NqlTransport } from "../transport_v2";
 
+// Topic-name
+export const topicNameString = "Topic-name";
+export const topicName = [84, 111, 112, 105, 99, 45, 110, 97, 109, 101];
+
+// 1234567890
+export const tokenIdString = "1234567890";
+export const tokenId = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48];
+
+// identifierOne
+export const identifierOneString = "identifierOne";
+export const identifierOne = [
+  105, 100, 101, 110, 116, 105, 102, 105, 101, 114, 79, 110, 101,
+];
+
+// identifierTwo
+export const identifierTwoString = "identifierTwo";
+export const identifierTwo = [
+  105, 100, 101, 110, 116, 105, 102, 105, 101, 114, 84, 119, 111,
+];
+
+export const authenticate = [ETransportCommand.Authenticate, ...tokenId];
+
+export const reconnect = [
+  ETransportCommand.Authenticate,
+  ...tokenId,
+  ETransportCommand.Reconnect,
+];
+
+export const subscribeToTopicOnly = [
+  ETransportCommand.Topic,
+  ...topicName,
+  ETransportCommand.AddAction,
+];
+
+export const subscribeToTopicAndIdentifiers = [
+  ETransportCommand.Topic,
+  ...topicName,
+  ETransportCommand.Identifier,
+  ...identifierOne,
+  ETransportCommand.ArraySeparator,
+  ...identifierTwo,
+  ETransportCommand.AddAction,
+];
+
+export const unSubscribeToTopicOnly = [
+  ETransportCommand.Topic,
+  ...topicName,
+  ETransportCommand.DeleteAction,
+];
+
+export const unSubscribeToTopicIdentifiers = [
+  ETransportCommand.Topic,
+  ...topicName,
+  ETransportCommand.Identifier,
+  ...identifierOne,
+  ETransportCommand.ArraySeparator,
+  ...identifierTwo,
+  ETransportCommand.DeleteAction,
+];
+
+export const payloadString = "Data to be sent";
+export const payload = stringToArrayBuffer(payloadString);
+
+export const publishPayload = [
+  ETransportCommand.Topic,
+  ...topicName,
+  ETransportCommand.Identifier,
+  ...identifierOne,
+  ETransportCommand.ArraySeparator,
+  ...identifierTwo,
+  ETransportCommand.Payload,
+  ...Array.from(new Uint8Array(payload)),
+];
+
 describe("Transport", () => {
-  // Topic-name
-  const topicNameString = "Topic-name";
-  const topicName = [84, 111, 112, 105, 99, 45, 110, 97, 109, 101];
-
-  // 1234567890
-  const tokenIdString = "1234567890";
-  const tokenId = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48];
-
-  // identifierOne
-  const identifierOneString = "identifierOne";
-  const identifierOne = [
-    105, 100, 101, 110, 116, 105, 102, 105, 101, 114, 79, 110, 101,
-  ];
-
-  // identifierTwo
-  const identifierTwoString = "identifierTwo";
-  const identifierTwo = [
-    105, 100, 101, 110, 116, 105, 102, 105, 101, 114, 84, 119, 111,
-  ];
-
-  const authenticate = [ETransportCommand.Authenticate, ...tokenId];
-
-  const reconnect = [
-    ETransportCommand.Authenticate,
-    ...tokenId,
-    ETransportCommand.Reconnect,
-  ];
-
-  const subscribeToTopicOnly = [
-    ETransportCommand.Topic,
-    ...topicName,
-    ETransportCommand.AddAction,
-  ];
-
-  const subscribeToTopicAndIdentifiers = [
-    ETransportCommand.Topic,
-    ...topicName,
-    ETransportCommand.Identifier,
-    ...identifierOne,
-    ETransportCommand.Identifier,
-    ...identifierTwo,
-    ETransportCommand.AddAction,
-  ];
-
-  const unSubscribeToTopicOnly = [
-    ETransportCommand.Topic,
-    ...topicName,
-    ETransportCommand.DeleteAction,
-  ];
-
-  const unSubscribeToTopicIdentifiers = [
-    ETransportCommand.Topic,
-    ...topicName,
-    ETransportCommand.Identifier,
-    ...identifierOne,
-    ETransportCommand.Identifier,
-    ...identifierTwo,
-    ETransportCommand.DeleteAction,
-  ];
-
-  const payloadString = "Data to be sent";
-
-  const payload = stringToArrayBuffer(payloadString);
-
-  const publishPayload = [
-    ETransportCommand.Topic,
-    ...topicName,
-    ETransportCommand.Identifier,
-    ...identifierOne,
-    ETransportCommand.Identifier,
-    ...identifierTwo,
-    ...Array.from(new Uint8Array(payload)),
-  ];
-
   test("Authenticate Command", () => {
     const commands = transportCommands().setCommand(
       ETransportCommand.Authenticate,
@@ -85,7 +85,6 @@ describe("Transport", () => {
     );
 
     const encodedBuffer = NqlTransport.encode(commands);
-
     expect(Array.from(new Uint8Array(encodedBuffer))).toEqual(authenticate);
   });
 
@@ -114,8 +113,10 @@ describe("Transport", () => {
   test("Subscribe to Topic and Identifiers Command", () => {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
-      .setCommand(ETransportCommand.Identifier, identifierOneString)
-      .setCommand(ETransportCommand.Identifier, identifierTwoString)
+      .setCommand(ETransportCommand.Identifier, [
+        identifierOneString,
+        identifierTwoString,
+      ])
       .setCommand(ETransportCommand.AddAction);
 
     const encodedBuffer = NqlTransport.encode(commands);
@@ -140,8 +141,10 @@ describe("Transport", () => {
   test("Unsubscribe to Topic Identifiers", () => {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
-      .setCommand(ETransportCommand.Identifier, identifierOneString)
-      .setCommand(ETransportCommand.Identifier, identifierTwoString)
+      .setCommand(ETransportCommand.Identifier, [
+        identifierOneString,
+        identifierTwoString,
+      ])
       .setCommand(ETransportCommand.DeleteAction);
 
     const encodedBuffer = NqlTransport.encode(commands);
@@ -154,25 +157,32 @@ describe("Transport", () => {
   test("Publish to Topic Identifiers", () => {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
-      .setCommand(ETransportCommand.Identifier, identifierOneString)
-      .setCommand(ETransportCommand.Identifier, identifierTwoString);
+      .setCommand(ETransportCommand.Identifier, [
+        identifierOneString,
+        identifierTwoString,
+      ]);
 
     const encodedBuffer = NqlTransport.encode(commands, payload);
-
     expect(Array.from(new Uint8Array(encodedBuffer))).toEqual(publishPayload);
   });
 
   test("Decode transport", () => {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
-      .setCommand(ETransportCommand.Identifier, identifierOneString);
+      .setCommand(ETransportCommand.Identifier, [
+        identifierOneString,
+        identifierTwoString,
+      ]);
 
     const encodedBuffer = NqlTransport.encode(commands, payload);
     const decoded = NqlTransport.decode(encodedBuffer);
 
     expect(decoded.commands).toEqual({
       [ETransportCommand.Topic]: topicNameString,
-      [ETransportCommand.Identifier]: identifierOneString,
+      [ETransportCommand.Identifier]: [
+        identifierOneString,
+        identifierTwoString,
+      ],
     });
   });
 });

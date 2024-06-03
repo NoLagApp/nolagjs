@@ -19,7 +19,7 @@ export interface ITransportCommands {
 }
 
 export class TransportCommands {
-  private commandsBuffer: number[] = [];
+  private commandArray: number[] = [];
 
   /**
    * Sets a command and optional command action. The command and command action are added to the commands buffer.
@@ -28,18 +28,45 @@ export class TransportCommands {
    * @param {string} [commandAction] - The optional command action to be set.
    * @return {this} Returns the current instance of the Commands class.
    */
-  setCommand(command: ETransportCommand, commandAction?: string) {
+  setCommand(command: ETransportCommand, commandAction?: string | string[]) {
     if (!command) return this;
-    this.commandsBuffer.push(command);
-
+    this.commandArray.push(command);
+    let commandActionArray: number[] = [];
     if (!commandAction) return this;
 
-    const commandActionBuffer = stringToArrayBuffer(commandAction);
-    const commandActionArray = Array.from(new Uint8Array(commandActionBuffer));
+    if (Array.isArray(commandAction)) {
+      commandActionArray = this.convertArray(commandAction);
+    } else if (typeof commandAction === "string") {
+      commandActionArray = this.convertStringNumberArray(commandAction);
+    }
 
-    this.commandsBuffer = [...this.commandsBuffer, ...commandActionArray];
-
+    this.commandArray = [...this.commandArray, ...commandActionArray];
     return this;
+  }
+
+  convertStringNumberArray(commandAction: string) {
+    const commandActionBuffer = stringToArrayBuffer(commandAction);
+    return Array.from(new Uint8Array(commandActionBuffer));
+  }
+
+  convertArray(commandActions: string[]): number[] {
+    const commandActionsUint8 = commandActions.map((action) => {
+      return this.convertStringNumberArray(action);
+    });
+
+    const commandActionsUint8Array = commandActionsUint8
+      .map((action) => {
+        // inject array separator
+        action.push(ETransportCommand.ArraySeparator);
+        return action;
+      })
+      // flatten the array, we don't need the nested arrays
+      .flat();
+
+    // we need to remove the last array separator, we don't need it
+    commandActionsUint8Array.pop();
+
+    return commandActionsUint8Array;
   }
 
   /**
@@ -48,7 +75,7 @@ export class TransportCommands {
    * @return {Uint8Array} The Uint8Array representation of the commands buffer.
    */
   build(): Uint8Array {
-    return new Uint8Array(this.commandsBuffer);
+    return new Uint8Array(this.commandArray);
   }
 }
 

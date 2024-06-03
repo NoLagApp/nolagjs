@@ -27,5 +27,6 @@ export enum ETransportCommand {
   // Server details
   Server = 24,
   // payload command separator
-  payload = 29,
+  Payload = 29,
+  ArraySeparator = 31,
 }

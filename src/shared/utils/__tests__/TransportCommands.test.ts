@@ -1,15 +1,25 @@
 import { ETransportCommand } from "../../enum/ETransportCommand";
 import { transportCommands } from "../TransportCommands";
+import {
+  identifierOneString,
+  identifierTwoString,
+  subscribeToTopicAndIdentifiers,
+  topicNameString,
+} from "./transport_v2.test";
 
 describe("Commands", () => {
   test("Build command sequence", () => {
     const uint8View = transportCommands()
-      .setCommand(ETransportCommand.Topic, "topicOne")
-      .setCommand(ETransportCommand.Identifier, "identifierOne")
-      .setCommand(ETransportCommand.Identifier, "IdentifierTwo")
+      .setCommand(ETransportCommand.Topic, topicNameString)
+      .setCommand(ETransportCommand.Identifier, [
+        identifierOneString,
+        identifierTwoString,
+      ])
       .setCommand(ETransportCommand.AddAction)
       .build();
 
-    expect(uint8View.byteLength).toEqual(38);
+    expect(Array.from(new Uint8Array(uint8View))).toEqual(
+      subscribeToTopicAndIdentifiers,
+    );
   });
 });
