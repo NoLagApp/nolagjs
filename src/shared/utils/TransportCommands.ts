@@ -1,4 +1,7 @@
-import { ETransportCommand } from "../enum/ETransportCommand";
+import {
+  ETransportCommand,
+  ETransportCommandSeparator,
+} from "../enum/ETransportCommand";
 import { stringToArrayBuffer } from "./Encodings";
 
 export interface ITransportCommands {
@@ -57,7 +60,7 @@ export class TransportCommands {
     const commandActionsUint8Array = commandActionsUint8
       .map((action) => {
         // inject array separator
-        action.push(ETransportCommand.ArraySeparator);
+        action.push(ETransportCommandSeparator.ArraySeparator);
         return action;
       })
       // flatten the array, we don't need the nested arrays

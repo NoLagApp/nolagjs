@@ -28,5 +28,8 @@ export enum ETransportCommand {
   Server = 24,
   // payload command separator
   Payload = 29,
+}
+
+export enum ETransportCommandSeparator {
   ArraySeparator = 31,
 }

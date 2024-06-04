@@ -1,4 +1,7 @@
-import { ETransportCommand } from "../../../shared/enum/ETransportCommand";
+import {
+  ETransportCommand,
+  ETransportCommandSeparator,
+} from "../../../shared/enum/ETransportCommand";
 import { stringToArrayBuffer } from "../Encodings";
 import { transportCommands } from "../TransportCommands";
 import { NqlTransport } from "../transport_v2";
@@ -42,7 +45,7 @@ export const subscribeToTopicAndIdentifiers = [
   ...topicName,
   ETransportCommand.Identifier,
   ...identifierOne,
-  ETransportCommand.ArraySeparator,
+  ETransportCommandSeparator.ArraySeparator,
   ...identifierTwo,
   ETransportCommand.AddAction,
 ];
@@ -58,7 +61,7 @@ export const unSubscribeToTopicIdentifiers = [
   ...topicName,
   ETransportCommand.Identifier,
   ...identifierOne,
-  ETransportCommand.ArraySeparator,
+  ETransportCommandSeparator.ArraySeparator,
   ...identifierTwo,
   ETransportCommand.DeleteAction,
 ];
@@ -71,7 +74,7 @@ export const publishPayload = [
   ...topicName,
   ETransportCommand.Identifier,
   ...identifierOne,
-  ETransportCommand.ArraySeparator,
+  ETransportCommandSeparator.ArraySeparator,
   ...identifierTwo,
   ETransportCommand.Payload,
   ...Array.from(new Uint8Array(payload)),

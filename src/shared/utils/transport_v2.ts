@@ -1,8 +1,11 @@
-import { ETransportCommand } from "../enum/ETransportCommand";
+import {
+  ETransportCommand,
+  ETransportCommandSeparator,
+} from "../enum/ETransportCommand";
 import { TransportCommands } from "./TransportCommands";
 
 export interface IDecode {
-  commands: Record<ETransportCommand, string>;
+  commands: Record<ETransportCommand, string | string[]>;
   payload: ArrayBuffer;
 }
 export interface INqlTransport {
@@ -63,42 +66,60 @@ export class NqlTransport {
     };
   }
 
-  static extractCommands(commands: Uint8Array) {
+  static hasSeparatorIndexes(commandAction: number[]): boolean {
+    return commandAction.indexOf(ETransportCommandSeparator.ArraySeparator) > 0;
+  }
+
+  static commandActionUint8ArrayToString(commandActionArray: number[]) {
+    return commandActionArray.map((item) => String.fromCharCode(item)).join("");
+  }
+
+  static commandActionUint8ArrayToStringArray(commandActionArray: number[]) {
+    const groupedUint8Array = commandActionArray
+      .join(",")
+      .split(`,${ETransportCommandSeparator.ArraySeparator},`);
+
+    const commandActionStringArray: string[] = groupedUint8Array.map(
+      (uint8ArrayAsString: string) => {
+        const groups = uint8ArrayAsString.split(",");
+        return this.commandActionUint8ArrayToString(
+          groups.map((i) => Number(i)),
+        );
+      },
+    );
+
+    return commandActionStringArray;
+  }
+
+  static extractCommands(
+    commands: Uint8Array,
+  ): Record<ETransportCommand, string | string[]> {
     const commandByteGroup: any = {};
     let commandBeingAssigned: any = null;
 
-    for (let index = 0; index <= commands.length; index++) {
-      const byte = commands[index];
-      if (!byte) return;
+    commands.forEach((byte) => {
       if (Object.values(ETransportCommand).indexOf(byte) >= 0) {
         commandBeingAssigned = byte;
+        return;
       }
-
       if (commandBeingAssigned && !commandByteGroup[commandBeingAssigned]) {
         commandByteGroup[commandBeingAssigned] = [];
       }
-
       commandByteGroup[commandBeingAssigned].push(byte);
-      console.log("index", commandByteGroup);
+    });
 
-      // console.log(commandByteGroup[commandBeingAssigned]);
+    Object.keys(commandByteGroup).forEach((key: any) => {
+      const commandActionArray = commandByteGroup[key];
+      const hasSeparatorIndexes = this.hasSeparatorIndexes(commandActionArray);
+      if (hasSeparatorIndexes) {
+        commandByteGroup[key] =
+          this.commandActionUint8ArrayToStringArray(commandActionArray);
+      } else {
+        commandByteGroup[key] =
+          this.commandActionUint8ArrayToString(commandActionArray);
+      }
+    });
 
-      // if (typeof commandByteGroup[commandBeingAssigned] !== undefined) {
-      //   const numberOfGroups = commandByteGroup[commandBeingAssigned].length;
-
-      //   console.log(
-      //     "2222",
-      //     commandByteGroup[commandBeingAssigned][numberOfGroups - 1],
-      //   );
-
-      //   commandByteGroup[commandBeingAssigned][numberOfGroups - 1] +=
-      //     String.fromCharCode(byte);
-      //   // commandByteGroup[commandBeingAssigned][numberOfGroups - 1].push(
-      //   //   String.fromCharCode(byte),
-      //   // );
-      // }
-    }
-    console.log("commandByteGroup", commandByteGroup);
     return commandByteGroup;
   }
 }
