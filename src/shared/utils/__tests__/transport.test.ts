@@ -4,7 +4,7 @@ import {
 } from "../../../shared/enum/ETransportCommand";
 import { stringToArrayBuffer } from "../Encodings";
 import { transportCommands } from "../TransportCommands";
-import { NqlTransport } from "../transport_v2";
+import { NqlTransport } from "../transport";
 
 // Topic-name
 export const topicNameString = "Topic-name";
@@ -172,6 +172,7 @@ describe("Transport", () => {
   test("Decode transport", () => {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, topicNameString)
+      .setCommand(ETransportCommand.Acknowledge)
       .setCommand(ETransportCommand.Identifier, [
         identifierOneString,
         identifierTwoString,
@@ -182,10 +183,20 @@ describe("Transport", () => {
 
     expect(decoded.commands).toEqual({
       [ETransportCommand.Topic]: topicNameString,
+      [ETransportCommand.Acknowledge]: true,
       [ETransportCommand.Identifier]: [
         identifierOneString,
         identifierTwoString,
       ],
     });
+    expect(decoded.payload).toEqual(payload);
+    expect(decoded.getCommand(ETransportCommand.Topic)).toEqual(
+      topicNameString,
+    );
+    expect(decoded.getCommand(ETransportCommand.Acknowledge)).toEqual(true);
+    expect(decoded.getCommand(ETransportCommand.Identifier)).toEqual([
+      identifierOneString,
+      identifierTwoString,
+    ]);
   });
 });

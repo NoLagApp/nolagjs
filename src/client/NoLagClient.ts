@@ -1,19 +1,9 @@
 import { CONSTANT, FConnection } from "../shared/constants";
-import {
-  EConnectionStatus,
-  EEncoding,
-  EEnvironment,
-  ESeparator,
-} from "../shared/enum";
+import { EConnectionStatus, EEncoding, EEnvironment } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
-import {
-  IConnectOptions,
-  IErrorMessage,
-  IResponse,
-} from "../shared/interfaces";
-import { uint8ArrayToString } from "../shared/utils/Encodings";
-import { Commands } from "../shared/utils/TransportCommands";
-import { NqlTransport } from "../shared/utils/transport_v2";
+import { IConnectOptions } from "../shared/interfaces";
+import { transportCommands } from "../shared/utils/TransportCommands";
+import { NqlTransport } from "../shared/utils/transport";
 
 interface INoLagClient {
   connect(): Promise<NoLagClient>;
@@ -209,7 +199,7 @@ export class NoLagClient implements INoLagClient {
     this.connectionStatus = EConnectionStatus.Connecting;
 
     const { authToken } = this;
-    const commands = Commands.init().setCommand(
+    const commands = transportCommands().setCommand(
       ETransportCommand.Authenticate,
       authToken,
     );
@@ -242,74 +232,6 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnOpen(undefined, event);
   }
 
-  private getAlertMessage(payload: Uint8Array): IErrorMessage {
-    const removedNegativeSeparator = payload.slice(1, payload.length);
-    const codeSplit = removedNegativeSeparator.findIndex(
-      (i) => i == ESeparator.BellAlert,
-    );
-    const code = removedNegativeSeparator.slice(0, codeSplit);
-    const message = removedNegativeSeparator.slice(
-      codeSplit + 1,
-      removedNegativeSeparator.length,
-    );
-    return {
-      code: Number(uint8ArrayToString(code)),
-      msg: uint8ArrayToString(message),
-    };
-  }
-
-  private getGroupSeparatorIndex(payload: Uint8Array): number {
-    return payload.findIndex((i) => i == ESeparator.Group);
-  }
-
-  private getGroups(payload: Uint8Array): any {
-    const sliceIndex = this.getGroupSeparatorIndex(payload);
-
-    // extract topic and identifier records
-    const topicAndIdentifiers = payload.slice(0, sliceIndex);
-
-    // extact data
-    const data = payload.slice(sliceIndex + 1, payload.length);
-    return {
-      topicAndIdentifiers,
-      data,
-    };
-  }
-
-  private getRecordSeparatorIndex(payload: Uint8Array): number {
-    return payload.findIndex((i) => i == ESeparator.Record);
-  }
-
-  private getRecords(payload: Uint8Array): any {
-    const sliceIndex = this.getRecordSeparatorIndex(payload);
-
-    // extract topic name
-    const topicName = uint8ArrayToString(payload.slice(0, sliceIndex));
-
-    // extract NQL identifiers
-    const nqlIdentifiers = uint8ArrayToString(
-      payload.slice(sliceIndex + 1, payload.length),
-    )
-      .split("\u000b")
-      .filter((i) => i !== "");
-
-    return {
-      topicName,
-      nqlIdentifiers,
-    };
-  }
-
-  private decode(payload: Uint8Array): IResponse {
-    const { topicAndIdentifiers, data } = this.getGroups(payload);
-    const { topicName, nqlIdentifiers } = this.getRecords(topicAndIdentifiers);
-
-    return {
-      data,
-      topicName,
-      nqlIdentifiers,
-    };
-  }
-
   private async _onReceive(event: any) {
     let data = null;
     switch (this.environment) {
@@ -327,30 +249,35 @@ export class NoLagClient implements INoLagClient {
       return;
     }
 
-    const decodedData = NqlTransport.decode(data);
+    const decoded = NqlTransport.decode(data);
 
     if (
-      decodedData[] === EConnectionStatus.Connecting &&
+      decoded.getCommand(ETransportCommand.InitConnection) &&
       this.connectionStatus === EConnectionStatus.Idle
     ) {
       this.authenticate();
       return;
     }
     if (
-      Number(`${data[0]}${data[1]}`) === EConnectionStatus.Connected &&
+      decoded.getCommand(ETransportCommand.Acknowledge) &&
       this.connectionStatus === EConnectionStatus.Connecting
     ) {
       this.connectionStatus = EConnectionStatus.Connected;
-      this.deviceTokenId = uint8ArrayToString(data.slice(2, data.length));
+      this.deviceTokenId = decoded.getCommand(
+        ETransportCommand.Acknowledge,
+      ) as string;
       return;
     }
-    if (Number(`${data[0]}`) === ESeparator.NegativeAck) {
-      this.connectionStatus = EConnectionStatus.Connected;
-      this.callbackOnError(this.getAlertMessage(data), undefined);
+    if (decoded.getCommand(ETransportCommand.Error)) {
+      this.connectionStatus = EConnectionStatus.Disconnected;
+      this.callbackOnError(
+        decoded.getCommand(ETransportCommand.Alert),
+        undefined,
+      );
       return;
     }
 
-    this.callbackOnReceive(undefined, this.decode(data));
+    this.callbackOnReceive(undefined, decoded);
   }
 
   private _onClose(event: any) {

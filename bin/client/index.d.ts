@@ -1,7 +1,6 @@
 import { FConnection } from "../shared/constants";
 import { IConnectOptions, IErrorMessage, INqlIdentifiers, IResponse, ITunnelOptions } from "../shared/interfaces";
-import { ITopic } from "./topic";
-export * from "../shared/utils/Encodings";
+import { ITopic } from "../shared/models/Topic";
 export interface ITunnel {
     /**
      * Retrieve instanciated topic
@@ -74,7 +73,7 @@ export declare class Tunnel implements ITunnel {
     get deviceTokenId(): string | null | undefined;
     private startHeartbeat;
     private stopHeartbeat;
-    initiate(): Promise<this>;
+    initiate(reconnect?: boolean): Promise<this>;
     private resetConnectAttempts;
     private onVisibilityChange;
     private onReceiveMessage;
@@ -92,6 +91,6 @@ export declare class Tunnel implements ITunnel {
     unsubscribe(topicName: string): boolean;
     subscribe(topicName: string, identifiers?: INqlIdentifiers): ITopic | undefined;
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
-    get status(): string | null;
+    get status(): import("../shared/enum").EConnectionStatus | null;
 }
 export declare const WebSocketClient: (authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions) => Promise<ITunnel>;

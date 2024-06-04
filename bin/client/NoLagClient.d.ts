@@ -1,7 +1,9 @@
 import { FConnection } from "../shared/constants";
+import { EConnectionStatus } from "../shared/enum";
 import { IConnectOptions } from "../shared/interfaces";
 interface INoLagClient {
     connect(): Promise<NoLagClient>;
+    setReConnect(): void;
     onOpen(callback: FConnection): void;
     onReceiveMessage(callback: FConnection): void;
     onClose(callback: FConnection): void;
@@ -20,12 +22,20 @@ export declare class NoLagClient implements INoLagClient {
     private defaultCheckConnectionTimeout;
     private checkConnectionInterval;
     private checkConnectionTimeout;
+    private reConnect;
     private callbackOnOpen;
     private callbackOnReceive;
     private callbackOnClose;
     private callbackOnError;
-    private connectionStatus;
+    connectionStatus: EConnectionStatus;
+    private buffer;
+    private backpressureSendInterval;
+    private senderInterval;
     constructor(authToken: string, connectOptions?: IConnectOptions);
+    startSender(): void;
+    slowDownSender(backpressureInterval: number): void;
+    addToBuffer(buffer: ArrayBuffer): void;
+    setReConnect(reConnect?: boolean): void;
     isBrowser(): boolean;
     /**
      * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
@@ -43,22 +53,12 @@ export declare class NoLagClient implements INoLagClient {
      * Node WebSocket connection with package "ws"
      */
     nodeInstance(): void;
-    /**
-     * Get the status of the connection to the server
-     */
-    get status(): string;
     authenticate(): void;
     onOpen(callback: FConnection): void;
     onReceiveMessage(callback: FConnection): void;
     onClose(callback: FConnection): void;
     onError(callback: FConnection): void;
     private _onOpen;
-    private getAlertMessage;
-    private getGroupSeparatorIndex;
-    private getGroups;
-    private getRecordSeparatorIndex;
-    private getRecords;
-    private decode;
     private _onReceive;
     private _onClose;
     private _onError;

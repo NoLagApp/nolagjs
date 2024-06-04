@@ -3,7 +3,7 @@ import { TData } from "../constants";
 import { ETransportCommand } from "../enum/ETransportCommand";
 import { INqlIdentifiers, IResponse } from "../interfaces";
 import { transportCommands } from "../utils/TransportCommands";
-import { NqlTransport } from "../utils/transport_v2";
+import { NqlTransport } from "../utils/transport";
 
 export interface ITopic {
   /**
@@ -97,9 +97,10 @@ export class Topic implements ITopic {
       this.topicName,
     );
 
-    identifiers.map((identifier: string) => {
-      commands.setCommand(ETransportCommand.Identifier, identifier);
-    });
+    if (identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, identifiers);
+    }
+
     commands.setCommand(ETransportCommand.AddAction);
 
     const transport = NqlTransport.encode(commands);
@@ -124,16 +125,17 @@ export class Topic implements ITopic {
     return this;
   }
 
-  public addIdentifiers(identifiers: INqlIdentifiers): Topic {
-    this.saveIdentifiers(identifiers.OR ?? []);
+  public addIdentifiers(identifiersList: INqlIdentifiers): Topic {
+    const identifiers = identifiersList?.OR ?? [];
+    this.saveIdentifiers(identifiers);
     const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,
     );
 
-    identifiers?.OR?.map((identifier: string) => {
-      commands.setCommand(ETransportCommand.Identifier, identifier);
-    });
+    if (identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, identifiers);
+    }
 
     commands.setCommand(ETransportCommand.AddAction);
 
@@ -152,9 +154,9 @@ export class Topic implements ITopic {
       this.topicName,
     );
 
-    identifiers.map((identifier: string) => {
-      commands.setCommand(ETransportCommand.Identifier, identifier);
-    });
+    if (identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, identifiers);
+    }
 
     commands.setCommand(ETransportCommand.DeleteAction);
 
@@ -182,9 +184,9 @@ export class Topic implements ITopic {
       this.topicName,
     );
 
-    identifiers.map((identifier: string) => {
-      commands.setCommand(ETransportCommand.Identifier, identifier);
-    });
+    if (identifiers?.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, identifiers);
+    }
 
     const transport = NqlTransport.encode(commands, data);
 

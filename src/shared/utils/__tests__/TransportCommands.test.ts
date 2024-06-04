@@ -5,7 +5,7 @@ import {
   identifierTwoString,
   subscribeToTopicAndIdentifiers,
   topicNameString,
-} from "./transport_v2.test";
+} from "./transport.test";
 
 describe("Commands", () => {
   test("Build command sequence", () => {

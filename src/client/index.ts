@@ -10,9 +10,10 @@ import {
 import { ITopic, Topic } from "../shared/models/Topic";
 
 import { EVisibilityState } from "../shared/enum";
-import { generateTransport } from "../shared/utils/transport";
+import { ETransportCommand } from "../shared/enum/ETransportCommand";
+import { transportCommands } from "../shared/utils/TransportCommands";
+import { NqlTransport } from "../shared/utils/transport";
 import { NoLagClient } from "./NoLagClient";
-export * from "../shared/utils/Encodings";
 
 export interface ITunnel {
   /**
@@ -307,14 +308,20 @@ export class Tunnel implements ITunnel {
   ): void {
     if (this.noLagClient && this.noLagClient.send) {
       this.stopHeartbeat();
-      const transport = generateTransport(data, topicName, identifiers);
-      this.noLagClient.send(transport);
+      const commands = transportCommands()
+        .setCommand(ETransportCommand.Topic, topicName)
+        .setCommand(ETransportCommand.Identifier, identifiers)
+        .setCommand(ETransportCommand.AddAction);
+
+      const encodedBuffer = NqlTransport.encode(commands);
+
+      this.noLagClient.send(encodedBuffer);
       this.startHeartbeat();
     }
   }
 
   public get status() {
-    return this.noLagClient?.status ?? null;
+    return this.noLagClient?.connectionStatus ?? null;
   }
 }
 
