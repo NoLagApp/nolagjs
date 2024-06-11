@@ -313,7 +313,7 @@ export class Tunnel implements ITunnel {
         .setCommand(ETransportCommand.Identifier, identifiers)
         .setCommand(ETransportCommand.AddAction);
 
-      const encodedBuffer = NqlTransport.encode(commands);
+      const encodedBuffer = NqlTransport.encode(commands, data);
 
       this.noLagClient.send(encodedBuffer);
       this.startHeartbeat();

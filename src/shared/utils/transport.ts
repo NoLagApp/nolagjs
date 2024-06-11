@@ -53,9 +53,13 @@ export class NqlTransport {
   static decode(transport: ArrayBuffer): IDecode {
     const totalTransportBytes = transport.byteLength;
     const transportBufferViewer = new Uint8Array(transport);
-    const payloadSeparatorIndex = transportBufferViewer.indexOf(
+    let payloadSeparatorIndex = transportBufferViewer.indexOf(
       ETransportCommand.Payload,
     );
+
+    payloadSeparatorIndex =
+      payloadSeparatorIndex < 0 ? totalTransportBytes : payloadSeparatorIndex;
+
     const commands = transportBufferViewer.slice(0, payloadSeparatorIndex);
     const payloadStartIndex = payloadSeparatorIndex + 1;
 

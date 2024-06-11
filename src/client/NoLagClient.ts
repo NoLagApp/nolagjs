@@ -233,7 +233,7 @@ export class NoLagClient implements INoLagClient {
   }
 
   private async _onReceive(event: any) {
-    let data = null;
+    let data: ArrayBuffer = new ArrayBuffer(0);
     switch (this.environment) {
       case EEnvironment.Browser:
         const arrayBuffer = await event.data;
@@ -245,19 +245,16 @@ export class NoLagClient implements INoLagClient {
         break;
     }
 
-    if (!data?.[0]) {
+    const decoded = NqlTransport.decode(data);
+    if (!decoded.getCommand(ETransportCommand.InitConnection)) {
       return;
     }
 
-    const decoded = NqlTransport.decode(data);
-
-    if (
-      decoded.getCommand(ETransportCommand.InitConnection) &&
-      this.connectionStatus === EConnectionStatus.Idle
-    ) {
+    if (this.connectionStatus === EConnectionStatus.Idle) {
       this.authenticate();
       return;
     }
+
     if (
       decoded.getCommand(ETransportCommand.Acknowledge) &&
       this.connectionStatus === EConnectionStatus.Connecting
@@ -268,6 +265,7 @@ export class NoLagClient implements INoLagClient {
       ) as string;
       return;
     }
+
     if (decoded.getCommand(ETransportCommand.Error)) {
       this.connectionStatus = EConnectionStatus.Disconnected;
       this.callbackOnError(

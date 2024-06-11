@@ -21,7 +21,7 @@ export const TunnelPublish = async (
     .setCommand(ETransportCommand.Identifier, identifiers)
     .setCommand(ETransportCommand.AddAction);
 
-  const encodedBuffer = NqlTransport.encode(commands);
+  const encodedBuffer = NqlTransport.encode(commands, data);
 
   await request.request({
     baseURL: `${connectOptions?.protocol}://${connectOptions?.wsHost}`,
