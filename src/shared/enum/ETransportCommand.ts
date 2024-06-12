@@ -7,7 +7,7 @@ export enum ETransportCommand {
   // first connection was made
   InitConnection = 1,
   // first connection was made
-  Authenticate = 13,
+  Authenticate = 15,
   // any acknowledgement
   Acknowledge = 6,
   // trigger connection state hydration
@@ -18,7 +18,7 @@ export enum ETransportCommand {
   Identifier = 11,
   // prefix error found
   Error = 21,
-  //   ?
+  // Error message
   Alert = 7,
   // add action
   AddAction = 12,

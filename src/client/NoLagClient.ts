@@ -208,6 +208,8 @@ export class NoLagClient implements INoLagClient {
       commands.setCommand(ETransportCommand.Reconnect);
     }
 
+    console.log(commands);
+
     this.send(NqlTransport.encode(commands));
   }
 
@@ -246,11 +248,14 @@ export class NoLagClient implements INoLagClient {
     }
 
     const decoded = NqlTransport.decode(data);
-    if (!decoded.getCommand(ETransportCommand.InitConnection)) {
-      return;
-    }
+    // if (!decoded.getCommand(ETransportCommand.InitConnection)) {
+    //   return;
+    // }
 
-    if (this.connectionStatus === EConnectionStatus.Idle) {
+    if (
+      decoded.getCommand(ETransportCommand.InitConnection) &&
+      this.connectionStatus === EConnectionStatus.Idle
+    ) {
       this.authenticate();
       return;
     }
