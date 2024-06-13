@@ -1,20 +1,9 @@
-import { CONSTANT, FConnection } from "../shared/constants";
-import {
-  EConnectionStatus,
-  EEncoding,
-  EEnvironment,
-  ESeparator,
-} from "../shared/enum";
-import {
-  IConnectOptions,
-  IErrorMessage,
-  IResponse,
-} from "../shared/interfaces";
-import {
-  authStringToReConnectBuffer,
-  stringToArrayBuffer,
-  uint8ArrayToString,
-} from "../shared/utils/Encodings";
+import { CONSTANT, FConnection, FOnReceive } from "../shared/constants";
+import { EConnectionStatus, EEncoding, EEnvironment } from "../shared/enum";
+import { ETransportCommand } from "../shared/enum/ETransportCommand";
+import { IConnectOptions } from "../shared/interfaces";
+import { transportCommands } from "../shared/utils/TransportCommands";
+import { NqlTransport } from "../shared/utils/transport";
 
 interface INoLagClient {
   connect(): Promise<NoLagClient>;
@@ -43,12 +32,15 @@ export class NoLagClient implements INoLagClient {
 
   // callback function used to return the connection result
   private callbackOnOpen: FConnection = () => {};
-  private callbackOnReceive: FConnection = () => {};
+  private callbackOnReceive: FOnReceive = () => {};
   private callbackOnClose: FConnection = () => {};
   private callbackOnError: FConnection = () => {};
 
   // status of current socket connection
-  private connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
+  public connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
+  private buffer: ArrayBuffer[] = [];
+  private backpressureSendInterval = 0;
+  private senderInterval: any = 0;
 
   constructor(authToken: string, connectOptions?: IConnectOptions) {
     this.authToken = authToken ?? "";
@@ -61,6 +53,29 @@ export class NoLagClient implements INoLagClient {
     this.checkConnectionTimeout =
       connectOptions?.checkConnectionTimeout ??
       this.defaultCheckConnectionTimeout;
+    this.startSender();
+  }
+
+  startSender() {
+    this.senderInterval = setInterval(() => {
+      // get the first message in the buffer
+      const sendTransport = this.buffer.shift();
+      if (!sendTransport) return;
+      if (!this.wsInstance) return;
+      // send the first message in the buffer
+      this.wsInstance.send(sendTransport);
+    }, this.backpressureSendInterval);
+  }
+
+  // to elevate the backpressure we increase the send interval
+  slowDownSender(backpressureInterval: number) {
+    clearInterval(this.senderInterval);
+    this.backpressureSendInterval = backpressureInterval;
+    this.startSender();
+  }
+
+  addToBuffer(buffer: ArrayBuffer) {
+    this.buffer.push(buffer);
   }
 
   setReConnect(reConnect?: boolean) {
@@ -180,31 +195,20 @@ export class NoLagClient implements INoLagClient {
     });
   }
 
-  /**
-   * Get the status of the connection to the server
-   */
-  get status(): string {
-    switch (this.connectionStatus) {
-      case EConnectionStatus.Connecting:
-        return "Connecting";
-      case EConnectionStatus.Connected:
-        return "Connected";
-      case EConnectionStatus.Disconnected:
-        return "Disconnected";
-      default:
-        return EConnectionStatus.Idle;
-    }
-  }
-
   authenticate() {
     this.connectionStatus = EConnectionStatus.Connecting;
 
     const { authToken } = this;
-    let authBuffer = stringToArrayBuffer(authToken);
+    const commands = transportCommands().setCommand(
+      ETransportCommand.Authenticate,
+      authToken,
+    );
+
     if (this.reConnect) {
-      authBuffer = authStringToReConnectBuffer(authToken);
+      commands.setCommand(ETransportCommand.Reconnect);
     }
-    this.send(authBuffer);
+
+    this.send(NqlTransport.encode(commands));
   }
 
   public onOpen(callback: FConnection) {
@@ -228,113 +232,59 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnOpen(undefined, event);
   }
 
-  private getAlertMessage(payload: Uint8Array): IErrorMessage {
-    const removedNegativeSeparator = payload.slice(1, payload.length);
-    const codeSplit = removedNegativeSeparator.findIndex(
-      (i) => i == ESeparator.BellAlert,
-    );
-    const code = removedNegativeSeparator.slice(0, codeSplit);
-    const message = removedNegativeSeparator.slice(
-      codeSplit + 1,
-      removedNegativeSeparator.length,
-    );
-    return {
-      code: Number(uint8ArrayToString(code)),
-      msg: uint8ArrayToString(message),
-    };
-  }
-
-  private getGroupSeparatorIndex(payload: Uint8Array): number {
-    return payload.findIndex((i) => i == ESeparator.Group);
-  }
-
-  private getGroups(payload: Uint8Array): any {
-    const sliceIndex = this.getGroupSeparatorIndex(payload);
-
-    // extract topic and identifier records
-    const topicAndIdentifiers = payload.slice(0, sliceIndex);
-
-    // extact data
-    const data = payload.slice(sliceIndex + 1, payload.length);
-    return {
-      topicAndIdentifiers,
-      data,
-    };
-  }
-
-  private getRecordSeparatorIndex(payload: Uint8Array): number {
-    return payload.findIndex((i) => i == ESeparator.Record);
-  }
-
-  private getRecords(payload: Uint8Array): any {
-    const sliceIndex = this.getRecordSeparatorIndex(payload);
-
-    // extract topic name
-    const topicName = uint8ArrayToString(payload.slice(0, sliceIndex));
-
-    // extract NQL identifiers
-    const nqlIdentifiers = uint8ArrayToString(
-      payload.slice(sliceIndex + 1, payload.length),
-    )
-      .split("\u000b")
-      .filter((i) => i !== "");
-
-    return {
-      topicName,
-      nqlIdentifiers,
-    };
-  }
-
-  private decode(payload: Uint8Array): IResponse {
-    const { topicAndIdentifiers, data } = this.getGroups(payload);
-    const { topicName, nqlIdentifiers } = this.getRecords(topicAndIdentifiers);
-
-    return {
-      data,
-      topicName,
-      nqlIdentifiers,
-    };
-  }
-
   private async _onReceive(event: any) {
-    let data = null;
+    let data: ArrayBuffer = new ArrayBuffer(0);
     switch (this.environment) {
       case EEnvironment.Browser:
         const arrayBuffer = await event.data;
-        data = new Uint8Array(arrayBuffer);
+        data = arrayBuffer;
         break;
 
       case EEnvironment.Nodejs:
-        data = new Uint8Array(event);
+        data = event;
         break;
     }
 
-    if (!data?.[0]) {
+    const decoded = NqlTransport.decode(data);
+    if (data.byteLength === 0) {
       return;
     }
 
     if (
-      data[0] === EConnectionStatus.Connecting &&
+      decoded.getCommand(ETransportCommand.InitConnection) &&
       this.connectionStatus === EConnectionStatus.Idle
     ) {
       this.authenticate();
       return;
     }
+
     if (
-      Number(`${data[0]}${data[1]}`) === EConnectionStatus.Connected &&
+      decoded.getCommand(ETransportCommand.Acknowledge) &&
       this.connectionStatus === EConnectionStatus.Connecting
     ) {
       this.connectionStatus = EConnectionStatus.Connected;
-      this.deviceTokenId = uint8ArrayToString(data.slice(2, data.length));
-      return;
-    }
-    if (Number(`${data[0]}`) === ESeparator.NegativeAck) {
-      this.connectionStatus = EConnectionStatus.Connected;
-      this.callbackOnError(this.getAlertMessage(data), undefined);
+      this.deviceTokenId = decoded.getCommand(
+        ETransportCommand.Acknowledge,
+      ) as string;
       return;
     }
 
-    this.callbackOnReceive(undefined, this.decode(data));
+    if (decoded.getCommand(ETransportCommand.Error)) {
+      this.connectionStatus = EConnectionStatus.Disconnected;
+      this.callbackOnError(
+        decoded.getCommand(ETransportCommand.Alert),
+        undefined,
+      );
+      return;
+    }
+
+    this.callbackOnReceive(undefined, {
+      topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+      nqlIdentifiers: decoded.getCommand(
+        ETransportCommand.Identifier,
+      ) as string[],
+      data: decoded.payload,
+    });
   }
 
   private _onClose(event: any) {
@@ -348,14 +298,12 @@ export class NoLagClient implements INoLagClient {
   }
 
   public send(transport: ArrayBuffer) {
-    if (this.wsInstance) {
-      this.wsInstance.send(transport as any);
-    }
+    this.addToBuffer(transport);
   }
 
   public heartbeat() {
     if (this.wsInstance) {
-      this.wsInstance.send(new ArrayBuffer(0));
+      this.send(new ArrayBuffer(0));
     }
   }
 }

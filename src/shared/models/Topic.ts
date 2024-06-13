@@ -1,14 +1,9 @@
-import { TData } from "../shared/constants";
-import { EAction } from "../shared/enum";
-import { INqlIdentifiers, IResponse } from "../shared/interfaces";
-import {
-  arrayOfString,
-  generateTransport,
-  nqlPayload,
-  toRecordSeparator,
-  topicPayload,
-} from "../shared/utils/transport";
-import { NoLagClient } from "./NoLagClient";
+import { NoLagClient } from "../../client/NoLagClient";
+import { TData } from "../constants";
+import { ETransportCommand } from "../enum/ETransportCommand";
+import { INqlIdentifiers, ITransport } from "../interfaces";
+import { transportCommands } from "../utils/TransportCommands";
+import { NqlTransport } from "../utils/transport";
 
 export interface ITopic {
   /**
@@ -29,9 +24,9 @@ export interface ITopic {
   /**
    * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
    * is onReceive
-   * @param IResponse data - Received data published by another device
+   * @param ITransport data - Received data published by another device
    */
-  onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;
+  onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
   /**
    * Publish topic data with optional attached identifiers
    * @param ArrayBuffer data - Data being sent is an ArrayBuffer
@@ -43,13 +38,13 @@ export interface ITopic {
    * PRIVATE Inject messages into the Topic instance
    * @param data
    */
-  _onReceiveMessage(data: IResponse): ITopic;
+  _onReceiveMessage(data: ITransport): ITopic;
 }
 
 export class Topic implements ITopic {
   private connection: NoLagClient | undefined;
   private topicName: string;
-  private callbackFn: ((data: IResponse) => void) | undefined;
+  private onReceiveCallback: ((data: ITransport) => void) | undefined;
   private identifiers: string[] = [];
   constructor(
     connection: NoLagClient,
@@ -75,6 +70,8 @@ export class Topic implements ITopic {
   }
 
   private saveIdentifiers(identifiers: string[]): void {
+    if (!Array.isArray(identifiers)) return;
+
     identifiers.map((identifier: string) => {
       const findSavedIdentifier = this.findSavedIdentifier(identifier);
       if (!findSavedIdentifier) {
@@ -97,14 +94,26 @@ export class Topic implements ITopic {
   }
 
   private subscribe(identifiers: string[]) {
-    const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers), EAction.Add);
+    if (
+      (!this.topicName && identifiers?.length === 0) ||
+      !Array.isArray(identifiers)
+    )
+      return this;
 
-    const records = toRecordSeparator([topicName, nql]);
+    const commands = transportCommands().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
+    if (identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, identifiers);
     }
+
+    commands.setCommand(ETransportCommand.AddAction);
+
+    const transport = NqlTransport.encode(commands);
+
+    this.send(transport);
   }
 
   public setConnection(connection: NoLagClient): Topic {
@@ -112,66 +121,98 @@ export class Topic implements ITopic {
     return this;
   }
 
-  public _onReceiveMessage(data: IResponse): ITopic {
-    if (this.callbackFn) {
-      this.callbackFn(data);
+  public _onReceiveMessage(data: ITransport): ITopic {
+    if (this.onReceiveCallback) {
+      this.onReceiveCallback(data);
     }
     return this;
   }
 
-  public onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic {
-    this.callbackFn = callbackFn;
+  public onReceive(
+    callbackFn: ((data: ITransport) => void) | undefined,
+  ): Topic {
+    this.onReceiveCallback = callbackFn;
     return this;
   }
 
-  public addIdentifiers(identifiers: INqlIdentifiers): Topic {
-    this.saveIdentifiers(identifiers.OR ?? []);
-    const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers.OR), EAction.Add);
+  public addIdentifiers(identifiersList: INqlIdentifiers): Topic {
+    if (!identifiersList?.OR?.length || identifiersList?.OR?.length === 0)
+      return this;
 
-    const records = toRecordSeparator([topicName, nql]);
+    const identifiers = identifiersList?.OR ?? [];
+    this.saveIdentifiers(identifiers);
+    const commands = transportCommands().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
+    if (identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, identifiers);
     }
+
+    commands.setCommand(ETransportCommand.AddAction);
+
+    const transport = NqlTransport.encode(commands);
+
+    this.send(transport);
 
     return this;
   }
 
   public removeIdentifiers(identifiers: string[]): Topic {
+    if (identifiers.length === 0) return this;
+
     this.deleteSavedIdentifiers(identifiers ?? []);
 
-    const topicName = topicPayload(this.topicName);
-    const nql = nqlPayload(arrayOfString(identifiers), EAction.Delete);
+    const commands = transportCommands().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
 
-    const records = toRecordSeparator([topicName, nql]);
+    commands.setCommand(ETransportCommand.Identifier, identifiers);
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
-    }
+    commands.setCommand(ETransportCommand.DeleteAction);
+
+    const transport = NqlTransport.encode(commands);
+
+    this.send(transport);
 
     return this;
   }
 
   unsubscribe(): boolean {
-    const topicName = topicPayload(this.topicName, EAction.Delete);
-    const nql = nqlPayload(new Uint8Array(0));
+    const commands = transportCommands()
+      .setCommand(ETransportCommand.Topic, this.topicName)
+      .setCommand(ETransportCommand.DeleteAction);
 
-    const records = toRecordSeparator([topicName, nql]);
+    const transport = NqlTransport.encode(commands);
 
-    if (this.connection) {
-      this.connection.send(records.buffer);
-    }
+    this.send(transport);
     return true;
   }
 
   public publish(data: ArrayBuffer, identifiers: string[]): Topic {
-    const transport = generateTransport(data, this.topicName, identifiers);
+    if (data.byteLength === 0) return this;
 
+    const commands = transportCommands().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
+
+    if (identifiers?.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, identifiers);
+    }
+
+    const transport = NqlTransport.encode(commands, data);
+
+    this.send(transport);
+
+    return this;
+  }
+
+  private send(transport: ArrayBuffer) {
     if (this.connection) {
       this.connection.send(transport);
     }
-
-    return this;
   }
 }

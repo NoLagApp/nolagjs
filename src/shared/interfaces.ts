@@ -1,6 +1,6 @@
 import { TData } from "./constants";
 
-import { EAccessPermission, EStatus, ETopicType } from "./enum";
+import { EAccessPermission, EStatus } from "./enum";
 import { dataType } from "./types";
 
 /**
@@ -29,8 +29,8 @@ export interface IConnectOptions {
 /**
  * Response received from Message Broker
  */
-export interface IResponse {
-  data: Uint8Array;
+export interface ITransport {
+  data: ArrayBuffer;
   nqlIdentifiers: string[];
   topicName: string;
 }

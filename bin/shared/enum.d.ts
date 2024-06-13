@@ -1,8 +1,8 @@
 export declare enum EConnectionStatus {
     Idle = "idle",
-    Connecting = 6,
-    Connected = 66,
-    Disconnected = 666
+    Connecting = "connecting",
+    Connected = "connected",
+    Disconnected = "disconnected"
 }
 export declare enum EEnvironment {
     Nodejs = "nodejs",
@@ -28,7 +28,8 @@ export declare enum ESeparator {
     Unit = 31,
     Vertical = 11,
     NegativeAck = 21,
-    BellAlert = 7
+    BellAlert = 7,
+    SynchronousIdle = 22
 }
 /**
  * Used to specify which type of Pub/Sub access the associated Device Token has.

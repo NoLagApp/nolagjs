@@ -1,10 +1,8 @@
 export enum EConnectionStatus {
   Idle = "idle",
-  // Connecting = "cng",
-  Connecting = 6,
-  Connected = 66,
-  // Connected = "cnd",
-  Disconnected = 666,
+  Connecting = "connecting",
+  Connected = "connected",
+  Disconnected = "disconnected",
 }
 
 export enum EEnvironment {

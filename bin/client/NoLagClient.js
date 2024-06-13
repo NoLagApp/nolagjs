@@ -26,7 +26,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NoLagClient = void 0;
 const constants_1 = require("../shared/constants");
 const enum_1 = require("../shared/enum");
-const Encodings_1 = require("../shared/utils/Encodings");
+const ETransportCommand_1 = require("../shared/enum/ETransportCommand");
+const TransportCommands_1 = require("../shared/utils/TransportCommands");
+const transport_1 = require("../shared/utils/transport");
 class NoLagClient {
     constructor(authToken, connectOptions) {
         var _a, _b, _c, _d;
@@ -36,6 +38,7 @@ class NoLagClient {
         //  check connection
         this.defaultCheckConnectionInterval = 100;
         this.defaultCheckConnectionTimeout = 10000;
+        this.reConnect = false;
         // callback function used to return the connection result
         this.callbackOnOpen = () => { };
         this.callbackOnReceive = () => { };
@@ -43,6 +46,9 @@ class NoLagClient {
         this.callbackOnError = () => { };
         // status of current socket connection
         this.connectionStatus = enum_1.EConnectionStatus.Idle;
+        this.buffer = [];
+        this.backpressureSendInterval = 0;
+        this.senderInterval = 0;
         this.authToken = authToken !== null && authToken !== void 0 ? authToken : "";
         this.host = (_a = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.host) !== null && _a !== void 0 ? _a : constants_1.CONSTANT.DefaultWsHost;
         this.protocol = (_b = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.protocol) !== null && _b !== void 0 ? _b : constants_1.CONSTANT.DefaultWsProtocol;
@@ -51,6 +57,32 @@ class NoLagClient {
             (_c = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionInterval) !== null && _c !== void 0 ? _c : this.defaultCheckConnectionInterval;
         this.checkConnectionTimeout =
             (_d = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionTimeout) !== null && _d !== void 0 ? _d : this.defaultCheckConnectionTimeout;
+        this.startSender();
+    }
+    startSender() {
+        this.senderInterval = setInterval(() => {
+            // get the first message in the buffer
+            const sendTransport = this.buffer.shift();
+            if (!sendTransport)
+                return;
+            if (!this.wsInstance)
+                return;
+            // send the first message in the buffer
+            this.wsInstance.send(sendTransport);
+        }, this.backpressureSendInterval);
+    }
+    // to elevate the backpressure we increase the send interval
+    slowDownSender(backpressureInterval) {
+        clearInterval(this.senderInterval);
+        this.backpressureSendInterval = backpressureInterval;
+        this.startSender();
+    }
+    addToBuffer(buffer) {
+        this.buffer.push(buffer);
+    }
+    setReConnect(reConnect) {
+        if (reConnect)
+            this.reConnect = reConnect;
     }
     // Check so see if we are in a browser or backend environment
     isBrowser() {
@@ -146,25 +178,14 @@ class NoLagClient {
             });
         });
     }
-    /**
-     * Get the status of the connection to the server
-     */
-    get status() {
-        switch (this.connectionStatus) {
-            case enum_1.EConnectionStatus.Connecting:
-                return "Connecting";
-            case enum_1.EConnectionStatus.Connected:
-                return "Connected";
-            case enum_1.EConnectionStatus.Disconnected:
-                return "Disconnected";
-            default:
-                return enum_1.EConnectionStatus.Idle;
-        }
-    }
     authenticate() {
         this.connectionStatus = enum_1.EConnectionStatus.Connecting;
-        const { authToken: auth, deviceConnectionId: id } = this;
-        this.send((0, Encodings_1.stringToArrayBuffer)(auth));
+        const { authToken } = this;
+        const commands = (0, TransportCommands_1.transportCommands)().setCommand(ETransportCommand_1.ETransportCommand.Authenticate, authToken);
+        if (this.reConnect) {
+            commands.setCommand(ETransportCommand_1.ETransportCommand.Reconnect);
+        }
+        this.send(transport_1.NqlTransport.encode(commands));
     }
     onOpen(callback) {
         this.callbackOnOpen = callback;
@@ -182,86 +203,38 @@ class NoLagClient {
         this.connectionStatus === enum_1.EConnectionStatus.Idle;
         this.callbackOnOpen(undefined, event);
     }
-    getAlertMessage(payload) {
-        const removedNegativeSeparator = payload.slice(1, payload.length);
-        const codeSplit = removedNegativeSeparator.findIndex((i) => i == enum_1.ESeparator.BellAlert);
-        const code = removedNegativeSeparator.slice(0, codeSplit);
-        const message = removedNegativeSeparator.slice(codeSplit + 1, removedNegativeSeparator.length);
-        return {
-            code: Number((0, Encodings_1.uint8ArrayToString)(code)),
-            msg: (0, Encodings_1.uint8ArrayToString)(message),
-        };
-    }
-    getGroupSeparatorIndex(payload) {
-        return payload.findIndex((i) => i == enum_1.ESeparator.Group);
-    }
-    getGroups(payload) {
-        const sliceIndex = this.getGroupSeparatorIndex(payload);
-        // extract topic and identifier records
-        const topicAndIdentifiers = payload.slice(0, sliceIndex);
-        // extact data
-        const data = payload.slice(sliceIndex + 1, payload.length);
-        return {
-            topicAndIdentifiers,
-            data,
-        };
-    }
-    getRecordSeparatorIndex(payload) {
-        return payload.findIndex((i) => i == enum_1.ESeparator.Record);
-    }
-    getRecords(payload) {
-        const sliceIndex = this.getRecordSeparatorIndex(payload);
-        // extract topic name
-        const topicName = (0, Encodings_1.uint8ArrayToString)(payload.slice(0, sliceIndex));
-        // extract NQL identifiers
-        const nqlIdentifiers = (0, Encodings_1.uint8ArrayToString)(payload.slice(sliceIndex + 1, payload.length))
-            .split("\u000b")
-            .filter((i) => i !== "");
-        return {
-            topicName,
-            nqlIdentifiers,
-        };
-    }
-    decode(payload) {
-        const { topicAndIdentifiers, data } = this.getGroups(payload);
-        const { topicName, nqlIdentifiers } = this.getRecords(topicAndIdentifiers);
-        return {
-            data,
-            topicName,
-            nqlIdentifiers,
-        };
-    }
     async _onReceive(event) {
         let data = null;
         switch (this.environment) {
             case enum_1.EEnvironment.Browser:
                 const arrayBuffer = await event.data;
-                data = new Uint8Array(arrayBuffer);
+                data = arrayBuffer;
                 break;
             case enum_1.EEnvironment.Nodejs:
-                data = new Uint8Array(event);
+                data = event;
                 break;
         }
         if (!(data === null || data === void 0 ? void 0 : data[0])) {
             return;
         }
-        if (data[0] === enum_1.EConnectionStatus.Connecting &&
+        const decoded = transport_1.NqlTransport.decode(data);
+        if (decoded.getCommand(ETransportCommand_1.ETransportCommand.InitConnection) &&
             this.connectionStatus === enum_1.EConnectionStatus.Idle) {
             this.authenticate();
             return;
         }
-        if (Number(`${data[0]}${data[1]}`) === enum_1.EConnectionStatus.Connected &&
+        if (decoded.getCommand(ETransportCommand_1.ETransportCommand.Acknowledge) &&
             this.connectionStatus === enum_1.EConnectionStatus.Connecting) {
             this.connectionStatus = enum_1.EConnectionStatus.Connected;
-            this.deviceTokenId = (0, Encodings_1.uint8ArrayToString)(data.slice(2, data.length));
+            this.deviceTokenId = decoded.getCommand(ETransportCommand_1.ETransportCommand.Acknowledge);
             return;
         }
-        if (Number(`${data[0]}`) === enum_1.ESeparator.NegativeAck) {
-            this.connectionStatus = enum_1.EConnectionStatus.Connected;
-            this.callbackOnError(this.getAlertMessage(data), undefined);
+        if (decoded.getCommand(ETransportCommand_1.ETransportCommand.Error)) {
+            this.connectionStatus = enum_1.EConnectionStatus.Disconnected;
+            this.callbackOnError(decoded.getCommand(ETransportCommand_1.ETransportCommand.Alert), undefined);
             return;
         }
-        this.callbackOnReceive(undefined, this.decode(data));
+        this.callbackOnReceive(undefined, decoded);
     }
     _onClose(event) {
         this.connectionStatus = enum_1.EConnectionStatus.Disconnected;
@@ -272,9 +245,7 @@ class NoLagClient {
         this.callbackOnError(event, undefined);
     }
     send(transport) {
-        if (this.wsInstance) {
-            this.wsInstance.send(transport);
-        }
+        this.addToBuffer(transport);
     }
     heartbeat() {
         if (this.wsInstance) {

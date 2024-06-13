@@ -1,143 +1,95 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateTransport = exports.toGroupSeparator = exports.stringToUint8Array = exports.toRecordSeparator = exports.arrayOfString = exports.toTransportSeparator = exports.nqlPayload = exports.topicPayload = exports.toUint8Array = exports.toUnitSeparator = void 0;
-const enum_1 = require("../enum");
-const toUnitSeparator = (unitArray) => {
-    var _a, _b, _c;
-    let byteLength = 0;
-    // add space for seporator
-    if (unitArray[0] && unitArray[1]) {
-        // total byte data
-        byteLength = ((_a = unitArray[0]) === null || _a === void 0 ? void 0 : _a.length) + ((_b = unitArray[1]) === null || _b === void 0 ? void 0 : _b.length);
-        // add byte length for seporator
-        byteLength = byteLength + 1;
-    }
-    else if (unitArray[0]) {
-        byteLength = (_c = unitArray[0]) === null || _c === void 0 ? void 0 : _c.length;
-    }
-    let unitData = new Uint8Array(byteLength);
-    if (unitArray[0] && unitArray[1]) {
-        unitData = (0, exports.toUint8Array)(unitData, unitArray[0], 0);
-        unitData[unitArray[0].length] = enum_1.ESeparator.Unit;
-        unitData = (0, exports.toUint8Array)(unitData, unitArray[1], unitArray[0].length + 1);
-    }
-    else if (unitArray[0]) {
-        unitData = (0, exports.toUint8Array)(unitData, unitArray[0], 0);
-    }
-    return unitData;
-};
-exports.toUnitSeparator = toUnitSeparator;
-const toUint8Array = (uint8Array, str, offset) => {
-    const strLen = str.length;
-    for (let i = 0; i < strLen; i++) {
-        uint8Array[offset] = str.charCodeAt(i);
-        offset = offset + 1;
-    }
-    return uint8Array;
-};
-exports.toUint8Array = toUint8Array;
-const topicPayload = (topicName, action) => {
-    const actionString = action;
-    return (0, exports.toUnitSeparator)([topicName, actionString].filter((i) => i));
-};
-exports.topicPayload = topicPayload;
-const nqlPayload = (identifiers, action) => {
-    var _a;
-    const seporator = 31;
-    const actionString = new Uint8Array((_a = action === null || action === void 0 ? void 0 : action.length) !== null && _a !== void 0 ? _a : 0);
-    if (action) {
-        actionString[0] = action.charCodeAt(0);
-    }
-    return (0, exports.toTransportSeparator)([identifiers, actionString], seporator);
-};
-exports.nqlPayload = nqlPayload;
-const toTransportSeparator = (recordArray, seporator) => {
-    var _a, _b, _c;
-    let byteLength = 0;
-    const seporatorArray = new Uint8Array(1);
-    seporatorArray[0] = seporator;
-    // add space for seporator
-    if (recordArray[0] && recordArray[1] && recordArray[1][0] !== undefined) {
-        // total byte data
-        byteLength = ((_a = recordArray[0]) === null || _a === void 0 ? void 0 : _a.byteLength) + ((_b = recordArray[1]) === null || _b === void 0 ? void 0 : _b.byteLength);
-        // add byte byteLength for seporator
-        byteLength = byteLength + 1;
-    }
-    else if (recordArray[0]) {
-        byteLength = (_c = recordArray[0]) === null || _c === void 0 ? void 0 : _c.byteLength;
-    }
-    let recordData = new Uint8Array(byteLength);
-    if (recordArray[0] && recordArray[1] && recordArray[1][0] !== undefined) {
-        recordData.set(recordArray[0], 0);
-        recordData.set(seporatorArray, recordArray[0].byteLength);
-        recordData.set(recordArray[1], recordArray[0].byteLength + 1);
-    }
-    else if (recordArray[0]) {
-        recordData.set(recordArray[0], 0);
-    }
-    return recordData;
-};
-exports.toTransportSeparator = toTransportSeparator;
-const arrayOfString = (identifiers = []) => {
-    // count the number of characters found in all the identifiers
-    // we need this number to construct the Uint8Array
-    const identifiersLength = identifiers
-        .map((item) => {
-        return item.length;
-    })
-        .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-    // get the number of NQL separators
-    // ex. 2 identifiers will need one seporator
-    // we need this number to construct the Uint8Array
-    const seporatorLength = identifiers.length <= 1 ? 0 : identifiers.length - 1;
-    const uint8Length = identifiersLength + seporatorLength;
-    const bufView = new Uint8Array(uint8Length);
-    let arrayCount = 0;
-    identifiers.map((item, key) => {
-        const strLen = item.length;
-        for (let i = 0; i < strLen; i++) {
-            bufView[arrayCount] = item.charCodeAt(i);
-            arrayCount = arrayCount + 1;
+exports.NqlTransport = void 0;
+const ETransportCommand_1 = require("../enum/ETransportCommand");
+class NqlTransport {
+    static encode(TransportCommands, payload) {
+        const separatorArray = new Uint8Array(1);
+        separatorArray[0] = ETransportCommand_1.ETransportCommand.Payload;
+        const transportCommandsUintArray = TransportCommands.build();
+        const commandLength = transportCommandsUintArray.byteLength;
+        let payloadLength = 0;
+        let payloadUintArray = new Uint8Array(0);
+        let payloadOffset;
+        if (payload) {
+            payloadLength = payload.byteLength + 1;
+            payloadUintArray = new Uint8Array(payload);
+            payloadOffset = commandLength + 1;
+            payload = new Uint8Array(payload);
         }
-        if (identifiers.length - 1 !== key) {
-            bufView[arrayCount] = enum_1.ESeparator.Vertical;
-            arrayCount = arrayCount + 1;
+        const bitLength = commandLength + payloadLength;
+        const buf = new ArrayBuffer(bitLength);
+        let tmp = new Uint8Array(buf);
+        tmp.set(transportCommandsUintArray, 0);
+        if (payload) {
+            tmp.set(separatorArray, commandLength);
+            tmp.set(payloadUintArray, payloadOffset);
         }
-    });
-    return bufView;
-};
-exports.arrayOfString = arrayOfString;
-const toRecordSeparator = (recordArray) => {
-    return (0, exports.toTransportSeparator)(recordArray, enum_1.ESeparator.Record);
-};
-exports.toRecordSeparator = toRecordSeparator;
-const stringToUint8Array = (str) => {
-    const bufView = new Uint8Array(str.length);
-    const strLen = str.length;
-    for (let i = 0; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
+        return tmp.buffer;
     }
-    return bufView;
-};
-exports.stringToUint8Array = stringToUint8Array;
-const toGroupSeparator = (records, data) => {
-    const seporatorArray = new Uint8Array(1);
-    seporatorArray[0] = enum_1.ESeparator.Group;
-    const bitLength = records.byteLength + seporatorArray.byteLength + data.byteLength;
-    const buf = new ArrayBuffer(bitLength);
-    let tmp = new Uint8Array(buf);
-    tmp.set(new Uint8Array(records), 0);
-    tmp.set(seporatorArray, records.byteLength);
-    tmp.set(new Uint8Array(data), records.byteLength + 1);
-    return tmp.buffer;
-};
-exports.toGroupSeparator = toGroupSeparator;
-const generateTransport = (data, topicName, identifiers) => {
-    const topicNamePayload = (0, exports.topicPayload)(topicName);
-    const nql = (0, exports.nqlPayload)((0, exports.arrayOfString)(identifiers));
-    const records = (0, exports.toRecordSeparator)([topicNamePayload, nql]);
-    const groups = (0, exports.toGroupSeparator)(records, data);
-    return groups;
-};
-exports.generateTransport = generateTransport;
+    static decode(transport) {
+        const totalTransportBytes = transport.byteLength;
+        const transportBufferViewer = new Uint8Array(transport);
+        const payloadSeparatorIndex = transportBufferViewer.indexOf(ETransportCommand_1.ETransportCommand.Payload);
+        const commands = transportBufferViewer.slice(0, payloadSeparatorIndex);
+        const payloadStartIndex = payloadSeparatorIndex + 1;
+        const extractedCommands = this.extractCommands(commands);
+        const getCommand = (command) => {
+            if (extractedCommands[command]) {
+                return extractedCommands[command];
+            }
+            return false;
+        };
+        return {
+            commands: extractedCommands,
+            payload: transport.slice(payloadStartIndex, totalTransportBytes),
+            getCommand,
+        };
+    }
+    static hasSeparatorIndexes(commandAction) {
+        return commandAction.indexOf(ETransportCommand_1.ETransportCommandSeparator.ArraySeparator) > 0;
+    }
+    static commandActionUint8ArrayToString(commandActionArray) {
+        return commandActionArray.map((item) => String.fromCharCode(item)).join("");
+    }
+    static commandActionUint8ArrayToStringArray(commandActionArray) {
+        const groupedUint8Array = commandActionArray
+            .join(",")
+            .split(`,${ETransportCommand_1.ETransportCommandSeparator.ArraySeparator},`);
+        const commandActionStringArray = groupedUint8Array.map((uint8ArrayAsString) => {
+            const groups = uint8ArrayAsString.split(",");
+            return this.commandActionUint8ArrayToString(groups.map((i) => Number(i)));
+        });
+        return commandActionStringArray;
+    }
+    static extractCommands(commands) {
+        const commandByteGroup = {};
+        let commandBeingAssigned = null;
+        commands.forEach((byte) => {
+            if (Object.values(ETransportCommand_1.ETransportCommand).indexOf(byte) >= 0) {
+                commandBeingAssigned = byte;
+                commandByteGroup[commandBeingAssigned] = [];
+                return;
+            }
+            commandByteGroup[commandBeingAssigned].push(byte);
+        });
+        Object.keys(commandByteGroup).forEach((key) => {
+            const commandActionArray = commandByteGroup[key];
+            const hasSeparatorIndexes = this.hasSeparatorIndexes(commandActionArray);
+            if (hasSeparatorIndexes) {
+                commandByteGroup[key] =
+                    this.commandActionUint8ArrayToStringArray(commandActionArray);
+            }
+            else if (commandActionArray.length === 0) {
+                commandByteGroup[key] = true;
+            }
+            else {
+                commandByteGroup[key] =
+                    this.commandActionUint8ArrayToString(commandActionArray);
+            }
+        });
+        return commandByteGroup;
+    }
+}
+exports.NqlTransport = NqlTransport;
 //# sourceMappingURL=transport.js.map

@@ -1,7 +1,9 @@
 import { AxiosInstance } from "axios";
 import { TData } from "../../../shared/constants";
+import { ETransportCommand } from "../../../shared/enum/ETransportCommand";
 import { IConnectOptions } from "../../../shared/interfaces";
-import { generateTransport } from "../../../shared/utils/transport";
+import { transportCommands } from "../../../shared/utils/TransportCommands";
+import { NqlTransport } from "../../../shared/utils/transport";
 
 const routeNamespace = "publish";
 
@@ -14,13 +16,19 @@ export const TunnelPublish = async (
   request: AxiosInstance,
   connectOptions: IConnectOptions,
 ): Promise<boolean> => {
-  const transport = generateTransport(data, topicName, identifiers);
+  const commands = transportCommands()
+    .setCommand(ETransportCommand.Topic, topicName)
+    .setCommand(ETransportCommand.Identifier, identifiers)
+    .setCommand(ETransportCommand.AddAction);
+
+  const encodedBuffer = NqlTransport.encode(commands, data);
+
   await request.request({
     baseURL: `${connectOptions?.protocol}://${connectOptions?.wsHost}`,
     headers: { "Content-Type": "application/json" },
     url: `/${parentRouteNamespace}/${tunnelId}/${routeNamespace}`,
     method: "post",
-    data: transport,
+    data: encodedBuffer,
   });
 
   return true;

@@ -1,16 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TunnelPublish = void 0;
+const ETransportCommand_1 = require("../../../shared/enum/ETransportCommand");
+const TransportCommands_1 = require("../../../shared/utils/TransportCommands");
 const transport_1 = require("../../../shared/utils/transport");
 const routeNamespace = "publish";
 const TunnelPublish = async (data, topicName, identifiers, tunnelId, parentRouteNamespace, request, connectOptions) => {
-    const transport = (0, transport_1.generateTransport)(data, topicName, identifiers);
+    const commands = (0, TransportCommands_1.transportCommands)()
+        .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName)
+        .setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers)
+        .setCommand(ETransportCommand_1.ETransportCommand.AddAction);
+    const encodedBuffer = transport_1.NqlTransport.encode(commands);
     await request.request({
         baseURL: `${connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.protocol}://${connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.wsHost}`,
         headers: { "Content-Type": "application/json" },
         url: `/${parentRouteNamespace}/${tunnelId}/${routeNamespace}`,
         method: "post",
-        data: transport,
+        data: encodedBuffer,
     });
     return true;
 };

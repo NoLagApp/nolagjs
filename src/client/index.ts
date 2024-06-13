@@ -3,16 +3,17 @@ import {
   IConnectOptions,
   IErrorMessage,
   INqlIdentifiers,
-  IResponse,
+  ITransport,
   ITunnelOptions,
 } from "../shared/interfaces";
 
-import { ITopic, Topic } from "./topic";
+import { ITopic, Topic } from "../shared/models/Topic";
 
 import { EVisibilityState } from "../shared/enum";
-import { generateTransport } from "../shared/utils/transport";
+import { ETransportCommand } from "../shared/enum/ETransportCommand";
+import { transportCommands } from "../shared/utils/TransportCommands";
+import { NqlTransport } from "../shared/utils/transport";
 import { NoLagClient } from "./NoLagClient";
-export * from "../shared/utils/Encodings";
 
 export interface ITunnel {
   /**
@@ -43,7 +44,7 @@ export interface ITunnel {
    * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
    */
   publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
-  onReceive(callbackFn: ((data: IResponse) => void) | undefined): void;
+  onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
   /**
    * Disconnect from NoLag
    */
@@ -59,7 +60,7 @@ export interface ITunnel {
    * Triggered when there is a reconnect attempt
    * @param callbackFn
    */
-  onReconnect(callbackFn: ((data: IResponse) => void) | undefined): void;
+  onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
   /**
    * Triggered when any errors are sent from the Message Broker
    * @param callbackFn
@@ -93,7 +94,7 @@ export class Tunnel implements ITunnel {
   private heartBeatInterval: number = 20000;
   private visibilityState: string = EVisibilityState.Visible;
 
-  private callbackOnReceive: ((data: IResponse) => void) | undefined;
+  private callbackOnReceive: ((data: ITransport) => void) | undefined;
   private callbackOnDisconnect: FConnection = () => {};
   private callbackOnReconnect: FConnection = () => {};
   private callbackOnReceivedError: FConnection = () => {};
@@ -108,7 +109,10 @@ export class Tunnel implements ITunnel {
       this.defaultCheckConnectionInterval;
     this.connectOptions = connectOptions ?? undefined;
     this.authToken = authToken;
+
+    // initiate NoLag client connection
     this.noLagClient = new NoLagClient(this.authToken, this.connectOptions);
+
     this.onClose();
     this.onError();
     this.onReceiveMessage();
@@ -157,6 +161,7 @@ export class Tunnel implements ITunnel {
         switch (this.visibilityState) {
           case EVisibilityState.Hidden:
             this.noLagClient?.disconnect();
+            this.stopHeartbeat();
             break;
           case EVisibilityState.Visible:
             await this.initiate(true);
@@ -168,7 +173,7 @@ export class Tunnel implements ITunnel {
 
   private onReceiveMessage() {
     if (this.noLagClient) {
-      this.noLagClient?.onReceiveMessage((err: any, data: IResponse) => {
+      this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
         const { topicName, nqlIdentifiers } = data;
         if (this.noLagClient && !this.topics[topicName]) {
           this.topics[topicName] = new Topic(this.noLagClient, topicName, {
@@ -189,7 +194,7 @@ export class Tunnel implements ITunnel {
     this.stopHeartbeat();
     setTimeout(async () => {
       this.reconnectAttempts++;
-      await this.initiate();
+      await this.initiate(true);
       if (typeof this.callbackOnReconnect === "function") {
         this.callbackOnReconnect();
       }
@@ -219,7 +224,7 @@ export class Tunnel implements ITunnel {
 
   private onClose() {
     if (this.noLagClient) {
-      this.noLagClient.onClose((err: any, data: IResponse) => {
+      this.noLagClient.onClose((err: any, data: ITransport) => {
         this.doReconnect();
         if (typeof this.callbackOnReceivedError === "function") {
           this.callbackOnReceivedError(err);
@@ -230,7 +235,7 @@ export class Tunnel implements ITunnel {
 
   private onError() {
     if (this.noLagClient) {
-      this.noLagClient.onError((err: IErrorMessage, data: IResponse) => {
+      this.noLagClient.onError((err: IErrorMessage, data: ITransport) => {
         if (typeof this.callbackOnReceivedError === "function") {
           this.callbackOnReceivedError(err);
         }
@@ -238,7 +243,7 @@ export class Tunnel implements ITunnel {
     }
   }
 
-  public onReceive(callback: (data: IResponse) => void): void {
+  public onReceive(callback: (data: ITransport) => void): void {
     this.callbackOnReceive = callback;
   }
 
@@ -303,14 +308,20 @@ export class Tunnel implements ITunnel {
   ): void {
     if (this.noLagClient && this.noLagClient.send) {
       this.stopHeartbeat();
-      const transport = generateTransport(data, topicName, identifiers);
-      this.noLagClient.send(transport);
+      const commands = transportCommands()
+        .setCommand(ETransportCommand.Topic, topicName)
+        .setCommand(ETransportCommand.Identifier, identifiers)
+        .setCommand(ETransportCommand.AddAction);
+
+      const encodedBuffer = NqlTransport.encode(commands, data);
+
+      this.noLagClient.send(encodedBuffer);
       this.startHeartbeat();
     }
   }
 
   public get status() {
-    return this.noLagClient?.status ?? null;
+    return this.noLagClient?.connectionStatus ?? null;
   }
 }
 
