@@ -1,7 +1,7 @@
 import { NoLagClient } from "../../client/NoLagClient";
 import { TData } from "../constants";
 import { ETransportCommand } from "../enum/ETransportCommand";
-import { INqlIdentifiers, IResponse } from "../interfaces";
+import { INqlIdentifiers, ITransport } from "../interfaces";
 import { transportCommands } from "../utils/TransportCommands";
 import { NqlTransport } from "../utils/transport";
 
@@ -24,9 +24,9 @@ export interface ITopic {
   /**
    * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
    * is onReceive
-   * @param IResponse data - Received data published by another device
+   * @param ITransport data - Received data published by another device
    */
-  onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;
+  onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
   /**
    * Publish topic data with optional attached identifiers
    * @param ArrayBuffer data - Data being sent is an ArrayBuffer
@@ -38,13 +38,13 @@ export interface ITopic {
    * PRIVATE Inject messages into the Topic instance
    * @param data
    */
-  _onReceiveMessage(data: IResponse): ITopic;
+  _onReceiveMessage(data: ITransport): ITopic;
 }
 
 export class Topic implements ITopic {
   private connection: NoLagClient | undefined;
   private topicName: string;
-  private callbackFn: ((data: IResponse) => void) | undefined;
+  private onReceiveCallback: ((data: ITransport) => void) | undefined;
   private identifiers: string[] = [];
   constructor(
     connection: NoLagClient,
@@ -70,6 +70,8 @@ export class Topic implements ITopic {
   }
 
   private saveIdentifiers(identifiers: string[]): void {
+    if (!Array.isArray(identifiers)) return;
+
     identifiers.map((identifier: string) => {
       const findSavedIdentifier = this.findSavedIdentifier(identifier);
       if (!findSavedIdentifier) {
@@ -92,6 +94,12 @@ export class Topic implements ITopic {
   }
 
   private subscribe(identifiers: string[]) {
+    if (
+      (!this.topicName && identifiers?.length === 0) ||
+      !Array.isArray(identifiers)
+    )
+      return this;
+
     const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,
@@ -113,19 +121,24 @@ export class Topic implements ITopic {
     return this;
   }
 
-  public _onReceiveMessage(data: IResponse): ITopic {
-    if (this.callbackFn) {
-      this.callbackFn(data);
+  public _onReceiveMessage(data: ITransport): ITopic {
+    if (this.onReceiveCallback) {
+      this.onReceiveCallback(data);
     }
     return this;
   }
 
-  public onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic {
-    this.callbackFn = callbackFn;
+  public onReceive(
+    callbackFn: ((data: ITransport) => void) | undefined,
+  ): Topic {
+    this.onReceiveCallback = callbackFn;
     return this;
   }
 
   public addIdentifiers(identifiersList: INqlIdentifiers): Topic {
+    if (!identifiersList?.OR?.length || identifiersList?.OR?.length === 0)
+      return this;
+
     const identifiers = identifiersList?.OR ?? [];
     this.saveIdentifiers(identifiers);
     const commands = transportCommands().setCommand(
@@ -147,6 +160,8 @@ export class Topic implements ITopic {
   }
 
   public removeIdentifiers(identifiers: string[]): Topic {
+    if (identifiers.length === 0) return this;
+
     this.deleteSavedIdentifiers(identifiers ?? []);
 
     const commands = transportCommands().setCommand(
@@ -154,9 +169,7 @@ export class Topic implements ITopic {
       this.topicName,
     );
 
-    if (identifiers.length > 0) {
-      commands.setCommand(ETransportCommand.Identifier, identifiers);
-    }
+    commands.setCommand(ETransportCommand.Identifier, identifiers);
 
     commands.setCommand(ETransportCommand.DeleteAction);
 
@@ -179,6 +192,8 @@ export class Topic implements ITopic {
   }
 
   public publish(data: ArrayBuffer, identifiers: string[]): Topic {
+    if (data.byteLength === 0) return this;
+
     const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,

@@ -1,4 +1,4 @@
-import { CONSTANT, FConnection } from "../shared/constants";
+import { CONSTANT, FConnection, FOnReceive } from "../shared/constants";
 import { EConnectionStatus, EEncoding, EEnvironment } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import { IConnectOptions } from "../shared/interfaces";
@@ -32,7 +32,7 @@ export class NoLagClient implements INoLagClient {
 
   // callback function used to return the connection result
   private callbackOnOpen: FConnection = () => {};
-  private callbackOnReceive: FConnection = () => {};
+  private callbackOnReceive: FOnReceive = () => {};
   private callbackOnClose: FConnection = () => {};
   private callbackOnError: FConnection = () => {};
 
@@ -208,8 +208,6 @@ export class NoLagClient implements INoLagClient {
       commands.setCommand(ETransportCommand.Reconnect);
     }
 
-    console.log(commands);
-
     this.send(NqlTransport.encode(commands));
   }
 
@@ -248,9 +246,9 @@ export class NoLagClient implements INoLagClient {
     }
 
     const decoded = NqlTransport.decode(data);
-    // if (!decoded.getCommand(ETransportCommand.InitConnection)) {
-    //   return;
-    // }
+    if (data.byteLength === 0) {
+      return;
+    }
 
     if (
       decoded.getCommand(ETransportCommand.InitConnection) &&
@@ -280,7 +278,13 @@ export class NoLagClient implements INoLagClient {
       return;
     }
 
-    this.callbackOnReceive(undefined, decoded);
+    this.callbackOnReceive(undefined, {
+      topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+      nqlIdentifiers: decoded.getCommand(
+        ETransportCommand.Identifier,
+      ) as string[],
+      data: decoded.payload,
+    });
   }
 
   private _onClose(event: any) {
@@ -299,7 +303,7 @@ export class NoLagClient implements INoLagClient {
 
   public heartbeat() {
     if (this.wsInstance) {
-      this.wsInstance.send(new ArrayBuffer(0));
+      this.send(new ArrayBuffer(0));
     }
   }
 }
