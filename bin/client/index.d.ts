@@ -1,5 +1,5 @@
 import { FConnection } from "../shared/constants";
-import { IConnectOptions, IErrorMessage, INqlIdentifiers, IResponse, ITunnelOptions } from "../shared/interfaces";
+import { IConnectOptions, IErrorMessage, INqlIdentifiers, ITransport, ITunnelOptions } from "../shared/interfaces";
 import { ITopic } from "../shared/models/Topic";
 export interface ITunnel {
     /**
@@ -27,7 +27,7 @@ export interface ITunnel {
      * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
      */
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
-    onReceive(callbackFn: ((data: IResponse) => void) | undefined): void;
+    onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
     /**
      * Disconnect from NoLag
      */
@@ -41,7 +41,7 @@ export interface ITunnel {
      * Triggered when there is a reconnect attempt
      * @param callbackFn
      */
-    onReconnect(callbackFn: ((data: IResponse) => void) | undefined): void;
+    onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
     /**
      * Triggered when any errors are sent from the Message Broker
      * @param callbackFn
@@ -61,8 +61,6 @@ export declare class Tunnel implements ITunnel {
     private heartbeatTimer;
     private defaultCheckConnectionInterval;
     private checkConnectionInterval;
-    private reconnectAttempts;
-    private maxReconnectAttempts;
     private heartBeatInterval;
     private visibilityState;
     private callbackOnReceive;
@@ -74,7 +72,6 @@ export declare class Tunnel implements ITunnel {
     private startHeartbeat;
     private stopHeartbeat;
     initiate(reconnect?: boolean): Promise<this>;
-    private resetConnectAttempts;
     private onVisibilityChange;
     private onReceiveMessage;
     private reconnect;
@@ -82,7 +79,7 @@ export declare class Tunnel implements ITunnel {
     private doReconnect;
     private onClose;
     private onError;
-    onReceive(callback: (data: IResponse) => void): void;
+    onReceive(callback: (data: ITransport) => void): void;
     disconnect(): void;
     onDisconnect(callback: FConnection): void;
     onReconnect(callback: FConnection): void;

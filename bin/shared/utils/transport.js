@@ -30,7 +30,9 @@ class NqlTransport {
     static decode(transport) {
         const totalTransportBytes = transport.byteLength;
         const transportBufferViewer = new Uint8Array(transport);
-        const payloadSeparatorIndex = transportBufferViewer.indexOf(ETransportCommand_1.ETransportCommand.Payload);
+        let payloadSeparatorIndex = transportBufferViewer.indexOf(ETransportCommand_1.ETransportCommand.Payload);
+        payloadSeparatorIndex =
+            payloadSeparatorIndex < 0 ? totalTransportBytes : payloadSeparatorIndex;
         const commands = transportBufferViewer.slice(0, payloadSeparatorIndex);
         const payloadStartIndex = payloadSeparatorIndex + 1;
         const extractedCommands = this.extractCommands(commands);

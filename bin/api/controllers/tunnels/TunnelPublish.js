@@ -10,7 +10,7 @@ const TunnelPublish = async (data, topicName, identifiers, tunnelId, parentRoute
         .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName)
         .setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers)
         .setCommand(ETransportCommand_1.ETransportCommand.AddAction);
-    const encodedBuffer = transport_1.NqlTransport.encode(commands);
+    const encodedBuffer = transport_1.NqlTransport.encode(commands, data);
     await request.request({
         baseURL: `${connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.protocol}://${connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.wsHost}`,
         headers: { "Content-Type": "application/json" },

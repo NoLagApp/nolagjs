@@ -27,6 +27,8 @@ class Topic {
         });
     }
     saveIdentifiers(identifiers) {
+        if (!Array.isArray(identifiers))
+            return;
         identifiers.map((identifier) => {
             const findSavedIdentifier = this.findSavedIdentifier(identifier);
             if (!findSavedIdentifier) {
@@ -47,6 +49,9 @@ class Topic {
         this.identifiers = identifierList;
     }
     subscribe(identifiers) {
+        if ((!this.topicName && (identifiers === null || identifiers === void 0 ? void 0 : identifiers.length) === 0) ||
+            !Array.isArray(identifiers))
+            return this;
         const commands = (0, TransportCommands_1.transportCommands)().setCommand(ETransportCommand_1.ETransportCommand.Topic, this.topicName);
         if (identifiers.length > 0) {
             commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
@@ -60,18 +65,20 @@ class Topic {
         return this;
     }
     _onReceiveMessage(data) {
-        if (this.callbackFn) {
-            this.callbackFn(data);
+        if (this.onReceiveCallback) {
+            this.onReceiveCallback(data);
         }
         return this;
     }
     onReceive(callbackFn) {
-        this.callbackFn = callbackFn;
+        this.onReceiveCallback = callbackFn;
         return this;
     }
     addIdentifiers(identifiersList) {
-        var _a;
-        const identifiers = (_a = identifiersList === null || identifiersList === void 0 ? void 0 : identifiersList.OR) !== null && _a !== void 0 ? _a : [];
+        var _a, _b, _c;
+        if (!((_a = identifiersList === null || identifiersList === void 0 ? void 0 : identifiersList.OR) === null || _a === void 0 ? void 0 : _a.length) || ((_b = identifiersList === null || identifiersList === void 0 ? void 0 : identifiersList.OR) === null || _b === void 0 ? void 0 : _b.length) === 0)
+            return this;
+        const identifiers = (_c = identifiersList === null || identifiersList === void 0 ? void 0 : identifiersList.OR) !== null && _c !== void 0 ? _c : [];
         this.saveIdentifiers(identifiers);
         const commands = (0, TransportCommands_1.transportCommands)().setCommand(ETransportCommand_1.ETransportCommand.Topic, this.topicName);
         if (identifiers.length > 0) {
@@ -83,11 +90,11 @@ class Topic {
         return this;
     }
     removeIdentifiers(identifiers) {
+        if (identifiers.length === 0)
+            return this;
         this.deleteSavedIdentifiers(identifiers !== null && identifiers !== void 0 ? identifiers : []);
         const commands = (0, TransportCommands_1.transportCommands)().setCommand(ETransportCommand_1.ETransportCommand.Topic, this.topicName);
-        if (identifiers.length > 0) {
-            commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
-        }
+        commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
         commands.setCommand(ETransportCommand_1.ETransportCommand.DeleteAction);
         const transport = transport_1.NqlTransport.encode(commands);
         this.send(transport);
@@ -102,6 +109,8 @@ class Topic {
         return true;
     }
     publish(data, identifiers) {
+        if (data.byteLength === 0)
+            return this;
         const commands = (0, TransportCommands_1.transportCommands)().setCommand(ETransportCommand_1.ETransportCommand.Topic, this.topicName);
         if ((identifiers === null || identifiers === void 0 ? void 0 : identifiers.length) > 0) {
             commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);

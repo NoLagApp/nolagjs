@@ -46,8 +46,6 @@ class TransportCommands {
         })
             // flatten the array, we don't need the nested arrays
             .flat();
-        // we need to remove the last array separator, we don't need it
-        commandActionsUint8Array.pop();
         return commandActionsUint8Array;
     }
     /**

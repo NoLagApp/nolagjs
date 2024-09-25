@@ -1,6 +1,6 @@
 import { NoLagClient } from "../../client/NoLagClient";
 import { TData } from "../constants";
-import { INqlIdentifiers, IResponse } from "../interfaces";
+import { INqlIdentifiers, ITransport } from "../interfaces";
 export interface ITopic {
     /**
      * Add NQL identifers to the Topic
@@ -20,9 +20,9 @@ export interface ITopic {
     /**
      * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
      * is onReceive
-     * @param IResponse data - Received data published by another device
+     * @param ITransport data - Received data published by another device
      */
-    onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;
+    onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
     /**
      * Publish topic data with optional attached identifiers
      * @param ArrayBuffer data - Data being sent is an ArrayBuffer
@@ -34,12 +34,12 @@ export interface ITopic {
      * PRIVATE Inject messages into the Topic instance
      * @param data
      */
-    _onReceiveMessage(data: IResponse): ITopic;
+    _onReceiveMessage(data: ITransport): ITopic;
 }
 export declare class Topic implements ITopic {
     private connection;
     private topicName;
-    private callbackFn;
+    private onReceiveCallback;
     private identifiers;
     constructor(connection: NoLagClient, topicName: string, identifiers: INqlIdentifiers);
     private findSavedIdentifier;
@@ -47,8 +47,8 @@ export declare class Topic implements ITopic {
     private deleteSavedIdentifiers;
     private subscribe;
     setConnection(connection: NoLagClient): Topic;
-    _onReceiveMessage(data: IResponse): ITopic;
-    onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;
+    _onReceiveMessage(data: ITransport): ITopic;
+    onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
     addIdentifiers(identifiersList: INqlIdentifiers): Topic;
     removeIdentifiers(identifiers: string[]): Topic;
     unsubscribe(): boolean;

@@ -89,8 +89,6 @@ export class Tunnel implements ITunnel {
 
   private defaultCheckConnectionInterval = 10000;
   private checkConnectionInterval: number;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 5;
   private heartBeatInterval: number = 20000;
   private visibilityState: string = EVisibilityState.Visible;
 
@@ -144,14 +142,9 @@ export class Tunnel implements ITunnel {
     if (this.noLagClient) {
       this.noLagClient.setReConnect(reconnect);
       await this.noLagClient.connect();
-      this.resetConnectAttempts();
       this.startHeartbeat();
     }
     return this;
-  }
-
-  private resetConnectAttempts() {
-    this.reconnectAttempts = 0;
   }
 
   private onVisibilityChange() {
@@ -193,7 +186,7 @@ export class Tunnel implements ITunnel {
   private reconnect(): void {
     this.stopHeartbeat();
     setTimeout(async () => {
-      this.reconnectAttempts++;
+      // this.reconnectAttempts++;
       await this.initiate(true);
       if (typeof this.callbackOnReconnect === "function") {
         this.callbackOnReconnect();
@@ -202,13 +195,7 @@ export class Tunnel implements ITunnel {
   }
 
   private canReconnect(): boolean {
-    if (
-      this.reconnectAttempts === this.maxReconnectAttempts ||
-      this.visibilityState === EVisibilityState.Hidden
-    ) {
-      return false;
-    }
-    return true;
+    return this.visibilityState !== EVisibilityState.Hidden;
   }
 
   private doReconnect(): void {
@@ -248,7 +235,6 @@ export class Tunnel implements ITunnel {
   }
 
   public disconnect(): void {
-    this.reconnectAttempts = this.maxReconnectAttempts;
     this.noLagClient?.disconnect();
   }
 

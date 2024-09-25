@@ -5,7 +5,7 @@
  */
 export declare enum ETransportCommand {
     InitConnection = 1,
-    Authenticate = 13,
+    Authenticate = 15,
     Acknowledge = 6,
     Reconnect = 22,
     Topic = 26,

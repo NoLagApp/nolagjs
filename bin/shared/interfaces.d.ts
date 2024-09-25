@@ -25,8 +25,8 @@ export interface IConnectOptions {
 /**
  * Response received from Message Broker
  */
-export interface IResponse {
-    data: Uint8Array;
+export interface ITransport {
+    data: ArrayBuffer;
     nqlIdentifiers: string[];
     topicName: string;
 }

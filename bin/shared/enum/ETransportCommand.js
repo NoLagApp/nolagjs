@@ -11,7 +11,7 @@ var ETransportCommand;
     // first connection was made
     ETransportCommand[ETransportCommand["InitConnection"] = 1] = "InitConnection";
     // first connection was made
-    ETransportCommand[ETransportCommand["Authenticate"] = 13] = "Authenticate";
+    ETransportCommand[ETransportCommand["Authenticate"] = 15] = "Authenticate";
     // any acknowledgement
     ETransportCommand[ETransportCommand["Acknowledge"] = 6] = "Acknowledge";
     // trigger connection state hydration
@@ -22,7 +22,7 @@ var ETransportCommand;
     ETransportCommand[ETransportCommand["Identifier"] = 11] = "Identifier";
     // prefix error found
     ETransportCommand[ETransportCommand["Error"] = 21] = "Error";
-    //   ?
+    // Error message
     ETransportCommand[ETransportCommand["Alert"] = 7] = "Alert";
     // add action
     ETransportCommand[ETransportCommand["AddAction"] = 12] = "AddAction";

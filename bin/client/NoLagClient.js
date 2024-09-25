@@ -204,7 +204,7 @@ class NoLagClient {
         this.callbackOnOpen(undefined, event);
     }
     async _onReceive(event) {
-        let data = null;
+        let data = new ArrayBuffer(0);
         switch (this.environment) {
             case enum_1.EEnvironment.Browser:
                 const arrayBuffer = await event.data;
@@ -214,10 +214,10 @@ class NoLagClient {
                 data = event;
                 break;
         }
-        if (!(data === null || data === void 0 ? void 0 : data[0])) {
+        const decoded = transport_1.NqlTransport.decode(data);
+        if (data.byteLength === 0) {
             return;
         }
-        const decoded = transport_1.NqlTransport.decode(data);
         if (decoded.getCommand(ETransportCommand_1.ETransportCommand.InitConnection) &&
             this.connectionStatus === enum_1.EConnectionStatus.Idle) {
             this.authenticate();
@@ -234,7 +234,11 @@ class NoLagClient {
             this.callbackOnError(decoded.getCommand(ETransportCommand_1.ETransportCommand.Alert), undefined);
             return;
         }
-        this.callbackOnReceive(undefined, decoded);
+        this.callbackOnReceive(undefined, {
+            topicName: decoded.getCommand(ETransportCommand_1.ETransportCommand.Topic),
+            nqlIdentifiers: decoded.getCommand(ETransportCommand_1.ETransportCommand.Identifier),
+            data: decoded.payload,
+        });
     }
     _onClose(event) {
         this.connectionStatus = enum_1.EConnectionStatus.Disconnected;
@@ -249,7 +253,7 @@ class NoLagClient {
     }
     heartbeat() {
         if (this.wsInstance) {
-            this.wsInstance.send(new ArrayBuffer(0));
+            this.send(new ArrayBuffer(0));
         }
     }
 }

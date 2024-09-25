@@ -18,8 +18,6 @@ class Tunnel {
         // topics
         this.topics = {};
         this.defaultCheckConnectionInterval = 10000;
-        this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
         this.heartBeatInterval = 20000;
         this.visibilityState = enum_1.EVisibilityState.Visible;
         this.callbackOnDisconnect = () => { };
@@ -58,13 +56,9 @@ class Tunnel {
         if (this.noLagClient) {
             this.noLagClient.setReConnect(reconnect);
             await this.noLagClient.connect();
-            this.resetConnectAttempts();
             this.startHeartbeat();
         }
         return this;
-    }
-    resetConnectAttempts() {
-        this.reconnectAttempts = 0;
     }
     onVisibilityChange() {
         if (document.addEventListener) {
@@ -106,7 +100,7 @@ class Tunnel {
     reconnect() {
         this.stopHeartbeat();
         setTimeout(async () => {
-            this.reconnectAttempts++;
+            // this.reconnectAttempts++;
             await this.initiate(true);
             if (typeof this.callbackOnReconnect === "function") {
                 this.callbackOnReconnect();
@@ -114,11 +108,7 @@ class Tunnel {
         }, this.checkConnectionInterval);
     }
     canReconnect() {
-        if (this.reconnectAttempts === this.maxReconnectAttempts ||
-            this.visibilityState === enum_1.EVisibilityState.Hidden) {
-            return false;
-        }
-        return true;
+        return this.visibilityState !== enum_1.EVisibilityState.Hidden;
     }
     doReconnect() {
         if (this.canReconnect()) {
@@ -155,7 +145,6 @@ class Tunnel {
     }
     disconnect() {
         var _a;
-        this.reconnectAttempts = this.maxReconnectAttempts;
         (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.disconnect();
     }
     onDisconnect(callback) {
@@ -201,7 +190,7 @@ class Tunnel {
                 .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName)
                 .setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers)
                 .setCommand(ETransportCommand_1.ETransportCommand.AddAction);
-            const encodedBuffer = transport_1.NqlTransport.encode(commands);
+            const encodedBuffer = transport_1.NqlTransport.encode(commands, data);
             this.noLagClient.send(encodedBuffer);
             this.startHeartbeat();
         }
