@@ -28,6 +28,9 @@ export enum ETransportCommand {
   Server = 24,
   // payload command separator
   Payload = 29,
+  // set a custom data associated with this topic
+  // this data will be sent to all devices subscribed to this topic/identifiers
+  Presence = 14
 }
 
 export enum ETransportCommandSeparator {

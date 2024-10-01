@@ -296,8 +296,7 @@ export class Tunnel implements ITunnel {
       this.stopHeartbeat();
       const commands = transportCommands()
         .setCommand(ETransportCommand.Topic, topicName)
-        .setCommand(ETransportCommand.Identifier, identifiers)
-        .setCommand(ETransportCommand.AddAction);
+        .setCommand(ETransportCommand.Identifier, identifiers);
 
       const encodedBuffer = NqlTransport.encode(commands, data);
 
