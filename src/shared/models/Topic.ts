@@ -54,6 +54,7 @@ export class Topic implements ITopic {
   private readonly topicName: string;
   private onReceiveCallback: ((data: ITransport) => void) | undefined;
   private identifiers: string[] = [];
+  private presence: string | undefined;
   constructor(
     connection: NoLagClient,
     topicName: string,
@@ -116,6 +117,10 @@ export class Topic implements ITopic {
       commands.setCommand(ETransportCommand.Identifier, this.identifiers);
     }
 
+    if (this.presence) {
+      commands.setCommand(ETransportCommand.Presence, this.presence);
+    }
+
     commands.setCommand(ETransportCommand.AddAction);
 
     const transport = NqlTransport.encode(commands);
@@ -124,20 +129,9 @@ export class Topic implements ITopic {
   }
 
   public setPresence(presence: string): Topic {
-    const commands = transportCommands().setCommand(
-      ETransportCommand.Topic,
-      this.topicName,
-    );
+    this.presence = presence;
 
-    if (this.identifiers.length > 0) {
-      commands.setCommand(ETransportCommand.Identifier, this.identifiers);
-    }
-    commands.setCommand(ETransportCommand.Presence, presence)
-    commands.setCommand(ETransportCommand.AddAction);
-
-    const transport = NqlTransport.encode(commands);
-
-    this.send(transport);
+    this.subscribe();
     return this;
   }
 
