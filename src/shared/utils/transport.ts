@@ -100,7 +100,13 @@ export class NqlTransport {
       } else {
         tempGroup.push(item);
       }
-    })
+    });
+
+    // only if tempGroup still has data push it in
+    if(tempGroup.length > 0) {
+      groupedUint8Array.push(tempGroup);
+    }
+
 
     return groupedUint8Array.map(
       (uint8Array: number[]) => {
