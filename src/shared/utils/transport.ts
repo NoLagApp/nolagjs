@@ -90,20 +90,25 @@ export class NqlTransport {
   }
 
   static commandActionUint8ArrayToStringArray(commandActionArray: number[]) {
-    const groupedUint8Array = commandActionArray
-      .join(",")
-      .split(`,${ETransportCommandSeparator.ArraySeparator},`);
+    const groupedUint8Array:number[][]  = [];
+    let tempGroup: number[] = [];
 
-    const commandActionStringArray: string[] = groupedUint8Array.map(
-      (uint8ArrayAsString: string) => {
-        const groups = uint8ArrayAsString.split(",");
+    commandActionArray.forEach((item) => {
+      if(item === ETransportCommandSeparator.ArraySeparator) {
+        groupedUint8Array.push(tempGroup);
+        tempGroup = [];
+      } else {
+        tempGroup.push(item);
+      }
+    })
+
+    return groupedUint8Array.map(
+      (uint8Array: number[]) => {
         return this.commandActionUint8ArrayToString(
-          groups.map((i) => Number(i)),
+          uint8Array.map((i) => Number(i)),
         );
       },
     );
-
-    return commandActionStringArray;
   }
 
   static extractCommands(
