@@ -122,6 +122,7 @@ export class NoLagClient implements INoLagClient {
   disconnect() {
     if (this.wsInstance && this.wsInstance.close) {
       this.wsInstance.close();
+      this.wsInstance = null;
     }
   }
 
