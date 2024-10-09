@@ -39,13 +39,22 @@ export interface ITopic {
    * @param data
    */
   _onReceiveMessage(data: ITransport): ITopic;
+  /**
+   * Set presence data on this topic. Presence data could be anything that identifies this device.
+   * Updated list of shared data is shared with all devices subscribed to the same Topic and Identifiers when a devices
+   * connect and disconnects.
+   * @param presence
+   * @returns
+   */
+  setPresence(presence: string): Topic;
 }
 
 export class Topic implements ITopic {
   private connection: NoLagClient | undefined;
-  private topicName: string;
+  private readonly topicName: string;
   private onReceiveCallback: ((data: ITransport) => void) | undefined;
   private identifiers: string[] = [];
+  private presence: string | undefined;
   constructor(
     connection: NoLagClient,
     topicName: string,
@@ -54,7 +63,7 @@ export class Topic implements ITopic {
     this.setConnection(connection);
     this.topicName = topicName;
     this.saveIdentifiers(identifiers?.OR ?? []);
-    this.subscribe(identifiers?.OR ?? []);
+    this.subscribe();
   }
 
   private findSavedIdentifier(identifier: string) {
@@ -73,8 +82,8 @@ export class Topic implements ITopic {
     if (!Array.isArray(identifiers)) return;
 
     identifiers.map((identifier: string) => {
-      const findSavedIdentifier = this.findSavedIdentifier(identifier);
-      if (!findSavedIdentifier) {
+      const foundIdentifier = this.identifiers.find((s) => s === identifier);
+      if (!foundIdentifier) {
         this.identifiers.push(identifier);
       }
     });
@@ -83,9 +92,8 @@ export class Topic implements ITopic {
   private deleteSavedIdentifiers(identifiers: string[]): void {
     const identifierList: string[] = [];
     identifiers.map((identifier: string) => {
-      const findSavedIdentifier = this.findSavedIdentifier(identifier);
-      if (!findSavedIdentifier) {
-      } else {
+      const foundIdentifier = this.identifiers.find((s) => s === identifier);
+      if (foundIdentifier) {
         identifierList.push(identifier);
       }
     });
@@ -93,10 +101,10 @@ export class Topic implements ITopic {
     this.identifiers = identifierList;
   }
 
-  private subscribe(identifiers: string[]) {
+  private subscribe() {
     if (
-      (!this.topicName && identifiers?.length === 0) ||
-      !Array.isArray(identifiers)
+      (!this.topicName && this.identifiers?.length === 0) ||
+      !Array.isArray(this.identifiers)
     )
       return this;
 
@@ -105,8 +113,12 @@ export class Topic implements ITopic {
       this.topicName,
     );
 
-    if (identifiers.length > 0) {
-      commands.setCommand(ETransportCommand.Identifier, identifiers);
+    if (this.identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, this.identifiers);
+    }
+
+    if (this.presence) {
+      commands.setCommand(ETransportCommand.Presence, this.presence);
     }
 
     commands.setCommand(ETransportCommand.AddAction);
@@ -114,6 +126,13 @@ export class Topic implements ITopic {
     const transport = NqlTransport.encode(commands);
 
     this.send(transport);
+  }
+
+  public setPresence(presence: string): Topic {
+    this.presence = presence;
+
+    this.subscribe();
+    return this;
   }
 
   public setConnection(connection: NoLagClient): Topic {

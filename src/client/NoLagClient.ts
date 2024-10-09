@@ -122,6 +122,7 @@ export class NoLagClient implements INoLagClient {
   disconnect() {
     if (this.wsInstance && this.wsInstance.close) {
       this.wsInstance.close();
+      this.wsInstance = null;
     }
   }
 
@@ -280,6 +281,7 @@ export class NoLagClient implements INoLagClient {
 
     this.callbackOnReceive(undefined, {
       topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+      presences: decoded.getCommand(ETransportCommand.Presence) as string[],
       nqlIdentifiers: decoded.getCommand(
         ETransportCommand.Identifier,
       ) as string[],
