@@ -188,8 +188,7 @@ class Tunnel {
             this.stopHeartbeat();
             const commands = (0, TransportCommands_1.transportCommands)()
                 .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName)
-                .setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers)
-                .setCommand(ETransportCommand_1.ETransportCommand.AddAction);
+                .setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
             const encodedBuffer = transport_1.NqlTransport.encode(commands, data);
             this.noLagClient.send(encodedBuffer);
             this.startHeartbeat();

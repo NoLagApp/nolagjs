@@ -35,17 +35,27 @@ export interface ITopic {
      * @param data
      */
     _onReceiveMessage(data: ITransport): ITopic;
+    /**
+     * Set presence data on this topic. Presence data could be anything that identifies this device.
+     * Updated list of shared data is shared with all devices subscribed to the same Topic and Identifiers when a devices
+     * connect and disconnects.
+     * @param presence
+     * @returns
+     */
+    setPresence(presence: string): Topic;
 }
 export declare class Topic implements ITopic {
     private connection;
-    private topicName;
+    private readonly topicName;
     private onReceiveCallback;
     private identifiers;
+    private presence;
     constructor(connection: NoLagClient, topicName: string, identifiers: INqlIdentifiers);
     private findSavedIdentifier;
     private saveIdentifiers;
     private deleteSavedIdentifiers;
     private subscribe;
+    setPresence(presence: string): Topic;
     setConnection(connection: NoLagClient): Topic;
     _onReceiveMessage(data: ITransport): ITopic;
     onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;

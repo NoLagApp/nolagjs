@@ -27,6 +27,7 @@ export interface IConnectOptions {
  */
 export interface ITransport {
     data: ArrayBuffer;
+    presences: string[];
     nqlIdentifiers: string[];
     topicName: string;
 }
@@ -124,6 +125,24 @@ export interface ITopicQuery {
     size?: number;
     page?: number;
     search?: string;
+}
+/**
+ * Query parameters available for a Tunnel
+ */
+export interface ITunnelQuery {
+    status?: EStatus;
+    name?: string;
+    size?: number;
+    page?: number;
+    search?: string;
+}
+export interface ITunnelResponse {
+    tunnelId: string;
+    projectId: string;
+    status: EStatus;
+    name: string;
+    secure: boolean;
+    sandbox: boolean;
 }
 /**
  * Error model received from Message Broker or API

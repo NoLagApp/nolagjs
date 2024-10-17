@@ -141,6 +141,26 @@ export interface ITopicQuery {
 }
 
 /**
+ * Query parameters available for a Tunnel
+ */
+export interface ITunnelQuery {
+  status?: EStatus;
+  name?: string;
+  size?: number;
+  page?: number;
+  search?: string;
+}
+
+export interface ITunnelResponse {
+  tunnelId: string;
+  projectId: string;
+  status: EStatus;
+  name: string;
+  secure: boolean;
+  sandbox: boolean;
+}
+
+/**
  * Error model received from Message Broker or API
  */
 export interface IErrorMessage {

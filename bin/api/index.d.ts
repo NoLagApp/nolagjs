@@ -1,7 +1,8 @@
-import { IConnectOptions } from "../shared/interfaces";
+import { IConnectOptions, IPaginated, ITunnelQuery, ITunnelResponse } from "../shared/interfaces";
 import { ITunnelApi } from "./controllers/tunnels/TunnelApi";
 export interface IApiTunnel {
-    tunnels(tunnelId: string): ITunnelApi;
+    tunnels(tunnelQuery: ITunnelQuery): Promise<IPaginated<ITunnelResponse>>;
+    tunnel(tunnelId: string): ITunnelApi;
 }
 export declare class ApiTunnel {
     private apiKey;
@@ -9,6 +10,8 @@ export declare class ApiTunnel {
     private request;
     constructor(apiKey: string, connectOptions?: IConnectOptions);
     private createRequestInstance;
-    tunnels(tunnelId: string): ITunnelApi;
+    tunnels(): Promise<IPaginated<ITunnelResponse>>;
+    tunnel(tunnelId: string): ITunnelApi;
 }
 export declare const Api: (apiKey: string, connectOptions?: IConnectOptions) => IApiTunnel;
+export default Api;

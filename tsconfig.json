@@ -25,6 +25,6 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "declaration": true
   },
-  "include": ["src"], // which files to compile
-  "exclude": ["./node_modules/*", "**/__tests__/*"] // which files to skip
+  "include": ["src/**/*"], // which files to compile
+  "exclude": ["./node_modules/*", "**/__tests__/*", "bin"] // which files to skip
 }

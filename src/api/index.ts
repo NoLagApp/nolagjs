@@ -1,11 +1,18 @@
 import axios, { AxiosInstance } from "axios";
 import { CONSTANT } from "../shared/constants";
-import { IConnectOptions } from "../shared/interfaces";
+import {
+  IConnectOptions,
+  IPaginated,
+  ITunnelQuery,
+  ITunnelResponse,
+} from "../shared/interfaces";
 import { ITunnelApi, TunnelApi } from "./controllers/tunnels/TunnelApi";
 
 export interface IApiTunnel {
-  tunnels(tunnelId: string): ITunnelApi;
+  tunnels(tunnelQuery: ITunnelQuery): Promise<IPaginated<ITunnelResponse>>;
+  tunnel(tunnelId: string): ITunnelApi;
 }
+
 export class ApiTunnel {
   private apiKey: string;
   public connectOptions: IConnectOptions;
@@ -31,7 +38,11 @@ export class ApiTunnel {
     });
   }
 
-  tunnels(tunnelId: string): ITunnelApi {
+  tunnels(): Promise<IPaginated<ITunnelResponse>> {
+    return this.request.get("/tunnels");
+  }
+
+  tunnel(tunnelId: string): ITunnelApi {
     return new TunnelApi(this, tunnelId, this.request);
   }
 }

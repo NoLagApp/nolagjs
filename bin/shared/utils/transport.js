@@ -55,14 +55,24 @@ class NqlTransport {
         return commandActionArray.map((item) => String.fromCharCode(item)).join("");
     }
     static commandActionUint8ArrayToStringArray(commandActionArray) {
-        const groupedUint8Array = commandActionArray
-            .join(",")
-            .split(`,${ETransportCommand_1.ETransportCommandSeparator.ArraySeparator},`);
-        const commandActionStringArray = groupedUint8Array.map((uint8ArrayAsString) => {
-            const groups = uint8ArrayAsString.split(",");
-            return this.commandActionUint8ArrayToString(groups.map((i) => Number(i)));
+        const groupedUint8Array = [];
+        let tempGroup = [];
+        commandActionArray.forEach((item) => {
+            if (item === ETransportCommand_1.ETransportCommandSeparator.ArraySeparator) {
+                groupedUint8Array.push(tempGroup);
+                tempGroup = [];
+            }
+            else {
+                tempGroup.push(item);
+            }
         });
-        return commandActionStringArray;
+        // only if tempGroup still has data push it in
+        if (tempGroup.length > 0) {
+            groupedUint8Array.push(tempGroup);
+        }
+        return groupedUint8Array.map((uint8Array) => {
+            return this.commandActionUint8ArrayToString(uint8Array.map((i) => Number(i)));
+        });
     }
     static extractCommands(commands) {
         const commandByteGroup = {};

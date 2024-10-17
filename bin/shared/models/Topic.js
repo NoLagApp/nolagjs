@@ -6,12 +6,12 @@ const TransportCommands_1 = require("../utils/TransportCommands");
 const transport_1 = require("../utils/transport");
 class Topic {
     constructor(connection, topicName, identifiers) {
-        var _a, _b;
+        var _a;
         this.identifiers = [];
         this.setConnection(connection);
         this.topicName = topicName;
         this.saveIdentifiers((_a = identifiers === null || identifiers === void 0 ? void 0 : identifiers.OR) !== null && _a !== void 0 ? _a : []);
-        this.subscribe((_b = identifiers === null || identifiers === void 0 ? void 0 : identifiers.OR) !== null && _b !== void 0 ? _b : []);
+        this.subscribe();
     }
     findSavedIdentifier(identifier) {
         var _a, _b;
@@ -30,8 +30,8 @@ class Topic {
         if (!Array.isArray(identifiers))
             return;
         identifiers.map((identifier) => {
-            const findSavedIdentifier = this.findSavedIdentifier(identifier);
-            if (!findSavedIdentifier) {
+            const foundIdentifier = this.identifiers.find((s) => s === identifier);
+            if (!foundIdentifier) {
                 this.identifiers.push(identifier);
             }
         });
@@ -39,26 +39,33 @@ class Topic {
     deleteSavedIdentifiers(identifiers) {
         const identifierList = [];
         identifiers.map((identifier) => {
-            const findSavedIdentifier = this.findSavedIdentifier(identifier);
-            if (!findSavedIdentifier) {
-            }
-            else {
+            const foundIdentifier = this.identifiers.find((s) => s === identifier);
+            if (foundIdentifier) {
                 identifierList.push(identifier);
             }
         });
         this.identifiers = identifierList;
     }
-    subscribe(identifiers) {
-        if ((!this.topicName && (identifiers === null || identifiers === void 0 ? void 0 : identifiers.length) === 0) ||
-            !Array.isArray(identifiers))
+    subscribe() {
+        var _a;
+        if ((!this.topicName && ((_a = this.identifiers) === null || _a === void 0 ? void 0 : _a.length) === 0) ||
+            !Array.isArray(this.identifiers))
             return this;
         const commands = (0, TransportCommands_1.transportCommands)().setCommand(ETransportCommand_1.ETransportCommand.Topic, this.topicName);
-        if (identifiers.length > 0) {
-            commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
+        if (this.identifiers.length > 0) {
+            commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, this.identifiers);
+        }
+        if (this.presence) {
+            commands.setCommand(ETransportCommand_1.ETransportCommand.Presence, this.presence);
         }
         commands.setCommand(ETransportCommand_1.ETransportCommand.AddAction);
         const transport = transport_1.NqlTransport.encode(commands);
         this.send(transport);
+    }
+    setPresence(presence) {
+        this.presence = presence;
+        this.subscribe();
+        return this;
     }
     setConnection(connection) {
         this.connection = connection;

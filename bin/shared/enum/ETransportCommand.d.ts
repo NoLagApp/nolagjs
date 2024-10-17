@@ -15,7 +15,8 @@ export declare enum ETransportCommand {
     AddAction = 12,
     DeleteAction = 16,
     Server = 24,
-    Payload = 29
+    Payload = 29,
+    Presence = 14
 }
 export declare enum ETransportCommandSeparator {
     ArraySeparator = 31

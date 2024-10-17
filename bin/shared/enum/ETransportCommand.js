@@ -32,6 +32,9 @@ var ETransportCommand;
     ETransportCommand[ETransportCommand["Server"] = 24] = "Server";
     // payload command separator
     ETransportCommand[ETransportCommand["Payload"] = 29] = "Payload";
+    // set a custom data associated with this topic
+    // this data will be sent to all devices subscribed to this topic/identifiers
+    ETransportCommand[ETransportCommand["Presence"] = 14] = "Presence";
 })(ETransportCommand = exports.ETransportCommand || (exports.ETransportCommand = {}));
 var ETransportCommandSeparator;
 (function (ETransportCommandSeparator) {
