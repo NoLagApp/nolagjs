@@ -20,8 +20,11 @@ class ApiTunnel {
             headers: { "X-API-Key": this.apiKey, "Content-Type": "application/json" },
         });
     }
-    tunnels() {
+    tunnels(tunnelQuery) {
         return this.request.get("/tunnels");
+        return this.request.get("/tunnels", {
+            params: tunnelQuery,
+        });
     }
     tunnel(tunnelId) {
         return new TunnelApi_1.TunnelApi(this, tunnelId, this.request);
@@ -32,5 +35,4 @@ const Api = (apiKey, connectOptions) => {
     return new ApiTunnel(apiKey, connectOptions);
 };
 exports.Api = Api;
-exports.default = exports.Api;
 //# sourceMappingURL=index.js.map

@@ -9,7 +9,7 @@ import {
 import { ITunnelApi, TunnelApi } from "./controllers/tunnels/TunnelApi";
 
 export interface IApiTunnel {
-  tunnels(tunnelQuery: ITunnelQuery): Promise<IPaginated<ITunnelResponse>>;
+  tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelResponse>>;
   tunnel(tunnelId: string): ITunnelApi;
 }
 
@@ -38,8 +38,11 @@ export class ApiTunnel {
     });
   }
 
-  tunnels(): Promise<IPaginated<ITunnelResponse>> {
+  tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelResponse>> {
     return this.request.get("/tunnels");
+    return this.request.get("/tunnels",{
+      params: tunnelQuery,
+    });
   }
 
   tunnel(tunnelId: string): ITunnelApi {

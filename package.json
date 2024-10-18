@@ -1,6 +1,6 @@
 {
   "name": "nolagjs",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "type": "commonjs",
   "engines": {
     "node": ">=8.0.0",
@@ -15,8 +15,8 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
-    "build": "npx tsc",
-    "build:watch": "npx tsc --watch",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
     "test": "jest"
   },
   "repository": {

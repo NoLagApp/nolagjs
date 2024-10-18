@@ -14,12 +14,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./api"), exports);
+__exportStar(require("./api/index"), exports);
 __exportStar(require("./api/controllers/tunnels/TunnelApi"), exports);
 __exportStar(require("./api/controllers/tunnels/TunnelDevice"), exports);
 __exportStar(require("./api/controllers/tunnels/TunnelPublish"), exports);
 __exportStar(require("./api/controllers/tunnels/TunnelTopic"), exports);
-__exportStar(require("./client"), exports);
+__exportStar(require("./client/index"), exports);
 __exportStar(require("./shared/constants"), exports);
 __exportStar(require("./shared/enum"), exports);
 __exportStar(require("./shared/interfaces"), exports);
