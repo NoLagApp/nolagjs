@@ -20,11 +20,11 @@ class ApiTunnel {
             headers: { "X-API-Key": this.apiKey, "Content-Type": "application/json" },
         });
     }
-    tunnels(tunnelQuery) {
-        return this.request.get("/tunnels");
-        return this.request.get("/tunnels", {
+    async tunnels(tunnelQuery) {
+        const response = await this.request.get("/tunnels", {
             params: tunnelQuery,
         });
+        return Object.assign({}, response.data);
     }
     tunnel(tunnelId) {
         return new TunnelApi_1.TunnelApi(this, tunnelId, this.request);

@@ -151,7 +151,7 @@ export interface ITunnelQuery {
   search?: string;
 }
 
-export interface ITunnelResponse {
+export interface ITunnelModel {
   tunnelId: string;
   projectId: string;
   status: EStatus;

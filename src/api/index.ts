@@ -4,12 +4,12 @@ import {
   IConnectOptions,
   IPaginated,
   ITunnelQuery,
-  ITunnelResponse,
+  ITunnelModel,
 } from "../shared/interfaces";
 import { ITunnelApi, TunnelApi } from "./controllers/tunnels/TunnelApi";
 
 export interface IApiTunnel {
-  tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelResponse>>;
+  tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>>;
   tunnel(tunnelId: string): ITunnelApi;
 }
 
@@ -38,11 +38,14 @@ export class ApiTunnel {
     });
   }
 
-  tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelResponse>> {
-    return this.request.get("/tunnels");
-    return this.request.get("/tunnels",{
+  async tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>> {
+    const response = await this.request.get("/tunnels",{
       params: tunnelQuery,
     });
+
+    return {
+      ...response.data
+    }
   }
 
   tunnel(tunnelId: string): ITunnelApi {
