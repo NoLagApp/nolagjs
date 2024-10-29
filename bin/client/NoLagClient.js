@@ -238,7 +238,7 @@ class NoLagClient {
         this.callbackOnReceive(undefined, {
             topicName: decoded.getCommand(ETransportCommand_1.ETransportCommand.Topic),
             presences: decoded.getCommand(ETransportCommand_1.ETransportCommand.Presence),
-            nqlIdentifiers: decoded.getCommand(ETransportCommand_1.ETransportCommand.Identifier),
+            identifiers: decoded.getCommand(ETransportCommand_1.ETransportCommand.Identifier),
             data: decoded.payload,
         });
     }

@@ -32,7 +32,7 @@ export interface IConnectOptions {
 export interface ITransport {
   data: ArrayBuffer;
   presences: string[];
-  nqlIdentifiers: string[];
+  identifiers: string[];
   topicName: string;
 }
 

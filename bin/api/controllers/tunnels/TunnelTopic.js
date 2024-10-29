@@ -25,7 +25,7 @@ class TunnelTopic {
         return response.data;
     }
     async listTopics(query) {
-        const queryString = (0, generateQueryString_1.generateQueryString)(query);
+        const queryString = query ? (0, generateQueryString_1.generateQueryString)(query) : "";
         const response = await this.request.request({
             url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
             method: "get",

@@ -28,7 +28,7 @@ export interface IConnectOptions {
 export interface ITransport {
     data: ArrayBuffer;
     presences: string[];
-    nqlIdentifiers: string[];
+    identifiers: string[];
     topicName: string;
 }
 /**
@@ -95,9 +95,6 @@ export interface IHttpPublish {
  * Topic properties used to creating or updating a model
  */
 export interface ITopicModel {
-    topicId?: string;
-    projectId?: string;
-    tunnelId?: string;
     status?: EStatus;
     name?: string;
     triggerApi?: ITopicApiModel;
@@ -117,9 +114,6 @@ export interface ITopicApiModel {
  * Query parameters available for a Topic
  */
 export interface ITopicQuery {
-    topicId?: string;
-    projectId?: string;
-    tunnelId?: string;
     status?: EStatus;
     name?: string;
     size?: number;
@@ -136,7 +130,7 @@ export interface ITunnelQuery {
     page?: number;
     search?: string;
 }
-export interface ITunnelResponse {
+export interface ITunnelModel {
     tunnelId: string;
     projectId: string;
     status: EStatus;

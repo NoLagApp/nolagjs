@@ -167,10 +167,10 @@ export class Tunnel implements ITunnel {
   private onReceiveMessage() {
     if (this.noLagClient) {
       this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
-        const { topicName, nqlIdentifiers } = data;
+        const { topicName, identifiers } = data;
         if (this.noLagClient && !this.topics[topicName]) {
           this.topics[topicName] = new Topic(this.noLagClient, topicName, {
-            OR: nqlIdentifiers,
+            OR: identifiers,
           });
         }
         if (topicName && this.topics[topicName]) {

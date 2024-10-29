@@ -82,10 +82,10 @@ class Tunnel {
         if (this.noLagClient) {
             (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.onReceiveMessage((err, data) => {
                 var _a;
-                const { topicName, nqlIdentifiers } = data;
+                const { topicName, identifiers } = data;
                 if (this.noLagClient && !this.topics[topicName]) {
                     this.topics[topicName] = new Topic_1.Topic(this.noLagClient, topicName, {
-                        OR: nqlIdentifiers,
+                        OR: identifiers,
                     });
                 }
                 if (topicName && this.topics[topicName]) {

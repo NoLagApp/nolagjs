@@ -282,7 +282,7 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnReceive(undefined, {
       topicName: decoded.getCommand(ETransportCommand.Topic) as string,
       presences: decoded.getCommand(ETransportCommand.Presence) as string[],
-      nqlIdentifiers: decoded.getCommand(
+      identifiers: decoded.getCommand(
         ETransportCommand.Identifier,
       ) as string[],
       data: decoded.payload,
