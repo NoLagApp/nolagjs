@@ -48,7 +48,7 @@ const payloadArrayBuffer: ArrayBuffer = stringToArrayBuffer(rideShareDriverPaylo
 // identifiers
 const identifiers: string[] = ["booking_id_1234"];
 
-nolagInstance.publish(payloadArrayBuffer, identifiers);
+nolagInstance.publish("rideShareDriver", payloadArrayBuffer, identifiers);
 ```
 
 #### Receive data on Topic name
