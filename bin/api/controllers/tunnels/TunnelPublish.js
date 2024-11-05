@@ -13,7 +13,10 @@ const TunnelPublish = async (data, topicName, identifiers, tunnelId, parentRoute
     const encodedBuffer = transport_1.NqlTransport.encode(commands, data);
     await request.request({
         baseURL: `${connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.protocol}://${connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.wsHost}`,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.apiKey
+        },
         url: `/${parentRouteNamespace}/${tunnelId}/${routeNamespace}`,
         method: "post",
         data: encodedBuffer,

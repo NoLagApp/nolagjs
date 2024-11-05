@@ -24,6 +24,7 @@ export class ApiTunnel {
       url: CONSTANT.DefaultApiUrl,
       wsUrl: CONSTANT.DefaultWsUrl,
       wsHost: CONSTANT.DefaultWsHost,
+      apiKey: apiKey,
       ...connectOptions,
     };
 

@@ -21,6 +21,7 @@ export interface IConnectOptions {
     devMode?: boolean;
     checkConnectionInterval?: number;
     checkConnectionTimeout?: number;
+    apiKey?: string;
 }
 /**
  * Response received from Message Broker

@@ -1,4 +1,4 @@
-import { AxiosInstance } from "axios";
+import { AxiosInstance, AxiosStatic } from "axios";
 import { TData } from "../../../shared/constants";
 import { ETransportCommand } from "../../../shared/enum/ETransportCommand";
 import { IConnectOptions } from "../../../shared/interfaces";
@@ -8,7 +8,7 @@ import { NqlTransport } from "../../../shared/utils/transport";
 const routeNamespace = "publish";
 
 export const TunnelPublish = async (
-  data: TData,
+  data: ArrayBuffer,
   topicName: string,
   identifiers: string[],
   tunnelId: string,
@@ -25,7 +25,10 @@ export const TunnelPublish = async (
 
   await request.request({
     baseURL: `${connectOptions?.protocol}://${connectOptions?.wsHost}`,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": connectOptions?.apiKey
+    },
     url: `/${parentRouteNamespace}/${tunnelId}/${routeNamespace}`,
     method: "post",
     data: encodedBuffer,
