@@ -18,8 +18,8 @@ class TunnelApi {
         return new TunnelDevice_1.TunnelDevice(this.routeNamespace, this.tunnelId, this.request);
     }
     async publish(httpPublish) {
-        const { data, tunnelName, identifiers } = httpPublish;
-        return (0, TunnelPublish_1.TunnelPublish)(data, tunnelName, identifiers, this.tunnelId, this.routeNamespace, this.request, this.apiTunnel.connectOptions);
+        const { data, topicName, identifiers } = httpPublish;
+        return (0, TunnelPublish_1.TunnelPublish)(data, topicName, identifiers, this.tunnelId, this.routeNamespace, this.request, this.apiTunnel.connectOptions);
     }
 }
 exports.TunnelApi = TunnelApi;

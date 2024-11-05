@@ -18,20 +18,20 @@ import { NoLagClient } from "./NoLagClient";
 export interface ITunnel {
   /**
    * Retrieve instanciated topic
-   * @param string topicName - Topic name regisrered in NoLag Portal
+   * @param topicName Topic name regisrered in NoLag Portal
    * @return Topic | undefined
    */
   getTopic(topicName: string): ITopic | undefined;
   /**
    * Delete instanciated topic
-   * @param string topicName - Topic name regisrered in NoLag Portal
+   * @param topicName Topic name regisrered in NoLag Portal
    * @return boolean
    */
   unsubscribe(topicName: string): boolean;
   /**
    * Set a new topic that is attached to tunnel
-   * @param string topicName - Topic name regisrered in NoLag Portal
-   * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+   * @param topicName Topic name regisrered in NoLag Portal
+   * @param identifiers Set if reverse query identifiers which the topic will listen two
    */
   subscribe(
     topicName: string,
@@ -39,9 +39,9 @@ export interface ITunnel {
   ): ITopic | undefined;
   /**
    * Publish data before setting a Topic
-   * @param string topicName - Topic name regisrered in NoLag Portal
-   * @param ArrayBuffer data - Data to send to the Topic
-   * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+   * @param topicName string - Topic name regisrered in NoLag Portal
+   * @param data ArrayBuffer - Data to send to the Topic
+   * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
    */
   publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
   onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
@@ -235,6 +235,7 @@ export class Tunnel implements ITunnel {
   }
 
   public disconnect(): void {
+    this.visibilityState = EVisibilityState.Hidden;
     this.noLagClient?.disconnect();
   }
 
@@ -263,6 +264,7 @@ export class Tunnel implements ITunnel {
   public unsubscribe(topicName: string): boolean {
     if (this.topics[topicName]) {
       this.topics[topicName]?.unsubscribe();
+      delete this.topics[topicName];
       return true;
     }
     return false;
@@ -295,8 +297,10 @@ export class Tunnel implements ITunnel {
     if (this.noLagClient && this.noLagClient.send) {
       this.stopHeartbeat();
       const commands = transportCommands()
-        .setCommand(ETransportCommand.Topic, topicName)
-        .setCommand(ETransportCommand.Identifier, identifiers);
+        .setCommand(ETransportCommand.Topic, topicName);
+
+      if(identifiers?.length > 0)
+        commands.setCommand(ETransportCommand.Identifier, identifiers);
 
       const encodedBuffer = NqlTransport.encode(commands, data);
 

@@ -145,6 +145,7 @@ class Tunnel {
     }
     disconnect() {
         var _a;
+        this.visibilityState = enum_1.EVisibilityState.Hidden;
         (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.disconnect();
     }
     onDisconnect(callback) {
@@ -168,6 +169,7 @@ class Tunnel {
         var _a;
         if (this.topics[topicName]) {
             (_a = this.topics[topicName]) === null || _a === void 0 ? void 0 : _a.unsubscribe();
+            delete this.topics[topicName];
             return true;
         }
         return false;
@@ -187,8 +189,9 @@ class Tunnel {
         if (this.noLagClient && this.noLagClient.send) {
             this.stopHeartbeat();
             const commands = (0, TransportCommands_1.transportCommands)()
-                .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName)
-                .setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
+                .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName);
+            if ((identifiers === null || identifiers === void 0 ? void 0 : identifiers.length) > 0)
+                commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
             const encodedBuffer = transport_1.NqlTransport.encode(commands, data);
             this.noLagClient.send(encodedBuffer);
             this.startHeartbeat();

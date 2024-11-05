@@ -98,7 +98,7 @@ export interface IStaticTopic {
  */
 export interface IHttpPublish {
   data: TData;
-  tunnelName: string;
+  topicName: string;
   identifiers: string[];
 }
 
@@ -139,7 +139,6 @@ export interface ITopicQuery {
  */
 export interface ITunnelQuery {
   status?: EStatus;
-  name?: string;
   size?: number;
   page?: number;
   search?: string;

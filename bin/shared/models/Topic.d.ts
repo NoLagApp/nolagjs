@@ -1,5 +1,4 @@
 import { NoLagClient } from "../../client/NoLagClient";
-import { TData } from "../constants";
 import { INqlIdentifiers, ITransport } from "../interfaces";
 export interface ITopic {
     /**
@@ -25,11 +24,11 @@ export interface ITopic {
     onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
     /**
      * Publish topic data with optional attached identifiers
-     * @param ArrayBuffer data - Data being sent is an ArrayBuffer
-     * @param string[] identifiers - List of identifiers used to send targeted messages
+     * @param data Data being sent is an ArrayBuffer
+     * @param identifiers List of identifiers used to send targeted messages
      * @returns
      */
-    publish(data: TData, identifiers: string[]): Topic;
+    publish(data: ArrayBuffer, identifiers: string[]): Topic;
     /**
      * PRIVATE Inject messages into the Topic instance
      * @param data

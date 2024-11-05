@@ -4,27 +4,27 @@ import { ITopic } from "../shared/models/Topic";
 export interface ITunnel {
     /**
      * Retrieve instanciated topic
-     * @param string topicName - Topic name regisrered in NoLag Portal
+     * @param topicName Topic name regisrered in NoLag Portal
      * @return Topic | undefined
      */
     getTopic(topicName: string): ITopic | undefined;
     /**
      * Delete instanciated topic
-     * @param string topicName - Topic name regisrered in NoLag Portal
+     * @param topicName Topic name regisrered in NoLag Portal
      * @return boolean
      */
     unsubscribe(topicName: string): boolean;
     /**
      * Set a new topic that is attached to tunnel
-     * @param string topicName - Topic name regisrered in NoLag Portal
-     * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+     * @param topicName Topic name regisrered in NoLag Portal
+     * @param identifiers Set if reverse query identifiers which the topic will listen two
      */
     subscribe(topicName: string, identifiers?: INqlIdentifiers): ITopic | undefined;
     /**
      * Publish data before setting a Topic
-     * @param string topicName - Topic name regisrered in NoLag Portal
-     * @param ArrayBuffer data - Data to send to the Topic
-     * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+     * @param topicName string - Topic name regisrered in NoLag Portal
+     * @param data ArrayBuffer - Data to send to the Topic
+     * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
      */
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
     onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;

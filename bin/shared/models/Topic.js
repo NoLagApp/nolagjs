@@ -123,6 +123,7 @@ class Topic {
             commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
         }
         const transport = transport_1.NqlTransport.encode(commands, data);
+        console.log(transport);
         this.send(transport);
         return this;
     }
