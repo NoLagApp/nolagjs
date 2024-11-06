@@ -21,7 +21,7 @@ export interface ITunnelTopic {
    * List all Tunnel Topics
    * @param query
    */
-  listTopics(query: ITopicQuery): Promise<IPaginated<ITopicModel>>;
+  listTopics(query?: ITopicQuery): Promise<IPaginated<ITopicModel>>;
   /**
    * Update a Tunnel Topic
    * @param topicId
@@ -69,8 +69,8 @@ export class TunnelTopic implements ITunnelTopic {
     return response.data;
   }
 
-  async listTopics(query: ITopicQuery): Promise<IPaginated<ITopicModel>> {
-    const queryString = generateQueryString(query);
+  async listTopics(query?: ITopicQuery): Promise<IPaginated<ITopicModel>> {
+    const queryString = query ? generateQueryString(query) : "";
     const response = await this.request.request({
       url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
       method: "get",

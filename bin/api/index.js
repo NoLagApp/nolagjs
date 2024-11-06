@@ -9,7 +9,7 @@ const constants_1 = require("../shared/constants");
 const TunnelApi_1 = require("./controllers/tunnels/TunnelApi");
 class ApiTunnel {
     constructor(apiKey, connectOptions) {
-        this.connectOptions = Object.assign({ host: constants_1.CONSTANT.DefaultApiHost, protocol: constants_1.CONSTANT.DefaultHttpProtocol, url: constants_1.CONSTANT.DefaultApiUrl, wsUrl: constants_1.CONSTANT.DefaultWsUrl, wsHost: constants_1.CONSTANT.DefaultWsHost }, connectOptions);
+        this.connectOptions = Object.assign({ host: constants_1.CONSTANT.DefaultApiHost, protocol: constants_1.CONSTANT.DefaultHttpProtocol, url: constants_1.CONSTANT.DefaultApiUrl, wsUrl: constants_1.CONSTANT.DefaultWsUrl, wsHost: constants_1.CONSTANT.DefaultWsHost, apiKey: apiKey }, connectOptions);
         this.apiKey = apiKey;
         this.request = this.createRequestInstance();
     }
@@ -20,7 +20,13 @@ class ApiTunnel {
             headers: { "X-API-Key": this.apiKey, "Content-Type": "application/json" },
         });
     }
-    tunnels(tunnelId) {
+    async tunnels(tunnelQuery) {
+        const response = await this.request.get("/tunnels", {
+            params: tunnelQuery,
+        });
+        return Object.assign({}, response.data);
+    }
+    tunnel(tunnelId) {
         return new TunnelApi_1.TunnelApi(this, tunnelId, this.request);
     }
 }

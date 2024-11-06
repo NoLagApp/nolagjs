@@ -8,8 +8,9 @@ export const stringToArrayBuffer = (str: string): ArrayBuffer => {
   return buf;
 };
 
-export const uint8ArrayToString = (data: Uint8Array): string => {
-  return data.reduce((accumulator, index) => {
+export const uint8ArrayToString = (buffer: ArrayBuffer): string => {
+  const view = new Uint8Array(buffer);
+  return view.reduce((accumulator, index) => {
     return accumulator + String.fromCharCode(index);
   }, "");
 };

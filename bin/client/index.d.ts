@@ -1,34 +1,33 @@
-import { IConnectOptions, IErrorMessage, INqlIdentifiers, IResponse, ITunnelOptions } from "../shared/interfaces";
 import { FConnection } from "../shared/constants";
-import { ITopic } from "./topic";
-export * from "../shared/utils/Encodings";
+import { IConnectOptions, IErrorMessage, INqlIdentifiers, ITransport, ITunnelOptions } from "../shared/interfaces";
+import { ITopic } from "../shared/models/Topic";
 export interface ITunnel {
     /**
      * Retrieve instanciated topic
-     * @param string topicName - Topic name regisrered in NoLag Portal
+     * @param topicName Topic name regisrered in NoLag Portal
      * @return Topic | undefined
      */
     getTopic(topicName: string): ITopic | undefined;
     /**
      * Delete instanciated topic
-     * @param string topicName - Topic name regisrered in NoLag Portal
+     * @param topicName Topic name regisrered in NoLag Portal
      * @return boolean
      */
     unsubscribe(topicName: string): boolean;
     /**
      * Set a new topic that is attached to tunnel
-     * @param string topicName - Topic name regisrered in NoLag Portal
-     * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+     * @param topicName Topic name regisrered in NoLag Portal
+     * @param identifiers Set if reverse query identifiers which the topic will listen two
      */
     subscribe(topicName: string, identifiers?: INqlIdentifiers): ITopic | undefined;
     /**
      * Publish data before setting a Topic
-     * @param string topicName - Topic name regisrered in NoLag Portal
-     * @param ArrayBuffer data - Data to send to the Topic
-     * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+     * @param topicName string - Topic name regisrered in NoLag Portal
+     * @param data ArrayBuffer - Data to send to the Topic
+     * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
      */
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
-    onReceive(callbackFn: ((data: IResponse) => void) | undefined): void;
+    onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
     /**
      * Disconnect from NoLag
      */
@@ -42,7 +41,7 @@ export interface ITunnel {
      * Triggered when there is a reconnect attempt
      * @param callbackFn
      */
-    onReconnect(callbackFn: ((data: IResponse) => void) | undefined): void;
+    onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
     /**
      * Triggered when any errors are sent from the Message Broker
      * @param callbackFn
@@ -62,8 +61,6 @@ export declare class Tunnel implements ITunnel {
     private heartbeatTimer;
     private defaultCheckConnectionInterval;
     private checkConnectionInterval;
-    private reconnectAttempts;
-    private maxReconnectAttempts;
     private heartBeatInterval;
     private visibilityState;
     private callbackOnReceive;
@@ -74,9 +71,7 @@ export declare class Tunnel implements ITunnel {
     get deviceTokenId(): string | null | undefined;
     private startHeartbeat;
     private stopHeartbeat;
-    private reSubscribe;
-    initiate(): Promise<this>;
-    private resetConnectAttempts;
+    initiate(reconnect?: boolean): Promise<this>;
     private onVisibilityChange;
     private onReceiveMessage;
     private reconnect;
@@ -84,7 +79,7 @@ export declare class Tunnel implements ITunnel {
     private doReconnect;
     private onClose;
     private onError;
-    onReceive(callback: (data: IResponse) => void): void;
+    onReceive(callback: (data: ITransport) => void): void;
     disconnect(): void;
     onDisconnect(callback: FConnection): void;
     onReconnect(callback: FConnection): void;
@@ -93,6 +88,6 @@ export declare class Tunnel implements ITunnel {
     unsubscribe(topicName: string): boolean;
     subscribe(topicName: string, identifiers?: INqlIdentifiers): ITopic | undefined;
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
-    get status(): string | null;
+    get status(): import("../shared/enum").EConnectionStatus | null;
 }
 export declare const WebSocketClient: (authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions) => Promise<ITunnel>;

@@ -21,13 +21,15 @@ export interface IConnectOptions {
     devMode?: boolean;
     checkConnectionInterval?: number;
     checkConnectionTimeout?: number;
+    apiKey?: string;
 }
 /**
  * Response received from Message Broker
  */
-export interface IResponse {
-    data: Uint8Array;
-    nqlIdentifiers: string[];
+export interface ITransport {
+    data: ArrayBuffer;
+    presences: string[];
+    identifiers: string[];
     topicName: string;
 }
 /**
@@ -87,16 +89,13 @@ export interface IStaticTopic {
  */
 export interface IHttpPublish {
     data: TData;
-    tunnelName: string;
+    topicName: string;
     identifiers: string[];
 }
 /**
  * Topic properties used to creating or updating a model
  */
 export interface ITopicModel {
-    topicId?: string;
-    projectId?: string;
-    tunnelId?: string;
     status?: EStatus;
     name?: string;
     triggerApi?: ITopicApiModel;
@@ -116,14 +115,28 @@ export interface ITopicApiModel {
  * Query parameters available for a Topic
  */
 export interface ITopicQuery {
-    topicId?: string;
-    projectId?: string;
-    tunnelId?: string;
     status?: EStatus;
     name?: string;
     size?: number;
     page?: number;
     search?: string;
+}
+/**
+ * Query parameters available for a Tunnel
+ */
+export interface ITunnelQuery {
+    status?: EStatus;
+    size?: number;
+    page?: number;
+    search?: string;
+}
+export interface ITunnelModel {
+    tunnelId: string;
+    projectId: string;
+    status: EStatus;
+    name: string;
+    secure: boolean;
+    sandbox: boolean;
 }
 /**
  * Error model received from Message Broker or API

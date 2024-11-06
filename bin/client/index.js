@@ -1,25 +1,12 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebSocketClient = exports.Tunnel = void 0;
-const topic_1 = require("./topic");
-const NoLagClient_1 = require("./NoLagClient");
+const Topic_1 = require("../shared/models/Topic");
 const enum_1 = require("../shared/enum");
+const ETransportCommand_1 = require("../shared/enum/ETransportCommand");
+const TransportCommands_1 = require("../shared/utils/TransportCommands");
 const transport_1 = require("../shared/utils/transport");
-__exportStar(require("../shared/utils/Encodings"), exports);
+const NoLagClient_1 = require("./NoLagClient");
 /**
  * To get access NoLag message broker you need access to a Tunnel
  * This class initiates a Tunnel connection and gives you the ability to subscribe to a
@@ -31,8 +18,6 @@ class Tunnel {
         // topics
         this.topics = {};
         this.defaultCheckConnectionInterval = 10000;
-        this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
         this.heartBeatInterval = 20000;
         this.visibilityState = enum_1.EVisibilityState.Visible;
         this.callbackOnDisconnect = () => { };
@@ -42,6 +27,7 @@ class Tunnel {
             (_a = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionInterval) !== null && _a !== void 0 ? _a : this.defaultCheckConnectionInterval;
         this.connectOptions = connectOptions !== null && connectOptions !== void 0 ? connectOptions : undefined;
         this.authToken = authToken;
+        // initiate NoLag client connection
         this.noLagClient = new NoLagClient_1.NoLagClient(this.authToken, this.connectOptions);
         this.onClose();
         this.onError();
@@ -65,23 +51,14 @@ class Tunnel {
     stopHeartbeat() {
         clearInterval(this.heartbeatTimer);
     }
-    reSubscribe() {
-        Object.values(this.topics).map((topic) => {
-            topic.reSubscribe();
-        });
-    }
     // connect to NoLag with Tunnel credentials
-    async initiate() {
+    async initiate(reconnect) {
         if (this.noLagClient) {
+            this.noLagClient.setReConnect(reconnect);
             await this.noLagClient.connect();
-            this.resetConnectAttempts();
             this.startHeartbeat();
-            this.reSubscribe();
         }
         return this;
-    }
-    resetConnectAttempts() {
-        this.reconnectAttempts = 0;
     }
     onVisibilityChange() {
         if (document.addEventListener) {
@@ -91,9 +68,10 @@ class Tunnel {
                 switch (this.visibilityState) {
                     case enum_1.EVisibilityState.Hidden:
                         (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.disconnect();
+                        this.stopHeartbeat();
                         break;
                     case enum_1.EVisibilityState.Visible:
-                        await this.initiate();
+                        await this.initiate(true);
                         break;
                 }
             });
@@ -104,7 +82,12 @@ class Tunnel {
         if (this.noLagClient) {
             (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.onReceiveMessage((err, data) => {
                 var _a;
-                const { topicName } = data;
+                const { topicName, identifiers } = data;
+                if (this.noLagClient && !this.topics[topicName]) {
+                    this.topics[topicName] = new Topic_1.Topic(this.noLagClient, topicName, {
+                        OR: identifiers,
+                    });
+                }
                 if (topicName && this.topics[topicName]) {
                     (_a = this.topics[topicName]) === null || _a === void 0 ? void 0 : _a._onReceiveMessage(data);
                 }
@@ -117,19 +100,15 @@ class Tunnel {
     reconnect() {
         this.stopHeartbeat();
         setTimeout(async () => {
-            this.reconnectAttempts++;
-            await this.initiate();
+            // this.reconnectAttempts++;
+            await this.initiate(true);
             if (typeof this.callbackOnReconnect === "function") {
                 this.callbackOnReconnect();
             }
         }, this.checkConnectionInterval);
     }
     canReconnect() {
-        if (this.reconnectAttempts === this.maxReconnectAttempts ||
-            this.visibilityState === enum_1.EVisibilityState.Hidden) {
-            return false;
-        }
-        return true;
+        return this.visibilityState !== enum_1.EVisibilityState.Hidden;
     }
     doReconnect() {
         if (this.canReconnect()) {
@@ -166,7 +145,7 @@ class Tunnel {
     }
     disconnect() {
         var _a;
-        this.reconnectAttempts = 5;
+        this.visibilityState = enum_1.EVisibilityState.Hidden;
         (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.disconnect();
     }
     onDisconnect(callback) {
@@ -182,7 +161,7 @@ class Tunnel {
         // if you are trying to get the specific topic but its not been set
         // set it now
         if (!this.topics[topicName] && this.noLagClient) {
-            this.topics[topicName] = new topic_1.Topic(this.noLagClient, topicName, {});
+            this.topics[topicName] = new Topic_1.Topic(this.noLagClient, topicName, {});
         }
         return this.topics[topicName];
     }
@@ -190,6 +169,7 @@ class Tunnel {
         var _a;
         if (this.topics[topicName]) {
             (_a = this.topics[topicName]) === null || _a === void 0 ? void 0 : _a.unsubscribe();
+            delete this.topics[topicName];
             return true;
         }
         return false;
@@ -197,12 +177,10 @@ class Tunnel {
     subscribe(topicName, identifiers = {}) {
         if (this.noLagClient) {
             if (this.topics[topicName]) {
-                const topic = this.topics[topicName];
-                topic === null || topic === void 0 ? void 0 : topic.reSubscribe();
-                return topic;
+                return this.topics[topicName];
             }
             else {
-                this.topics[topicName] = new topic_1.Topic(this.noLagClient, topicName, identifiers);
+                this.topics[topicName] = new Topic_1.Topic(this.noLagClient, topicName, identifiers);
                 return this.topics[topicName];
             }
         }
@@ -210,14 +188,18 @@ class Tunnel {
     publish(topicName, data, identifiers = []) {
         if (this.noLagClient && this.noLagClient.send) {
             this.stopHeartbeat();
-            const transport = (0, transport_1.generateTransport)(data, topicName, identifiers);
-            this.noLagClient.send(transport);
+            const commands = (0, TransportCommands_1.transportCommands)()
+                .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName);
+            if ((identifiers === null || identifiers === void 0 ? void 0 : identifiers.length) > 0)
+                commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
+            const encodedBuffer = transport_1.NqlTransport.encode(commands, data);
+            this.noLagClient.send(encodedBuffer);
             this.startHeartbeat();
         }
     }
     get status() {
         var _a, _b;
-        return (_b = (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.status) !== null && _b !== void 0 ? _b : null;
+        return (_b = (_a = this.noLagClient) === null || _a === void 0 ? void 0 : _a.connectionStatus) !== null && _b !== void 0 ? _b : null;
     }
 }
 exports.Tunnel = Tunnel;

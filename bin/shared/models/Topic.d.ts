@@ -1,6 +1,5 @@
-import { TData } from "../shared/constants";
-import { INqlIdentifiers, IResponse } from "../shared/interfaces";
-import { NoLagClient } from "./NoLagClient";
+import { NoLagClient } from "../../client/NoLagClient";
+import { INqlIdentifiers, ITransport } from "../interfaces";
 export interface ITopic {
     /**
      * Add NQL identifers to the Topic
@@ -20,42 +19,48 @@ export interface ITopic {
     /**
      * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
      * is onReceive
-     * @param IResponse data - Received data published by another device
+     * @param ITransport data - Received data published by another device
      */
-    onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;
+    onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
     /**
      * Publish topic data with optional attached identifiers
-     * @param ArrayBuffer data - Data being sent is an ArrayBuffer
-     * @param string[] identifiers - List of identifiers used to send targeted messages
+     * @param data Data being sent is an ArrayBuffer
+     * @param identifiers List of identifiers used to send targeted messages
      * @returns
      */
-    publish(data: TData, identifiers: string[]): Topic;
-    /**
-     * Trigger the reconnect procedure
-     */
-    reSubscribe(): void;
+    publish(data: ArrayBuffer, identifiers: string[]): Topic;
     /**
      * PRIVATE Inject messages into the Topic instance
      * @param data
      */
-    _onReceiveMessage(data: IResponse): ITopic;
+    _onReceiveMessage(data: ITransport): ITopic;
+    /**
+     * Set presence data on this topic. Presence data could be anything that identifies this device.
+     * Updated list of shared data is shared with all devices subscribed to the same Topic and Identifiers when a devices
+     * connect and disconnects.
+     * @param presence
+     * @returns
+     */
+    setPresence(presence: string): Topic;
 }
 export declare class Topic implements ITopic {
     private connection;
-    private topicName;
-    private callbackFn;
+    private readonly topicName;
+    private onReceiveCallback;
     private identifiers;
+    private presence;
     constructor(connection: NoLagClient, topicName: string, identifiers: INqlIdentifiers);
     private findSavedIdentifier;
     private saveIdentifiers;
     private deleteSavedIdentifiers;
     private subscribe;
-    reSubscribe(): void;
+    setPresence(presence: string): Topic;
     setConnection(connection: NoLagClient): Topic;
-    _onReceiveMessage(data: IResponse): ITopic;
-    onReceive(callbackFn: ((data: IResponse) => void) | undefined): Topic;
-    addIdentifiers(identifiers: INqlIdentifiers): Topic;
+    _onReceiveMessage(data: ITransport): ITopic;
+    onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
+    addIdentifiers(identifiersList: INqlIdentifiers): Topic;
     removeIdentifiers(identifiers: string[]): Topic;
     unsubscribe(): boolean;
     publish(data: ArrayBuffer, identifiers: string[]): Topic;
+    private send;
 }

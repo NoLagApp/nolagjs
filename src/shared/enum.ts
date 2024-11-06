@@ -1,10 +1,8 @@
 export enum EConnectionStatus {
   Idle = "idle",
-  // Connecting = "cng",
-  Connecting = 6,
-  Connected = 66,
-  // Connected = "cnd",
-  Disconnected = 666,
+  Connecting = "connecting",
+  Connected = "connected",
+  Disconnected = "disconnected",
 }
 
 export enum EEnvironment {
@@ -36,6 +34,8 @@ export enum ESeparator {
   Vertical = 11,
   NegativeAck = 21,
   BellAlert = 7,
+  // send this when we try to reconnect to Message Broker
+  SynchronousIdle = 22,
 }
 
 /**

@@ -31,10 +31,10 @@ export class TunnelApi implements ITunnelApi {
   }
 
   async publish(httpPublish: IHttpPublish): Promise<boolean> {
-    const { data, tunnelName, identifiers } = httpPublish;
+    const { data, topicName, identifiers } = httpPublish;
     return TunnelPublish(
       data,
-      tunnelName,
+      topicName,
       identifiers,
       this.tunnelId,
       this.routeNamespace,

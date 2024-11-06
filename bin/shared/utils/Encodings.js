@@ -11,8 +11,9 @@ const stringToArrayBuffer = (str) => {
     return buf;
 };
 exports.stringToArrayBuffer = stringToArrayBuffer;
-const uint8ArrayToString = (data) => {
-    return data.reduce((accumulator, index) => {
+const uint8ArrayToString = (buffer) => {
+    const view = new Uint8Array(buffer);
+    return view.reduce((accumulator, index) => {
         return accumulator + String.fromCharCode(index);
     }, "");
 };

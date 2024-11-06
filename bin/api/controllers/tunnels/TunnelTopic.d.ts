@@ -15,7 +15,7 @@ export interface ITunnelTopic {
      * List all Tunnel Topics
      * @param query
      */
-    listTopics(query: ITopicQuery): Promise<IPaginated<ITopicModel>>;
+    listTopics(query?: ITopicQuery): Promise<IPaginated<ITopicModel>>;
     /**
      * Update a Tunnel Topic
      * @param topicId
@@ -36,7 +36,7 @@ export declare class TunnelTopic implements ITunnelTopic {
     constructor(parentRouteNamespace: string, tunnelId: string, request: AxiosInstance);
     createTopic(payload: ITopicModel): Promise<ITopicModel>;
     getTopicById(topicId: string): Promise<ITopicModel>;
-    listTopics(query: ITopicQuery): Promise<IPaginated<ITopicModel>>;
+    listTopics(query?: ITopicQuery): Promise<IPaginated<ITopicModel>>;
     updateTopic(topicId: string, payload: ITopicModel): Promise<ITopicModel>;
     deleteTopic(topicId: string): Promise<ITopicModel>;
 }

@@ -4,11 +4,9 @@ exports.ETopicType = exports.EStatus = exports.EAccessPermission = exports.ESepa
 var EConnectionStatus;
 (function (EConnectionStatus) {
     EConnectionStatus["Idle"] = "idle";
-    // Connecting = "cng",
-    EConnectionStatus[EConnectionStatus["Connecting"] = 6] = "Connecting";
-    EConnectionStatus[EConnectionStatus["Connected"] = 66] = "Connected";
-    // Connected = "cnd",
-    EConnectionStatus[EConnectionStatus["Disconnected"] = 666] = "Disconnected";
+    EConnectionStatus["Connecting"] = "connecting";
+    EConnectionStatus["Connected"] = "connected";
+    EConnectionStatus["Disconnected"] = "disconnected";
 })(EConnectionStatus = exports.EConnectionStatus || (exports.EConnectionStatus = {}));
 var EEnvironment;
 (function (EEnvironment) {
@@ -40,6 +38,8 @@ var ESeparator;
     ESeparator[ESeparator["Vertical"] = 11] = "Vertical";
     ESeparator[ESeparator["NegativeAck"] = 21] = "NegativeAck";
     ESeparator[ESeparator["BellAlert"] = 7] = "BellAlert";
+    // send this when we try to reconnect to Message Broker
+    ESeparator[ESeparator["SynchronousIdle"] = 22] = "SynchronousIdle";
 })(ESeparator = exports.ESeparator || (exports.ESeparator = {}));
 /**
  * Used to specify which type of Pub/Sub access the associated Device Token has.

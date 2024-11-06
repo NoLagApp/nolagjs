@@ -1,36 +1,37 @@
+import { FConnection, dataType } from "../shared/constants";
 import {
   IConnectOptions,
   IErrorMessage,
   INqlIdentifiers,
-  IResponse,
+  ITransport,
   ITunnelOptions,
 } from "../shared/interfaces";
-import { dataType, FConnection, TData } from "../shared/constants";
 
-import { ITopic, Topic } from "./topic";
+import { ITopic, Topic } from "../shared/models/Topic";
 
-import { NoLagClient } from "./NoLagClient";
 import { EVisibilityState } from "../shared/enum";
-import { generateTransport } from "../shared/utils/transport";
-export * from "../shared/utils/Encodings";
+import { ETransportCommand } from "../shared/enum/ETransportCommand";
+import { transportCommands } from "../shared/utils/TransportCommands";
+import { NqlTransport } from "../shared/utils/transport";
+import { NoLagClient } from "./NoLagClient";
 
 export interface ITunnel {
   /**
    * Retrieve instanciated topic
-   * @param string topicName - Topic name regisrered in NoLag Portal
+   * @param topicName Topic name regisrered in NoLag Portal
    * @return Topic | undefined
    */
   getTopic(topicName: string): ITopic | undefined;
   /**
    * Delete instanciated topic
-   * @param string topicName - Topic name regisrered in NoLag Portal
+   * @param topicName Topic name regisrered in NoLag Portal
    * @return boolean
    */
   unsubscribe(topicName: string): boolean;
   /**
    * Set a new topic that is attached to tunnel
-   * @param string topicName - Topic name regisrered in NoLag Portal
-   * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+   * @param topicName Topic name regisrered in NoLag Portal
+   * @param identifiers Set if reverse query identifiers which the topic will listen two
    */
   subscribe(
     topicName: string,
@@ -38,12 +39,12 @@ export interface ITunnel {
   ): ITopic | undefined;
   /**
    * Publish data before setting a Topic
-   * @param string topicName - Topic name regisrered in NoLag Portal
-   * @param ArrayBuffer data - Data to send to the Topic
-   * @param string[] identifiers - Set if reverse query identifiers which the topic will listen two
+   * @param topicName string - Topic name regisrered in NoLag Portal
+   * @param data ArrayBuffer - Data to send to the Topic
+   * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
    */
   publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
-  onReceive(callbackFn: ((data: IResponse) => void) | undefined): void;
+  onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
   /**
    * Disconnect from NoLag
    */
@@ -59,7 +60,7 @@ export interface ITunnel {
    * Triggered when there is a reconnect attempt
    * @param callbackFn
    */
-  onReconnect(callbackFn: ((data: IResponse) => void) | undefined): void;
+  onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
   /**
    * Triggered when any errors are sent from the Message Broker
    * @param callbackFn
@@ -88,12 +89,10 @@ export class Tunnel implements ITunnel {
 
   private defaultCheckConnectionInterval = 10000;
   private checkConnectionInterval: number;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 5;
   private heartBeatInterval: number = 20000;
   private visibilityState: string = EVisibilityState.Visible;
 
-  private callbackOnReceive: ((data: IResponse) => void) | undefined;
+  private callbackOnReceive: ((data: ITransport) => void) | undefined;
   private callbackOnDisconnect: FConnection = () => {};
   private callbackOnReconnect: FConnection = () => {};
   private callbackOnReceivedError: FConnection = () => {};
@@ -108,7 +107,10 @@ export class Tunnel implements ITunnel {
       this.defaultCheckConnectionInterval;
     this.connectOptions = connectOptions ?? undefined;
     this.authToken = authToken;
+
+    // initiate NoLag client connection
     this.noLagClient = new NoLagClient(this.authToken, this.connectOptions);
+
     this.onClose();
     this.onError();
     this.onReceiveMessage();
@@ -135,25 +137,14 @@ export class Tunnel implements ITunnel {
     clearInterval(this.heartbeatTimer);
   }
 
-  private reSubscribe(): void {
-    Object.values(this.topics).map((topic) => {
-      topic.reSubscribe();
-    });
-  }
-
   // connect to NoLag with Tunnel credentials
-  public async initiate() {
+  public async initiate(reconnect?: boolean) {
     if (this.noLagClient) {
+      this.noLagClient.setReConnect(reconnect);
       await this.noLagClient.connect();
-      this.resetConnectAttempts();
       this.startHeartbeat();
-      this.reSubscribe();
     }
     return this;
-  }
-
-  private resetConnectAttempts() {
-    this.reconnectAttempts = 0;
   }
 
   private onVisibilityChange() {
@@ -163,9 +154,10 @@ export class Tunnel implements ITunnel {
         switch (this.visibilityState) {
           case EVisibilityState.Hidden:
             this.noLagClient?.disconnect();
+            this.stopHeartbeat();
             break;
           case EVisibilityState.Visible:
-            await this.initiate();
+            await this.initiate(true);
             break;
         }
       });
@@ -174,8 +166,13 @@ export class Tunnel implements ITunnel {
 
   private onReceiveMessage() {
     if (this.noLagClient) {
-      this.noLagClient?.onReceiveMessage((err: any, data: IResponse) => {
-        const { topicName } = data;
+      this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
+        const { topicName, identifiers } = data;
+        if (this.noLagClient && !this.topics[topicName]) {
+          this.topics[topicName] = new Topic(this.noLagClient, topicName, {
+            OR: identifiers,
+          });
+        }
         if (topicName && this.topics[topicName]) {
           this.topics[topicName]?._onReceiveMessage(data);
         }
@@ -189,8 +186,8 @@ export class Tunnel implements ITunnel {
   private reconnect(): void {
     this.stopHeartbeat();
     setTimeout(async () => {
-      this.reconnectAttempts++;
-      await this.initiate();
+      // this.reconnectAttempts++;
+      await this.initiate(true);
       if (typeof this.callbackOnReconnect === "function") {
         this.callbackOnReconnect();
       }
@@ -198,13 +195,7 @@ export class Tunnel implements ITunnel {
   }
 
   private canReconnect(): boolean {
-    if (
-      this.reconnectAttempts === this.maxReconnectAttempts ||
-      this.visibilityState === EVisibilityState.Hidden
-    ) {
-      return false;
-    }
-    return true;
+    return this.visibilityState !== EVisibilityState.Hidden;
   }
 
   private doReconnect(): void {
@@ -220,7 +211,7 @@ export class Tunnel implements ITunnel {
 
   private onClose() {
     if (this.noLagClient) {
-      this.noLagClient.onClose((err: any, data: IResponse) => {
+      this.noLagClient.onClose((err: any, data: ITransport) => {
         this.doReconnect();
         if (typeof this.callbackOnReceivedError === "function") {
           this.callbackOnReceivedError(err);
@@ -231,7 +222,7 @@ export class Tunnel implements ITunnel {
 
   private onError() {
     if (this.noLagClient) {
-      this.noLagClient.onError((err: IErrorMessage, data: IResponse) => {
+      this.noLagClient.onError((err: IErrorMessage, data: ITransport) => {
         if (typeof this.callbackOnReceivedError === "function") {
           this.callbackOnReceivedError(err);
         }
@@ -239,12 +230,12 @@ export class Tunnel implements ITunnel {
     }
   }
 
-  public onReceive(callback: (data: IResponse) => void): void {
+  public onReceive(callback: (data: ITransport) => void): void {
     this.callbackOnReceive = callback;
   }
 
   public disconnect(): void {
-    this.reconnectAttempts = 5;
+    this.visibilityState = EVisibilityState.Hidden;
     this.noLagClient?.disconnect();
   }
 
@@ -273,6 +264,7 @@ export class Tunnel implements ITunnel {
   public unsubscribe(topicName: string): boolean {
     if (this.topics[topicName]) {
       this.topics[topicName]?.unsubscribe();
+      delete this.topics[topicName];
       return true;
     }
     return false;
@@ -284,9 +276,7 @@ export class Tunnel implements ITunnel {
   ): ITopic | undefined {
     if (this.noLagClient) {
       if (this.topics[topicName]) {
-        const topic = this.topics[topicName];
-        topic?.reSubscribe();
-        return topic;
+        return this.topics[topicName];
       } else {
         this.topics[topicName] = new Topic(
           this.noLagClient,
@@ -306,14 +296,21 @@ export class Tunnel implements ITunnel {
   ): void {
     if (this.noLagClient && this.noLagClient.send) {
       this.stopHeartbeat();
-      const transport = generateTransport(data, topicName, identifiers);
-      this.noLagClient.send(transport);
+      const commands = transportCommands()
+        .setCommand(ETransportCommand.Topic, topicName);
+
+      if(identifiers?.length > 0)
+        commands.setCommand(ETransportCommand.Identifier, identifiers);
+
+      const encodedBuffer = NqlTransport.encode(commands, data);
+
+      this.noLagClient.send(encodedBuffer);
       this.startHeartbeat();
     }
   }
 
   public get status() {
-    return this.noLagClient?.status ?? null;
+    return this.noLagClient?.connectionStatus ?? null;
   }
 }
 
