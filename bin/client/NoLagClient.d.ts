@@ -36,7 +36,6 @@ export declare class NoLagClient implements INoLagClient {
     slowDownSender(backpressureInterval: number): void;
     addToBuffer(buffer: ArrayBuffer): void;
     setReConnect(reConnect?: boolean): void;
-    isBrowser(): boolean;
     /**
      * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
      * @param callbackMain used as a event trigger

@@ -94,7 +94,9 @@ export class NoLagClient implements INoLagClient {
    */
   connect(): Promise<NoLagClient> {
     this.connectionStatus = EConnectionStatus.Idle;
-    this.environment === EEnvironment.Browser ? this.browserInstance() : this.nodeInstance();
+    this.environment === EEnvironment.Browser
+      ? this.browserInstance()
+      : this.nodeInstance();
     return new Promise((resolve, reject) => {
       const checkConnection = setInterval(() => {
         if (this.connectionStatus === EConnectionStatus.Connected) {
