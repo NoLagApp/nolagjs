@@ -27,7 +27,7 @@ export const TunnelPublish = async (
     baseURL: `${connectOptions?.protocol}://${connectOptions?.wsHost}`,
     headers: {
       "Content-Type": "application/json",
-      "X-API-Key": connectOptions?.apiKey
+      "X-API-Key": connectOptions?.apiKey,
     },
     url: `/${parentRouteNamespace}/${tunnelId}/${routeNamespace}`,
     method: "post",

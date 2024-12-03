@@ -1,4 +1,4 @@
-import { FConnection, dataType } from "../shared/constants";
+import { dataType, FConnection } from "../shared/constants";
 import {
   IConnectOptions,
   IErrorMessage,
@@ -9,7 +9,7 @@ import {
 
 import { ITopic, Topic } from "../shared/models/Topic";
 
-import { EVisibilityState } from "../shared/enum";
+import { EEnvironment, EVisibilityState } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import { transportCommands } from "../shared/utils/TransportCommands";
 import { NqlTransport } from "../shared/utils/transport";
@@ -22,12 +22,14 @@ export interface ITunnel {
    * @return Topic | undefined
    */
   getTopic(topicName: string): ITopic | undefined;
+
   /**
    * Delete instanciated topic
    * @param topicName Topic name regisrered in NoLag Portal
    * @return boolean
    */
   unsubscribe(topicName: string): boolean;
+
   /**
    * Set a new topic that is attached to tunnel
    * @param topicName Topic name regisrered in NoLag Portal
@@ -37,6 +39,7 @@ export interface ITunnel {
     topicName: string,
     identifiers?: INqlIdentifiers,
   ): ITopic | undefined;
+
   /**
    * Publish data before setting a Topic
    * @param topicName string - Topic name regisrered in NoLag Portal
@@ -44,11 +47,14 @@ export interface ITunnel {
    * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
    */
   publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
+
   onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
+
   /**
    * Disconnect from NoLag
    */
   disconnect(): void;
+
   /**
    * Triggered when device disconnects form Message Broker
    * @param callbackFn
@@ -56,11 +62,13 @@ export interface ITunnel {
   onDisconnect(
     callbackFn: ((errorMessage: IErrorMessage) => void) | undefined,
   ): void;
+
   /**
    * Triggered when there is a reconnect attempt
    * @param callbackFn
    */
   onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
+
   /**
    * Triggered when any errors are sent from the Message Broker
    * @param callbackFn
@@ -109,7 +117,11 @@ export class Tunnel implements ITunnel {
     this.authToken = authToken;
 
     // initiate NoLag client connection
-    this.noLagClient = new NoLagClient(this.authToken, this.connectOptions);
+    this.noLagClient = new NoLagClient(
+      this.authToken,
+      options?.environment ?? EEnvironment.Browser,
+      this.connectOptions,
+    );
 
     this.onClose();
     this.onError();
@@ -296,10 +308,12 @@ export class Tunnel implements ITunnel {
   ): void {
     if (this.noLagClient && this.noLagClient.send) {
       this.stopHeartbeat();
-      const commands = transportCommands()
-        .setCommand(ETransportCommand.Topic, topicName);
+      const commands = transportCommands().setCommand(
+        ETransportCommand.Topic,
+        topicName,
+      );
 
-      if(identifiers?.length > 0)
+      if (identifiers?.length > 0)
         commands.setCommand(ETransportCommand.Identifier, identifiers);
 
       const encodedBuffer = NqlTransport.encode(commands, data);

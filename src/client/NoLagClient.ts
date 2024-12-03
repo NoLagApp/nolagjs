@@ -42,7 +42,11 @@ export class NoLagClient implements INoLagClient {
   private backpressureSendInterval = 0;
   private senderInterval: any = 0;
 
-  constructor(authToken: string, connectOptions?: IConnectOptions) {
+  constructor(
+    authToken: string,
+    environment: EEnvironment,
+    connectOptions?: IConnectOptions,
+  ) {
     this.authToken = authToken ?? "";
     this.host = connectOptions?.host ?? CONSTANT.DefaultWsHost;
     this.protocol = connectOptions?.protocol ?? CONSTANT.DefaultWsProtocol;
@@ -53,6 +57,7 @@ export class NoLagClient implements INoLagClient {
     this.checkConnectionTimeout =
       connectOptions?.checkConnectionTimeout ??
       this.defaultCheckConnectionTimeout;
+    this.environment = environment;
     this.startSender();
   }
 
@@ -131,8 +136,6 @@ export class NoLagClient implements INoLagClient {
    * wsInstance
    */
   browserInstance() {
-    this.environment = EEnvironment.Browser;
-
     // prevent the re-initiation of a socket connection when the
     // reconnect function calls this method again
     if (this.connectionStatus === EConnectionStatus.Connected) {
@@ -171,8 +174,6 @@ export class NoLagClient implements INoLagClient {
   nodeInstance() {
     import("ws").then((loadedWebSocketNode) => {
       const WebSocketNode = loadedWebSocketNode.default;
-
-      this.environment = EEnvironment.Nodejs;
 
       // prevent the re-initiation of a socket connection when the
       // reconnect function calls this method again
@@ -282,9 +283,7 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnReceive(undefined, {
       topicName: decoded.getCommand(ETransportCommand.Topic) as string,
       presences: decoded.getCommand(ETransportCommand.Presence) as string[],
-      identifiers: decoded.getCommand(
-        ETransportCommand.Identifier,
-      ) as string[],
+      identifiers: decoded.getCommand(ETransportCommand.Identifier) as string[],
       data: decoded.payload,
     });
   }

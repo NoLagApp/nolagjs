@@ -90,11 +90,11 @@ export class NqlTransport {
   }
 
   static commandActionUint8ArrayToStringArray(commandActionArray: number[]) {
-    const groupedUint8Array:number[][]  = [];
+    const groupedUint8Array: number[][] = [];
     let tempGroup: number[] = [];
 
     commandActionArray.forEach((item) => {
-      if(item === ETransportCommandSeparator.ArraySeparator) {
+      if (item === ETransportCommandSeparator.ArraySeparator) {
         groupedUint8Array.push(tempGroup);
         tempGroup = [];
       } else {
@@ -103,18 +103,15 @@ export class NqlTransport {
     });
 
     // only if tempGroup still has data push it in
-    if(tempGroup.length > 0) {
+    if (tempGroup.length > 0) {
       groupedUint8Array.push(tempGroup);
     }
 
-
-    return groupedUint8Array.map(
-      (uint8Array: number[]) => {
-        return this.commandActionUint8ArrayToString(
-          uint8Array.map((i) => Number(i)),
-        );
-      },
-    );
+    return groupedUint8Array.map((uint8Array: number[]) => {
+      return this.commandActionUint8ArrayToString(
+        uint8Array.map((i) => Number(i)),
+      );
+    });
   }
 
   static extractCommands(

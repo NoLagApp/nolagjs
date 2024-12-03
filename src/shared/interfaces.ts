@@ -1,6 +1,6 @@
 import { TData } from "./constants";
 
-import { EAccessPermission, EStatus } from "./enum";
+import { EAccessPermission, EEnvironment, EStatus } from "./enum";
 import { dataType } from "./types";
 
 /**
@@ -8,6 +8,7 @@ import { dataType } from "./types";
  */
 export interface ITunnelOptions {
   disconnectOnNoVisibility?: boolean;
+  environment: EEnvironment;
 }
 
 /**

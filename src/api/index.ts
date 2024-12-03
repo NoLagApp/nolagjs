@@ -40,13 +40,13 @@ export class ApiTunnel {
   }
 
   async tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>> {
-    const response = await this.request.get("/tunnels",{
+    const response = await this.request.get("/tunnels", {
       params: tunnelQuery,
     });
 
     return {
-      ...response.data
-    }
+      ...response.data,
+    };
   }
 
   tunnel(tunnelId: string): ITunnelApi {

@@ -1,11 +1,12 @@
 import { TData } from "./constants";
-import { EAccessPermission, EStatus } from "./enum";
+import { EAccessPermission, EEnvironment, EStatus } from "./enum";
 import { dataType } from "./types";
 /**
  * Disconnect from message broker when tab is not in view
  */
 export interface ITunnelOptions {
     disconnectOnNoVisibility?: boolean;
+    environment: EEnvironment;
 }
 /**
  * NOT FOR NORMAL USE

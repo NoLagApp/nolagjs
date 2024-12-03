@@ -30,7 +30,7 @@ const ETransportCommand_1 = require("../shared/enum/ETransportCommand");
 const TransportCommands_1 = require("../shared/utils/TransportCommands");
 const transport_1 = require("../shared/utils/transport");
 class NoLagClient {
-    constructor(authToken, connectOptions) {
+    constructor(authToken, environment, connectOptions) {
         var _a, _b, _c, _d;
         this.wsInstance = null;
         this.deviceConnectionId = undefined;
@@ -57,6 +57,7 @@ class NoLagClient {
             (_c = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionInterval) !== null && _c !== void 0 ? _c : this.defaultCheckConnectionInterval;
         this.checkConnectionTimeout =
             (_d = connectOptions === null || connectOptions === void 0 ? void 0 : connectOptions.checkConnectionTimeout) !== null && _d !== void 0 ? _d : this.defaultCheckConnectionTimeout;
+        this.environment = environment;
         this.startSender();
     }
     startSender() {
@@ -130,7 +131,6 @@ class NoLagClient {
      * wsInstance
      */
     browserInstance() {
-        this.environment = enum_1.EEnvironment.Browser;
         // prevent the re-initiation of a socket connection when the
         // reconnect function calls this method again
         if (this.connectionStatus === enum_1.EConnectionStatus.Connected) {
@@ -161,7 +161,6 @@ class NoLagClient {
     nodeInstance() {
         Promise.resolve().then(() => __importStar(require("ws"))).then((loadedWebSocketNode) => {
             const WebSocketNode = loadedWebSocketNode.default;
-            this.environment = enum_1.EEnvironment.Nodejs;
             // prevent the re-initiation of a socket connection when the
             // reconnect function calls this method again
             if (this.connectionStatus === enum_1.EConnectionStatus.Connected) {

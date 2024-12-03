@@ -14,7 +14,7 @@ const NoLagClient_1 = require("./NoLagClient");
  */
 class Tunnel {
     constructor(authToken, options, connectOptions) {
-        var _a;
+        var _a, _b;
         // topics
         this.topics = {};
         this.defaultCheckConnectionInterval = 10000;
@@ -28,7 +28,7 @@ class Tunnel {
         this.connectOptions = connectOptions !== null && connectOptions !== void 0 ? connectOptions : undefined;
         this.authToken = authToken;
         // initiate NoLag client connection
-        this.noLagClient = new NoLagClient_1.NoLagClient(this.authToken, this.connectOptions);
+        this.noLagClient = new NoLagClient_1.NoLagClient(this.authToken, (_b = options === null || options === void 0 ? void 0 : options.environment) !== null && _b !== void 0 ? _b : enum_1.EEnvironment.Browser, this.connectOptions);
         this.onClose();
         this.onError();
         this.onReceiveMessage();
@@ -188,8 +188,7 @@ class Tunnel {
     publish(topicName, data, identifiers = []) {
         if (this.noLagClient && this.noLagClient.send) {
             this.stopHeartbeat();
-            const commands = (0, TransportCommands_1.transportCommands)()
-                .setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName);
+            const commands = (0, TransportCommands_1.transportCommands)().setCommand(ETransportCommand_1.ETransportCommand.Topic, topicName);
             if ((identifiers === null || identifiers === void 0 ? void 0 : identifiers.length) > 0)
                 commands.setCommand(ETransportCommand_1.ETransportCommand.Identifier, identifiers);
             const encodedBuffer = transport_1.NqlTransport.encode(commands, data);

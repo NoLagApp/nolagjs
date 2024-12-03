@@ -1,5 +1,5 @@
 import { FConnection } from "../shared/constants";
-import { EConnectionStatus } from "../shared/enum";
+import { EConnectionStatus, EEnvironment } from "../shared/enum";
 import { IConnectOptions } from "../shared/interfaces";
 interface INoLagClient {
     connect(): Promise<NoLagClient>;
@@ -31,7 +31,7 @@ export declare class NoLagClient implements INoLagClient {
     private buffer;
     private backpressureSendInterval;
     private senderInterval;
-    constructor(authToken: string, connectOptions?: IConnectOptions);
+    constructor(authToken: string, environment: EEnvironment, connectOptions?: IConnectOptions);
     startSender(): void;
     slowDownSender(backpressureInterval: number): void;
     addToBuffer(buffer: ArrayBuffer): void;
