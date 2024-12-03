@@ -87,19 +87,6 @@ export class NoLagClient implements INoLagClient {
     if (reConnect) this.reConnect = reConnect;
   }
 
-  // Check so see if we are in a browser or backend environment
-  isBrowser() {
-    let isNode = true;
-    if (typeof process === "object") {
-      if (typeof process.versions === "object") {
-        if (typeof process.versions.node !== "undefined") {
-          isNode = false;
-        }
-      }
-    }
-    return isNode;
-  }
-
   /**
    * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
    * @param callbackMain used as a event trigger
@@ -107,7 +94,7 @@ export class NoLagClient implements INoLagClient {
    */
   connect(): Promise<NoLagClient> {
     this.connectionStatus = EConnectionStatus.Idle;
-    this.isBrowser() ? this.browserInstance() : this.nodeInstance();
+    this.environment === EEnvironment.Browser ? this.browserInstance() : this.nodeInstance();
     return new Promise((resolve, reject) => {
       const checkConnection = setInterval(() => {
         if (this.connectionStatus === EConnectionStatus.Connected) {
