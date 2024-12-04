@@ -138,21 +138,21 @@ export class NoLagClient implements INoLagClient {
       return;
     }
 
-    this.wsInstance.onOpen ? this.wsInstance.onOpen((event: any) => {
+    this.wsInstance.onOpen = ((event: any) => {
       this._onOpen(event);
-    }): null;
+    });
 
-    this.wsInstance.onMessage ? this.wsInstance.onMessage((event: any) => {
+    this.wsInstance.onMessage = ((event: any) => {
       this._onReceive(event);
-    }): null;
+    })
 
-    this.wsInstance.onClose ? this.wsInstance.onClose((event: any) => {
+   this.wsInstance.onClose = ((event: any) => {
       this._onClose(event);
-    }): null;
+    })
 
-    this.wsInstance.onError ? this.wsInstance.onError((event: any) => {
+    this.wsInstance.onError = ((event: any) => {
       this._onError(event);
-    }): null;
+    });
   }
 
   authenticate() {
@@ -192,9 +192,8 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnOpen(undefined, event);
   }
 
-  private async _onReceive(event: any) {
+  private _onReceive(event: any) {
     const data: ArrayBuffer = event ?? new ArrayBuffer(0);
-
     const decoded = NqlTransport.decode(data);
     if (data.byteLength === 0) {
       return;

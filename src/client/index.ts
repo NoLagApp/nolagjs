@@ -9,7 +9,7 @@ import {
 
 import { ITopic, Topic } from "../shared/models/Topic";
 
-import { EEnvironment, EVisibilityState } from "../shared/enum";
+import { EVisibilityState } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import { transportCommands } from "../shared/utils/TransportCommands";
 import { NqlTransport } from "../shared/utils/transport";

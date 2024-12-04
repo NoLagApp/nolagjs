@@ -1,15 +1,21 @@
-import WebSocket from 'ws';
 import { IUnifiedWebsocket } from "../shared/interfaces";
 import { EEncoding } from "../shared/enum";
 
 export const unifiedWebsocket = (url: string) => {
-  const wsInstance: IUnifiedWebsocket= {}
-
   const ws = new WebSocket(
     url,
   );
 
   ws.binaryType = EEncoding.Arraybuffer;
+
+  const wsInstance: IUnifiedWebsocket= {
+    send: (message: ArrayBuffer) => {
+      ws.send(message);
+    },
+    close: () => {
+      ws.close();
+    },
+  };
 
   // set of events
   // when a successful connection is made with he server

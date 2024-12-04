@@ -1,7 +1,6 @@
 export * from "./imports";
-import { EEnvironment } from "./shared/enum";
 import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
-import { ITunnel, Tunnel } from "./client";
+import { ITunnel, Tunnel } from "./client/index";
 import {unifiedWebsocket} from "./instance/node";
 
 

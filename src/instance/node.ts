@@ -2,11 +2,18 @@ import WebSocket from 'ws';
 import { IUnifiedWebsocket } from "../shared/interfaces";
 
 export const unifiedWebsocket = (url: string) => {
-  const wsInstance: IUnifiedWebsocket= {}
-
   const ws = new WebSocket(
     url,
   );
+
+  const wsInstance: IUnifiedWebsocket= {
+    send: (message: ArrayBuffer) => {
+      ws.send(message);
+    },
+    close: () => {
+      ws.close();
+    },
+  };
 
   ws.on("open", (event: any) => {
     if(wsInstance?.onOpen) {
