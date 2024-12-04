@@ -1,6 +1,6 @@
 import { FConnection } from "../shared/constants";
-import { EConnectionStatus, EEnvironment } from "../shared/enum";
-import { IConnectOptions } from "../shared/interfaces";
+import { EConnectionStatus } from "../shared/enum";
+import { IConnectOptions, IUnifiedWebsocket } from "../shared/interfaces";
 interface INoLagClient {
     connect(): Promise<NoLagClient>;
     setReConnect(): void;
@@ -12,7 +12,7 @@ interface INoLagClient {
 export declare class NoLagClient implements INoLagClient {
     private host;
     private authToken;
-    wsInstance: any | null;
+    wsInstance: IUnifiedWebsocket | undefined;
     private protocol;
     private url;
     private deviceConnectionId;
@@ -31,7 +31,8 @@ export declare class NoLagClient implements INoLagClient {
     private buffer;
     private backpressureSendInterval;
     private senderInterval;
-    constructor(authToken: string, environment: EEnvironment, connectOptions?: IConnectOptions);
+    private unifiedWebsocket;
+    constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, connectOptions?: IConnectOptions);
     startSender(): void;
     slowDownSender(backpressureInterval: number): void;
     addToBuffer(buffer: ArrayBuffer): void;
@@ -47,11 +48,7 @@ export declare class NoLagClient implements INoLagClient {
      * Initiate browser WebSocket instance and set it to
      * wsInstance
      */
-    browserInstance(): void;
-    /**
-     * Node WebSocket connection with package "ws"
-     */
-    nodeInstance(): void;
+    initWebsocketConnection(): void;
     authenticate(): void;
     onOpen(callback: FConnection): void;
     onReceiveMessage(callback: FConnection): void;

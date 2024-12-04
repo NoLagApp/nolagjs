@@ -161,3 +161,11 @@ export interface IErrorsModel {
 export interface INqlIdentifiers {
     OR?: string[];
 }
+export interface IUnifiedWebsocket {
+    onOpen?: (onOpenCallback: (event: unknown) => void) => void | undefined;
+    onMessage?: (onMessageCallback: (event: unknown) => void) => void | undefined;
+    onClose?: (onCloseCallback: (event: unknown) => void) => void | undefined;
+    onError?: (onErrorCallback: (event: unknown) => void) => void | undefined;
+    close?: () => void;
+    send?: (message: ArrayBuffer) => void;
+}

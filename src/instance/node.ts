@@ -1,0 +1,29 @@
+import WebSocket from 'ws';
+import { IUnifiedWebsocket } from "../shared/interfaces";
+
+export const unifiedWebsocket = (url: string) => {
+  const wsInstance: IUnifiedWebsocket= {}
+
+  const ws = new WebSocket(
+    url,
+  );
+
+  ws.on("open", (event: any) => {
+    if(wsInstance?.onOpen) {
+      wsInstance.onOpen(event);
+    }
+  });
+
+  ws.on("message", (event: any) => {
+    if(wsInstance?.onMessage) {
+      wsInstance.onMessage(event);
+    }
+  });
+  ws.on("close", (event: any) => {
+    if(wsInstance?.onClose) {
+      wsInstance.onClose(event);
+    }
+  });
+
+  return wsInstance;
+}

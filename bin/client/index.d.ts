@@ -1,5 +1,5 @@
 import { FConnection } from "../shared/constants";
-import { IConnectOptions, IErrorMessage, INqlIdentifiers, ITransport, ITunnelOptions } from "../shared/interfaces";
+import { IConnectOptions, IErrorMessage, INqlIdentifiers, ITransport, ITunnelOptions, IUnifiedWebsocket } from "../shared/interfaces";
 import { ITopic } from "../shared/models/Topic";
 export interface ITunnel {
     /**
@@ -67,7 +67,7 @@ export declare class Tunnel implements ITunnel {
     private callbackOnDisconnect;
     private callbackOnReconnect;
     private callbackOnReceivedError;
-    constructor(authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions);
+    constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions);
     get deviceTokenId(): string | null | undefined;
     private startHeartbeat;
     private stopHeartbeat;
@@ -90,4 +90,3 @@ export declare class Tunnel implements ITunnel {
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
     get status(): import("../shared/enum").EConnectionStatus | null;
 }
-export declare const WebSocketClient: (authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions) => Promise<ITunnel>;

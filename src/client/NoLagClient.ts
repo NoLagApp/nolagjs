@@ -1,7 +1,7 @@
 import { CONSTANT, FConnection, FOnReceive } from "../shared/constants";
 import { EConnectionStatus, EEncoding, EEnvironment } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
-import { IConnectOptions } from "../shared/interfaces";
+import { IConnectOptions, IUnifiedWebsocket } from "../shared/interfaces";
 import { transportCommands } from "../shared/utils/TransportCommands";
 import { NqlTransport } from "../shared/utils/transport";
 
@@ -17,7 +17,7 @@ interface INoLagClient {
 export class NoLagClient implements INoLagClient {
   private host: string;
   private authToken: string;
-  public wsInstance: any | null = null;
+  public wsInstance: IUnifiedWebsocket |undefined;
   private protocol: string;
   private url: string;
   private deviceConnectionId: string | undefined = undefined;
@@ -41,10 +41,11 @@ export class NoLagClient implements INoLagClient {
   private buffer: ArrayBuffer[] = [];
   private backpressureSendInterval = 0;
   private senderInterval: any = 0;
+  private unifiedWebsocket: (url: string) => IUnifiedWebsocket;
 
   constructor(
+    unifiedWebsocket: (url: string) => IUnifiedWebsocket,
     authToken: string,
-    environment: EEnvironment,
     connectOptions?: IConnectOptions,
   ) {
     this.authToken = authToken ?? "";
@@ -57,7 +58,7 @@ export class NoLagClient implements INoLagClient {
     this.checkConnectionTimeout =
       connectOptions?.checkConnectionTimeout ??
       this.defaultCheckConnectionTimeout;
-    this.environment = environment;
+    this.unifiedWebsocket = unifiedWebsocket;
     this.startSender();
   }
 
@@ -68,7 +69,7 @@ export class NoLagClient implements INoLagClient {
       if (!sendTransport) return;
       if (!this.wsInstance) return;
       // send the first message in the buffer
-      this.wsInstance.send(sendTransport);
+      this.wsInstance.send ? this.wsInstance.send(sendTransport) : undefined;
     }, this.backpressureSendInterval);
   }
 
@@ -94,9 +95,7 @@ export class NoLagClient implements INoLagClient {
    */
   connect(): Promise<NoLagClient> {
     this.connectionStatus = EConnectionStatus.Idle;
-    this.environment === EEnvironment.Browser
-      ? this.browserInstance()
-      : this.nodeInstance();
+    this.initWebsocketConnection();
     return new Promise((resolve, reject) => {
       const checkConnection = setInterval(() => {
         if (this.connectionStatus === EConnectionStatus.Connected) {
@@ -116,7 +115,7 @@ export class NoLagClient implements INoLagClient {
   disconnect() {
     if (this.wsInstance && this.wsInstance.close) {
       this.wsInstance.close();
-      this.wsInstance = null;
+      this.wsInstance = undefined;
     }
   }
 
@@ -124,66 +123,36 @@ export class NoLagClient implements INoLagClient {
    * Initiate browser WebSocket instance and set it to
    * wsInstance
    */
-  browserInstance() {
+  initWebsocketConnection() {
     // prevent the re-initiation of a socket connection when the
     // reconnect function calls this method again
     if (this.connectionStatus === EConnectionStatus.Connected) {
       return;
     }
 
-    this.wsInstance = null;
-    // connect to server via ws
-    this.wsInstance = new WebSocket(
+    this.wsInstance = this.unifiedWebsocket(
       `${this.protocol}://${this.host}${this.url}`,
     );
-    this.wsInstance.binaryType = EEncoding.Arraybuffer;
 
-    // set of events
-    // when a successful connection is made with he server
-    this.wsInstance.onopen = (event: any) => {
+    if (!this.wsInstance) {
+      return;
+    }
+
+    this.wsInstance.onOpen ? this.wsInstance.onOpen((event: any) => {
       this._onOpen(event);
-    };
+    }): null;
 
-    this.wsInstance.onclose = (event: any) => {
-      this._onClose(event);
-    };
-
-    this.wsInstance.onerror = (event: any) => {
-      this._onError(event);
-    };
-
-    this.wsInstance.onmessage = (event: any) => {
+    this.wsInstance.onMessage ? this.wsInstance.onMessage((event: any) => {
       this._onReceive(event);
-    };
-  }
+    }): null;
 
-  /**
-   * Node WebSocket connection with package "ws"
-   */
-  nodeInstance() {
-    import("ws").then((loadedWebSocketNode) => {
-      const WebSocketNode = loadedWebSocketNode.default;
+    this.wsInstance.onClose ? this.wsInstance.onClose((event: any) => {
+      this._onClose(event);
+    }): null;
 
-      // prevent the re-initiation of a socket connection when the
-      // reconnect function calls this method again
-      if (this.connectionStatus === EConnectionStatus.Connected) {
-        return;
-      }
-
-      this.wsInstance = new WebSocketNode(
-        `${this.protocol}://${this.host}${this.url}`,
-      );
-
-      this.wsInstance.on("open", (event: any) => {
-        this._onOpen(event);
-      });
-      this.wsInstance.on("message", (event: any) => {
-        this._onReceive(event);
-      });
-      this.wsInstance.on("close", (event: any) => {
-        this._onError(event);
-      });
-    });
+    this.wsInstance.onError ? this.wsInstance.onError((event: any) => {
+      this._onError(event);
+    }): null;
   }
 
   authenticate() {
@@ -224,17 +193,7 @@ export class NoLagClient implements INoLagClient {
   }
 
   private async _onReceive(event: any) {
-    let data: ArrayBuffer = new ArrayBuffer(0);
-    switch (this.environment) {
-      case EEnvironment.Browser:
-        const arrayBuffer = await event.data;
-        data = arrayBuffer;
-        break;
-
-      case EEnvironment.Nodejs:
-        data = event;
-        break;
-    }
+    const data: ArrayBuffer = event ?? new ArrayBuffer(0);
 
     const decoded = NqlTransport.decode(data);
     if (data.byteLength === 0) {

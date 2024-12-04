@@ -4,7 +4,7 @@ import {
   IErrorMessage,
   INqlIdentifiers,
   ITransport,
-  ITunnelOptions, IUnifiedWebsocket
+  ITunnelOptions, IWebsocketInstance
 } from "../shared/interfaces";
 
 import { ITopic, Topic } from "../shared/models/Topic";
@@ -106,7 +106,7 @@ export class Tunnel implements ITunnel {
   private callbackOnReceivedError: FConnection = () => {};
 
   constructor(
-    unifiedWebsocket: (url: string) => IUnifiedWebsocket,
+    unifiedWebsocket: (url: string) => IWebsocketInstance,
     authToken: string,
     options?: ITunnelOptions,
     connectOptions?: IConnectOptions,

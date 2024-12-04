@@ -31,8 +31,6 @@ export class NqlTransport {
       payloadLength = payload.byteLength + 1;
       payloadUintArray = new Uint8Array(payload);
       payloadOffset = commandLength + 1;
-
-      payload = new Uint8Array(payload);
     }
 
     const bitLength = commandLength + payloadLength;
