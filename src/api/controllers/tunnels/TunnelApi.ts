@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import { ApiTunnel } from "../..";
+import { ApiTunnel } from "../../ApiTunnel";
 import { IHttpPublish } from "../../../shared/interfaces";
 import { ITunnelDevice, TunnelDevice } from "./TunnelDevice";
 import { TunnelPublish } from "./TunnelPublish";

@@ -1,5 +1,4 @@
 import { AxiosInstance, AxiosStatic } from "axios";
-import { TData } from "../../../shared/constants";
 import { ETransportCommand } from "../../../shared/enum/ETransportCommand";
 import { IConnectOptions } from "../../../shared/interfaces";
 import { transportCommands } from "../../../shared/utils/TransportCommands";

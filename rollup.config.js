@@ -7,7 +7,24 @@ import { terser } from 'rollup-plugin-terser';
 export default [
   // ESM build
   {
-    input: 'src/browser.ts', // Entry point for the ESM build
+    input: 'src/index.ts', // Entry point for the ESM build
+    output: {
+      file: './bin/index.js', // Output file
+      format: 'umd', // Universal Module Definition for browsers
+      name: 'NoLagJS', // Global variable for browser UMD builds
+      sourcemap: true, // Generate sourcemap for debugging
+    },
+    plugins: [
+      resolve(), // Resolves module dependencies
+      json(),
+      commonjs(), // Converts CommonJS modules to ES Modules
+      typescript({ tsconfig: './tsconfig.json' }), // TypeScript support
+      terser(), // Optional: Minify the code for production
+    ],
+  },
+  // ESM build
+  {
+    input: 'src/index.ts', // Entry point for the ESM build
     output: {
       file: './bin/esm.js', // Output file
       format: 'esm', // ECMAScript Module format
@@ -23,7 +40,7 @@ export default [
   },
   // Browser build
   {
-    input: 'src/browser.ts',
+    input: 'src/index.ts',
     output: {
       file: './bin/browser.js',
       format: 'umd', // Universal Module Definition for browsers

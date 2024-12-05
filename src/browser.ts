@@ -1,6 +1,6 @@
 export * from "./imports";
 import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
-import { ITunnel, Tunnel } from "./client/index";
+import { ITunnel, Tunnel } from "./client";
 import {unifiedWebsocket} from "./instance/browser";
 
 

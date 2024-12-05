@@ -20,7 +20,7 @@
     "noImplicitAny": true /* Enable error reporting for expressions and declarations with an implied `any` type.. */,
     "noUncheckedIndexedAccess": true /* Include 'undefined' in index signature results */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "declaration": true
+    "declaration": true,
   },
   "include": ["src/**/*"], // which files to compile
   "exclude": ["./node_modules/*", "**/__tests__/*", "bin"] // which files to skip

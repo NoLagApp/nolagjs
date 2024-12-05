@@ -7,10 +7,10 @@
     "npm": ">=5.0.0"
   },
   "description": "NoLag websocket client for browser and Nodejs",
-  "main": "bin/node.js",
+  "main": "bin/browser.js",
   "browser": "bin/browser.js",
-  "module": "bin/esm.js",
-  "types": "bin/imports.d.ts",
+  "module": "bin/browser.js",
+  "types": "bin/browser.d.ts",
   "files": [
     "bin"
   ],
