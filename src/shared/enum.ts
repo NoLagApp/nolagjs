@@ -10,14 +10,6 @@ export enum EEnvironment {
   Browser = "browser",
 }
 
-/**
- * Used as a command to indicate to the Message Broker that a device wants to add or delete a subscription to a topic, or to add and delete identifiers set on a topic.
- */
-export enum EAction {
-  Add = "a",
-  Delete = "d",
-}
-
 export enum EEncoding {
   Arraybuffer = "arraybuffer",
 }
@@ -25,17 +17,6 @@ export enum EEncoding {
 export enum EVisibilityState {
   Hidden = "hidden",
   Visible = "visible",
-}
-
-export enum ESeparator {
-  Group = 29,
-  Record = 30,
-  Unit = 31,
-  Vertical = 11,
-  NegativeAck = 21,
-  BellAlert = 7,
-  // send this when we try to reconnect to Message Broker
-  SynchronousIdle = 22,
 }
 
 /**
@@ -58,4 +39,8 @@ export enum EStatus {
 export enum ETopicType {
   Standard = "standard",
   Api = "api",
+}
+
+export enum ELoadBalanceType {
+  RoundRobbin = "roundRobin",
 }

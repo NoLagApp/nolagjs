@@ -1,6 +1,6 @@
 import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
 import { ITunnel, Tunnel } from "./client";
-import {unifiedWebsocket} from "./instance/browser";
+import {unifiedWebsocket} from "./unifiedWebsocket/browser";
 export * from "./imports";
 
 console.log("load browserInstance");

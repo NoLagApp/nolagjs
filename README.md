@@ -12,7 +12,7 @@ import {
   WebSocketClient,
   stringToArrayBuffer,
   uint8ArrayToString,
-} from "nolag";
+} from "nolagjs";
 
 import type { ITopic, ITunnel, IResponse } from "nolag";
 

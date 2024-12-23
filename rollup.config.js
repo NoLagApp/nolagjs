@@ -66,7 +66,7 @@ export default [
   {
     input: 'src/index.ts', // Entry point for the ESM build
     output: {
-      file: './bin/index.js', // Output file
+      file: './bin/index.cjs', // Output file
       format: 'cjs', // ECMAScript Module format
       sourcemap: true, // Generate sourcemap for debugging
     },
@@ -82,7 +82,7 @@ export default [
   {
     input: 'src/index.ts', // Entry point for the ESM build
     output: {
-      file: './bin/index.esm.js', // Output file
+      file: './bin/index.mjs', // Output file
       format: 'esm', // ECMAScript Module format
       sourcemap: true, // Generate sourcemap for debugging
     },

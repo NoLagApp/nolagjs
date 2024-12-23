@@ -7,9 +7,9 @@
     "npm": ">=8.6.0"
   },
   "description": "NoLag websocket client for browser and Nodejs",
-  "main": "./bin/index.js",
+  "main": "./bin/index.cjs",
   "browser": "./bin/browserInstance.js",
-  "module": "./bin/index.esm.js",
+  "module": "./bin/index.mjs",
   "types": "./bin/index.d.ts",
   "files": [
     "bin"

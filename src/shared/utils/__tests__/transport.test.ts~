@@ -2,7 +2,7 @@ import {
   ETransportCommand,
   ETransportCommandSeparator,
 } from "../../../shared/enum/ETransportCommand";
-import { stringToBuffer } from "../Encodings";
+import { stringToArrayBuffer } from "../Encodings";
 import { transportCommands } from "../TransportCommands";
 import { NqlTransport } from "../transport";
 
@@ -67,7 +67,7 @@ export const unSubscribeToTopicIdentifiers = [
 ];
 
 export const payloadString = "Data to be sent";
-export const payload = stringToBuffer(payloadString);
+export const payload = stringToArrayBuffer(payloadString);
 
 export const publishPayload = [
   ETransportCommand.Topic,
