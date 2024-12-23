@@ -1,5 +1,4 @@
-import { AxiosInstance } from "axios";
-import { IDeviceListQuery, IDeviceTokenModel, IPaginated } from "../../../shared/interfaces";
+import { IDeviceListQuery, IDeviceTokenModel, IPaginated, IRequestParams } from "../../../shared/interfaces";
 export interface ITunnelDevice {
     /**
      * Create new Tunnel device
@@ -15,7 +14,7 @@ export interface ITunnelDevice {
      * List all Tunnel devices
      * @param query
      */
-    listDevices(query: IDeviceListQuery): Promise<IPaginated<IDeviceTokenModel>>;
+    listDevices(query?: IDeviceListQuery): Promise<IPaginated<IDeviceTokenModel>>;
     /**
      * Update a Tunnel device
      * @param deviceTokenId
@@ -32,11 +31,12 @@ export declare class TunnelDevice implements ITunnelDevice {
     private routeNamespace;
     private parentRouteNamespace;
     private tunnelId;
-    private request;
-    constructor(parentRouteNamespace: string, tunnelId: string, request: AxiosInstance);
+    private requestParams;
+    constructor(parentRouteNamespace: string, tunnelId: string, requestParams: IRequestParams);
     createDevice(payload: IDeviceTokenModel): Promise<IDeviceTokenModel>;
     getDeviceById(deviceTokenId: string): Promise<IDeviceTokenModel>;
-    listDevices(query: IDeviceListQuery): Promise<IPaginated<IDeviceTokenModel>>;
+    listDevices(query?: IDeviceListQuery): Promise<IPaginated<IDeviceTokenModel>>;
     updateDevice(deviceTokenId: string, payload: IDeviceTokenModel): Promise<IDeviceTokenModel>;
     deleteDevice(deviceTokenId: string): Promise<IDeviceTokenModel>;
 }
+//# sourceMappingURL=TunnelDevice.d.ts.map

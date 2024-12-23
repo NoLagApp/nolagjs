@@ -90,3 +90,4 @@ export declare class Tunnel implements ITunnel {
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
     get status(): import("../shared/enum").EConnectionStatus | null;
 }
+//# sourceMappingURL=index.d.ts.map

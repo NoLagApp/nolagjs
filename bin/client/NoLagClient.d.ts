@@ -62,3 +62,4 @@ export declare class NoLagClient implements INoLagClient {
     heartbeat(): void;
 }
 export {};
+//# sourceMappingURL=NoLagClient.d.ts.map

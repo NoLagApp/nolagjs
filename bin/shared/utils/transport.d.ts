@@ -17,3 +17,4 @@ export declare class NqlTransport {
     static commandActionUint8ArrayToStringArray(commandActionArray: number[]): string[];
     static extractCommands(commands: Uint8Array): Record<ETransportCommand, string | string[] | boolean>;
 }
+//# sourceMappingURL=transport.d.ts.map

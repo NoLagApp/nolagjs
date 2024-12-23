@@ -1,4 +1,4 @@
-// export * from "./api/index";
+export * from "./api";
 export * from "./api/controllers/tunnels/TunnelApi";
 export * from "./api/controllers/tunnels/TunnelDevice";
 export * from "./api/controllers/tunnels/TunnelPublish";

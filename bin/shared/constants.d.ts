@@ -17,3 +17,4 @@ export type TData = ArrayBuffer;
 export type dataType<T> = {
     [key: string]: T;
 };
+//# sourceMappingURL=constants.d.ts.map

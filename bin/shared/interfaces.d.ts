@@ -169,3 +169,8 @@ export interface IUnifiedWebsocket {
     close?: () => void;
     send?: (message: ArrayBuffer) => void;
 }
+export interface IRequestParams {
+    baseURL: string;
+    headers: Record<string, string>;
+}
+//# sourceMappingURL=interfaces.d.ts.map

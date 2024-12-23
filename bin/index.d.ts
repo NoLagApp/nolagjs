@@ -1,2 +1,12 @@
+import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
+import { ITunnel } from "./client";
 export * from "./imports";
-export declare const test = "test";
+/**
+ * Connect to NoLag message broker using websocket
+ * @param authToken
+ * @param options
+ * @param connectOptions
+ * @constructor
+ */
+export declare const WebSocketClient: (authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions) => Promise<ITunnel>;
+//# sourceMappingURL=index.d.ts.map

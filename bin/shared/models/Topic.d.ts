@@ -64,3 +64,4 @@ export declare class Topic implements ITopic {
     publish(data: ArrayBuffer, identifiers: string[]): Topic;
     private send;
 }
+//# sourceMappingURL=Topic.d.ts.map

@@ -1,6 +1,5 @@
-import { IConnectOptions, IPaginated, ITunnelModel, ITunnelQuery } from "../shared/interfaces";
+import { IConnectOptions, IPaginated, ITunnelModel, ITunnelQuery, IRequestParams } from "../shared/interfaces";
 import { ITunnelApi, TunnelApi } from "./controllers/tunnels/TunnelApi";
-import axios, { AxiosInstance } from "axios";
 import { CONSTANT } from "../shared/constants";
 
 export interface IApiTunnel {
@@ -11,7 +10,7 @@ export interface IApiTunnel {
 export class ApiTunnel {
   private apiKey: string;
   public connectOptions: IConnectOptions;
-  private request: AxiosInstance;
+  private requestParams: IRequestParams;
   constructor(apiKey: string, connectOptions?: IConnectOptions) {
     this.connectOptions = {
       host: CONSTANT.DefaultApiHost,
@@ -24,27 +23,23 @@ export class ApiTunnel {
     };
 
     this.apiKey = apiKey;
-    this.request = this.createRequestInstance();
-  }
-
-  private createRequestInstance() {
-    return axios.create({
+    this.requestParams = {
       baseURL: `${this.connectOptions?.protocol}://${this.connectOptions?.host}${this.connectOptions?.url}`,
       headers: { "X-API-Key": this.apiKey, "Content-Type": "application/json" },
-    });
-  }
-
-  async tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>> {
-    const response = await this.request.get("/tunnels", {
-      params: tunnelQuery,
-    });
-
-    return {
-      ...response.data,
     };
   }
 
+  async tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>> {
+    const queryString = new URLSearchParams(tunnelQuery as Record<string, string>).toString();
+    const response = await fetch(`${this.requestParams.baseURL}/tunnels${queryString ? `?${queryString}` : ""}`, {
+      headers: this.requestParams.headers,
+      method: "get",
+    });
+
+    return response.json();
+  }
+
   tunnel(tunnelId: string): ITunnelApi {
-    return new TunnelApi(this, tunnelId, this.request);
+    return new TunnelApi(this, tunnelId, this.requestParams);
   }
 }

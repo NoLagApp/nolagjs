@@ -7,9 +7,9 @@ export interface IApiTunnel {
 export declare class ApiTunnel {
     private apiKey;
     connectOptions: IConnectOptions;
-    private request;
+    private requestParams;
     constructor(apiKey: string, connectOptions?: IConnectOptions);
-    private createRequestInstance;
     tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>>;
     tunnel(tunnelId: string): ITunnelApi;
 }
+//# sourceMappingURL=ApiTunnel.d.ts.map

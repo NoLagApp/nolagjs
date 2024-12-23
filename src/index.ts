@@ -1,15 +1,25 @@
+import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
+import { ITunnel, Tunnel } from "./client";
+import {unifiedWebsocket} from "./instance/node";
 export * from "./imports";
-import { ITunnel } from "./client/index";
+// import { Api } from "./api";
+//
+// export {
+//   Api
+// }
 
-// Use a runtime check to detect the environment
-const isNode =
-  typeof process !== 'undefined' &&
-  process.versions !== null &&
-  process.versions.node !== null;
-
-// export const WebSocketClient: Promise<ITunnel> = isNode
-//   ? require('./node').WebSocketClient
-//   : require('./browser').WebSocketClient;
-console.log(require('./browser'));
-export const test = "test";
-// export const WebSocketClient: Promise<ITunnel> = require('./browser').WebSocketClient;
+/**
+ * Connect to NoLag message broker using websocket
+ * @param authToken
+ * @param options
+ * @param connectOptions
+ * @constructor
+ */
+export const WebSocketClient = async (
+  authToken: string,
+  options?: ITunnelOptions,
+  connectOptions?: IConnectOptions,
+): Promise<ITunnel> => {
+  const instance = new Tunnel(unifiedWebsocket, authToken, options, connectOptions);
+  return instance.initiate();
+};

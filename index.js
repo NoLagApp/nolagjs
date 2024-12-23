@@ -1,3 +1,11 @@
 "use strict";
 
-module.exports = require("./bin");
+import * as nolagjs from './bin/index.js';
+
+const {
+  webSocketClient
+} = nolagjs;
+
+export {
+  webSocketClient
+}

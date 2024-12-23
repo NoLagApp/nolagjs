@@ -1,9 +1,9 @@
-export * from "./imports";
 import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
-import { ITunnel, Tunnel } from "./client/index";
-import {unifiedWebsocket} from "./instance/node";
+import { ITunnel, Tunnel } from "./client";
+import {unifiedWebsocket} from "./instance/browser";
+export * from "./imports";
 
-
+console.log("load browserInstance");
 export const WebSocketClient = async (
   authToken: string,
   options?: ITunnelOptions,

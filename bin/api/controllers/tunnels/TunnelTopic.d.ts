@@ -1,5 +1,4 @@
-import { AxiosInstance } from "axios";
-import { ITopicQuery, ITopicModel, IPaginated } from "../../../shared/interfaces";
+import { ITopicQuery, ITopicModel, IPaginated, IRequestParams } from "../../../shared/interfaces";
 export interface ITunnelTopic {
     /**
      * Create new Tunnel Topic
@@ -32,11 +31,12 @@ export declare class TunnelTopic implements ITunnelTopic {
     private routeNamespace;
     private parentRouteNamespace;
     private tunnelId;
-    private request;
-    constructor(parentRouteNamespace: string, tunnelId: string, request: AxiosInstance);
+    private readonly requestParams;
+    constructor(parentRouteNamespace: string, tunnelId: string, requestParams: IRequestParams);
     createTopic(payload: ITopicModel): Promise<ITopicModel>;
     getTopicById(topicId: string): Promise<ITopicModel>;
     listTopics(query?: ITopicQuery): Promise<IPaginated<ITopicModel>>;
     updateTopic(topicId: string, payload: ITopicModel): Promise<ITopicModel>;
     deleteTopic(topicId: string): Promise<ITopicModel>;
 }
+//# sourceMappingURL=TunnelTopic.d.ts.map
