@@ -4,7 +4,8 @@ import {
   IErrorMessage,
   INqlIdentifiers,
   ITransport,
-  ITunnelOptions, IUnifiedWebsocket
+  ITunnelOptions,
+  IUnifiedWebsocket,
 } from "../shared/interfaces";
 
 import { ITopic, Topic } from "../shared/models/Topic";

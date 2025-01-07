@@ -29,6 +29,6 @@
       "*": ["src/*"]
     }
   },
-  "include": ["src/**/*"], // which files to compile
-  "exclude": ["./node_modules/*", "**/__tests__/*", "bin"] // which files to skip
+  "include": ["src/**/*", "bin/**/*"], // which files to compile
+  "exclude": ["./node_modules/*", "**/__tests__/*"] // which files to skip
 }

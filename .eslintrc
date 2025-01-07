@@ -21,6 +21,7 @@
      "@typescript-eslint/no-explicit-any": "off"
    },
    "env": {
+     "node": true,
      "es2021": true
    }
  }

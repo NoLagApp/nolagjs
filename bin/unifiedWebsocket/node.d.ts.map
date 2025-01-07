@@ -1,1 +1,1 @@
-{"version":3,"file":"node.d.ts","sourceRoot":"","sources":["../../src/unifiedWebsocket/node.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,iBAAiB,EAAE,MAAM,sBAAsB,CAAC;AAEzD,eAAO,MAAM,gBAAgB,QAAS,MAAM,sBAgC3C,CAAA"}
+{"version":3,"file":"node.d.ts","sourceRoot":"","sources":["../../src/unifiedWebsocket/node.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,iBAAiB,EAAE,MAAM,sBAAsB,CAAC;AAEzD,eAAO,MAAM,gBAAgB,QAAS,MAAM,sBA8B3C,CAAC"}

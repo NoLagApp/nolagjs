@@ -1,9 +1,9 @@
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
-import json from '@rollup/plugin-json';
-import { terser } from 'rollup-plugin-terser';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import typescript from "@rollup/plugin-typescript";
+import json from "@rollup/plugin-json";
+import terser from '@rollup/plugin-terser';
+import nodePolyfills from "rollup-plugin-polyfill-node";
 
 export default [
   // ESM build
@@ -47,53 +47,53 @@ export default [
   // },
   // ESM build
   {
-    input: 'src/browserInstance.ts', // Entry point for the ESM build
+    input: "src/browserInstance.ts", // Entry point for the ESM build
     output: {
-      file: './bin/browserInstance.js', // Output file
-      format: 'esm', // ECMAScript Module format
+      file: "./bin/browserInstance.js", // Output file
+      format: "esm", // ECMAScript Module format
       sourcemap: true, // Generate sourcemap for debugging
     },
     plugins: [
       resolve(), // Resolves module dependencies
       json(),
       commonjs(), // Converts CommonJS modules to ES Modules
-      typescript({ tsconfig: './tsconfig.json' }), // TypeScript support
+      typescript({ tsconfig: "./tsconfig.json" }), // TypeScript support
       terser(), // Optional: Minify the code for production
     ],
-    external: ['fs', 'path'], // Exclude Node.js built-in modules
+    external: ["fs", "path"], // Exclude Node.js built-in modules
   },
   // ESM build
   {
-    input: 'src/index.ts', // Entry point for the ESM build
+    input: "src/index.ts", // Entry point for the ESM build
     output: {
-      file: './bin/index.cjs', // Output file
-      format: 'cjs', // ECMAScript Module format
+      file: "./bin/index.cjs", // Output file
+      format: "cjs", // ECMAScript Module format
       sourcemap: true, // Generate sourcemap for debugging
     },
     plugins: [
       resolve(), // Resolves module dependencies
       json(),
       commonjs(), // Converts CommonJS modules to ES Modules
-      typescript({ tsconfig: './tsconfig.json' }), // TypeScript support
+      typescript({ tsconfig: "./tsconfig.json" }), // TypeScript support
       terser(), // Optional: Minify the code for production,code
     ],
-    external: ['fs', 'path'], // Exclude Node.js built-in modules
+    external: ["fs", "path"], // Exclude Node.js built-in modules
   },
   {
-    input: 'src/index.ts', // Entry point for the ESM build
+    input: "src/index.ts", // Entry point for the ESM build
     output: {
-      file: './bin/index.mjs', // Output file
-      format: 'esm', // ECMAScript Module format
+      file: "./bin/index.mjs", // Output file
+      format: "esm", // ECMAScript Module format
       sourcemap: true, // Generate sourcemap for debugging
     },
     plugins: [
       resolve(), // Resolves module dependencies
       json(),
       commonjs(), // Converts CommonJS modules to ES Modules
-      typescript({ tsconfig: './tsconfig.json' }), // TypeScript support
+      typescript({ tsconfig: "./tsconfig.json" }), // TypeScript support
       terser(), // Optional: Minify the code for production,
     ],
-    external: ['fs', 'path'], // Exclude Node.js built-in modules
+    external: ["fs", "path"], // Exclude Node.js built-in modules
   },
   // // Browser build
   // {

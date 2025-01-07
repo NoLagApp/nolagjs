@@ -1,7 +1,8 @@
 import {
   IDeviceListQuery,
   IDeviceTokenModel,
-  IPaginated, IRequestParams
+  IPaginated,
+  IRequestParams,
 } from "../../../shared/interfaces";
 import { generateQueryString } from "../../../shared/utils/generateQueryString";
 
@@ -53,20 +54,26 @@ export class TunnelDevice implements ITunnelDevice {
   }
 
   async createDevice(payload: IDeviceTokenModel): Promise<IDeviceTokenModel> {
-    const response = await fetch(`${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`, {
-      method: "POST",
-      headers: this.requestParams.headers,
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
+      {
+        method: "POST",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
     return response.json();
   }
 
   async getDeviceById(deviceTokenId: string): Promise<IDeviceTokenModel> {
-    const response = await fetch(`${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`, {
-      method: "GET",
-      headers: this.requestParams.headers,
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
+      {
+        method: "GET",
+        headers: this.requestParams.headers,
+      },
+    );
 
     return response.json();
   }
@@ -75,10 +82,13 @@ export class TunnelDevice implements ITunnelDevice {
     query?: IDeviceListQuery,
   ): Promise<IPaginated<IDeviceTokenModel>> {
     const queryString = generateQueryString(query);
-    const response = await fetch(`${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`, {
-      method: "GET",
-      headers: this.requestParams.headers,
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
+      {
+        method: "GET",
+        headers: this.requestParams.headers,
+      },
+    );
 
     return response.json();
   }
@@ -87,20 +97,26 @@ export class TunnelDevice implements ITunnelDevice {
     deviceTokenId: string,
     payload: IDeviceTokenModel,
   ): Promise<IDeviceTokenModel> {
-    const response = await fetch(`${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`, {
-      method: "PATCH",
-      headers: this.requestParams.headers,
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
+      {
+        method: "PATCH",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
     return response.json();
   }
 
   async deleteDevice(deviceTokenId: string): Promise<IDeviceTokenModel> {
-    const response = await fetch(`${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`, {
-      method: "DELETE",
-      headers: this.requestParams.headers,
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
+      {
+        method: "DELETE",
+        headers: this.requestParams.headers,
+      },
+    );
 
     return response.json();
   }

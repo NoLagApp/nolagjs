@@ -1,6 +1,4 @@
-import {
-  IConnectOptions,
-} from "../shared/interfaces";
+import { IConnectOptions } from "../shared/interfaces";
 import { ApiTunnel, IApiTunnel } from "./ApiTunnel";
 
 /**

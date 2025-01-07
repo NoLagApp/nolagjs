@@ -1,12 +1,10 @@
-import WebSocket from 'ws';
+import WebSocket from "ws";
 import { IUnifiedWebsocket } from "../shared/interfaces";
 
 export const unifiedWebsocket = (url: string) => {
-  const ws = new WebSocket(
-    url,
-  );
+  const ws = new WebSocket(url);
 
-  const wsInstance: IUnifiedWebsocket= {
+  const wsInstance: IUnifiedWebsocket = {
     send: (message: ArrayBuffer) => {
       ws.send(message);
     },
@@ -16,21 +14,21 @@ export const unifiedWebsocket = (url: string) => {
   };
 
   ws.on("open", (event: any) => {
-    if(wsInstance?.onOpen) {
+    if (wsInstance?.onOpen) {
       wsInstance.onOpen(event);
     }
   });
 
   ws.on("message", (event: any) => {
-    if(wsInstance?.onMessage) {
+    if (wsInstance?.onMessage) {
       wsInstance.onMessage(event);
     }
   });
   ws.on("close", (event: any) => {
-    if(wsInstance?.onClose) {
+    if (wsInstance?.onClose) {
       wsInstance.onClose(event);
     }
   });
 
   return wsInstance;
-}
+};

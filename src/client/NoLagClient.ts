@@ -17,7 +17,7 @@ interface INoLagClient {
 export class NoLagClient implements INoLagClient {
   private host: string;
   private authToken: string;
-  public wsInstance: IUnifiedWebsocket |undefined;
+  public wsInstance: IUnifiedWebsocket | undefined;
   private protocol: string;
   private url: string;
   private deviceConnectionId: string | undefined = undefined;
@@ -138,21 +138,21 @@ export class NoLagClient implements INoLagClient {
       return;
     }
 
-    this.wsInstance.onOpen = ((event: any) => {
+    this.wsInstance.onOpen = (event: any) => {
       this._onOpen(event);
-    });
+    };
 
-    this.wsInstance.onMessage = ((event: any) => {
+    this.wsInstance.onMessage = (event: any) => {
       this._onReceive(event);
-    })
+    };
 
-   this.wsInstance.onClose = ((event: any) => {
+    this.wsInstance.onClose = (event: any) => {
       this._onClose(event);
-    })
+    };
 
-    this.wsInstance.onError = ((event: any) => {
+    this.wsInstance.onError = (event: any) => {
       this._onError(event);
-    });
+    };
   }
 
   authenticate() {

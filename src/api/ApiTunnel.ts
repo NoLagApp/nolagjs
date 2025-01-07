@@ -1,9 +1,28 @@
-import { IConnectOptions, IPaginated, ITunnelModel, ITunnelQuery, IRequestParams } from "../shared/interfaces";
+import {
+  IConnectOptions,
+  IPaginated,
+  ITunnelModel,
+  ITunnelQuery,
+  IRequestParams,
+} from "../shared/interfaces";
 import { ITunnelApi, TunnelApi } from "./controllers/tunnels/TunnelApi";
 import { CONSTANT } from "../shared/constants";
 
 export interface IApiTunnel {
+  /**
+   * Retrieve list of tunnels based on tunnelQuery
+   * @param tunnelQuery
+   */
   tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>>;
+  /**
+   * Create new tunnel based on supplied payload
+   * @param payload
+   */
+  createTunnel(payload: ITunnelModel): Promise<ITunnelModel>;
+  /**
+   * Interact with a tunnel by using the tunnelId
+   * @param tunnelId
+   */
   tunnel(tunnelId: string): ITunnelApi;
 }
 
@@ -30,16 +49,31 @@ export class ApiTunnel {
   }
 
   async tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>> {
-    const queryString = new URLSearchParams(tunnelQuery as Record<string, string>).toString();
-    const response = await fetch(`${this.requestParams.baseURL}/tunnels${queryString ? `?${queryString}` : ""}`, {
-      headers: this.requestParams.headers,
-      method: "get",
-    });
+    const queryString = new URLSearchParams(
+      tunnelQuery as Record<string, string>,
+    ).toString();
+    const response = await fetch(
+      `${this.requestParams.baseURL}/tunnels${
+        queryString ? `?${queryString}` : ""
+      }`,
+      {
+        headers: this.requestParams.headers,
+        method: "get",
+      },
+    );
 
     return response.json();
   }
 
-  tunnel(tunnelId: string): ITunnelApi {
+  async createTunnel(payload: ITunnelModel): Promise<ITunnelModel> {
+    return fetch(`${this.requestParams.baseURL}/tunnels`, {
+      method: "POST",
+      headers: this.requestParams.headers,
+      body: JSON.stringify(payload),
+    }).then((response) => response.json());
+  }
+
+  public tunnel(tunnelId: string): ITunnelApi {
     return new TunnelApi(this, tunnelId, this.requestParams);
   }
 }

@@ -97,6 +97,9 @@ export interface IHttpPublish {
  * Topic properties used to creating or updating a model
  */
 export interface ITopicModel {
+    topicId?: string;
+    projectId?: string;
+    tunnelId?: string;
     status?: EStatus;
     name?: string;
     triggerApi?: ITopicApiModel;
@@ -132,11 +135,11 @@ export interface ITunnelQuery {
     search?: string;
 }
 export interface ITunnelModel {
-    tunnelId: string;
-    projectId: string;
-    status: EStatus;
+    tunnelId?: string;
+    projectId?: string;
+    status?: EStatus;
     name: string;
-    secure: boolean;
+    secure?: boolean;
     sandbox: boolean;
 }
 /**
@@ -172,5 +175,8 @@ export interface IUnifiedWebsocket {
 export interface IRequestParams {
     baseURL: string;
     headers: Record<string, string>;
+}
+export interface IGlobalVars {
+    PROJECT_API_KEY: string;
 }
 //# sourceMappingURL=interfaces.d.ts.map
