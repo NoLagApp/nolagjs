@@ -4,7 +4,7 @@
     "target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
     /* Modules */
     "module": "ESNext" /* Specify what module code is generated. */,
-    "rootDir": "./src" /* Specify the root folder within your source files. */,
+    "rootDir": "./" /* Specify the root folder within your source files. */,
     "types": [
       /*"reflect-metadata",*/
       "jest",
@@ -24,10 +24,7 @@
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "moduleResolution": "node",
+    "composite": true
   },
-  "include": ["src/**/*"], // which files to compile
-  "references": [
-    { "path": "./examples" }
-  ],
-  "exclude": ["node_modules", "**/__tests__/*", "examples"] // which files to skip
+  "include": ["**/*"], // which files to compile
 }

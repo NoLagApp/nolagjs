@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config(); // Load environment variables from .env file
 
 export default defineConfig({
-  testDir: "./e2e/browser", // Directory where your test files are located
+  testDir: "./examples/e2e/browser", // Directory where your test files are located
   testMatch: "**/*.playtest.ts", // Only include files with "playtest" in their name
   timeout: 30000, // Set timeout for each test
   expect: {

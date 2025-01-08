@@ -12,3 +12,6 @@ Thumbs.db
 
 # Environment file
 *.env
+
+# tests ran
+test-results/

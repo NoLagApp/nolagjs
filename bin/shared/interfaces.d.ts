@@ -138,9 +138,9 @@ export interface ITunnelModel {
     tunnelId?: string;
     projectId?: string;
     status?: EStatus;
-    name: string;
+    name?: string;
     secure?: boolean;
-    sandbox: boolean;
+    sandbox?: boolean;
 }
 /**
  * Error model received from Message Broker or API

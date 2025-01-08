@@ -5,7 +5,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   collectCoverage: true,
   collectCoverageFrom: [
-    './e2e/node/**/*.jestest.{ts,tsx}',
+    './examples/e2e/node/**/*.jestest.{ts,tsx}',
     '**/*.test.{ts,tsx}'
   ],
   testSequencer: "./testSequencer.cjs",
