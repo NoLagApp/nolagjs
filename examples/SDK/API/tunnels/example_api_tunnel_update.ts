@@ -1,25 +1,24 @@
 /**
- * Create new Tunnel attached to a Project
+ * Update Tunnel details attached to a Project using tunnelID
  * Can read more about this here: https://developer.nolag.app/#project-tunnels
  */
-import globalVars from "../../../constants/globalVars";
 
 import type { IConnectOptions, ITunnelModel } from "nolagjs";
 import { Api } from "nolagjs";
 
-export interface IExampleApiTunnelCreate {
+export interface IExampleApiTunnelEdit {
+  e2ePayload: ITunnelModel;
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
-  tunnelName: string;
-  payload: ITunnelModel;
+  tunnel: ITunnelModel;
 }
 
-export const example_api_tunnel_create = async ({
+export const example_api_tunnel_edit = async ({
+  e2ePayload,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
-  tunnelName,
-  payload,
-}: IExampleApiTunnelCreate) => {
+  tunnel,
+}: IExampleApiTunnelEdit) => {
   /***** EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
@@ -30,14 +29,16 @@ export const example_api_tunnel_create = async ({
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
 
-  // tunnel payload
-  const createPayload: ITunnelModel = payload ?? {
-    name: tunnelName,
-    // you can not create sandbox tunnels if no billing details attached to project
-    sandbox: true,
-  };
+  const tunnelId = tunnel?.tunnelId ?? "";
 
-  const response = await apiTunnel.createTunnel(createPayload);
+  // we update the name or any end-to-end data we want to test
+  const payload: ITunnelModel = e2ePayload
+    ? e2ePayload
+    : {
+        name: `updated_tunnel_name`,
+      };
+
+  const response = await apiTunnel.tunnel(tunnelId).updateTunnel(payload);
 
   /***** EXAMPLE CODE END *****/
 

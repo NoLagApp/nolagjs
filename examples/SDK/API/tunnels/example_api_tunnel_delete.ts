@@ -1,22 +1,21 @@
 /**
- * List Tunnels attached to a Project
+ * Delete Tunnel using tunnelID
  * Can read more about this here: https://developer.nolag.app/#project-tunnels
  */
 
-import type { IConnectOptions, ITunnelQuery } from "nolagjs";
-import { Api, EStatus } from "nolagjs";
+import { Api, type IConnectOptions, type ITunnelModel } from "nolagjs";
 
-export interface IExampleApiTunnelList {
-  tunnelQuery: ITunnelQuery;
+export interface IExampleApiTunnelDelete {
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
+  tunnel: ITunnelModel;
 }
 
-export const example_api_tunnel_list = async ({
-  tunnelQuery,
+export const example_api_tunnel_delete = async ({
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
-}: IExampleApiTunnelList) => {
+  tunnel,
+}: IExampleApiTunnelDelete) => {
   /***** EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
@@ -27,21 +26,11 @@ export const example_api_tunnel_list = async ({
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
 
-  const query: ITunnelQuery = tunnelQuery ?? {
-    status: EStatus.Active,
-    size: 10,
-    page: 1,
-    search: "tunnel_name_search_goes_here",
-  };
-
-  const response = await apiTunnel.tunnels(query);
-
-  const { records, pagination } = response;
+  const response = await apiTunnel
+    .tunnel(tunnel?.tunnelId ?? "")
+    .deleteTunnel();
 
   /***** EXAMPLE CODE END *****/
 
-  return {
-    records,
-    pagination,
-  };
+  return response;
 };

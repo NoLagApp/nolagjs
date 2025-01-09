@@ -8,7 +8,7 @@ import globalVars from "../../constants/globalVars";
 
 import { Api } from "nolagjs";
 
-import { example_api_tunnel_edit_name } from "../../SDK/API/tunnels/example_api_tunnel_edit";
+import { example_api_tunnel_edit_name } from "../../SDK/API/tunnels/example_api_tunnel_update";
 
 // setup connection to NoLag API
 // we only need to supply the API KEY obtained from the NoLag portal

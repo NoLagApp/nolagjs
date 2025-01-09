@@ -1,22 +1,24 @@
 /**
- * List Tunnels attached to a Project
- * Can read more about this here: https://developer.nolag.app/#project-tunnels
+ * List Tunnel topics based on but not required topic query
+ * Can read more about this here: https://developer.nolag.app/#tunnel-topics
  */
 
-import type { IConnectOptions, ITunnelQuery } from "nolagjs";
+import type { IConnectOptions, ITopicQuery } from "nolagjs";
 import { Api, EStatus } from "nolagjs";
 
-export interface IExampleApiTunnelList {
-  tunnelQuery: ITunnelQuery;
+export interface IExampleApiTunnelTopicList {
+  topicQuery: ITopicQuery;
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
+  tunnelId: string;
 }
 
-export const example_api_tunnel_list = async ({
-  tunnelQuery,
+export const example_api_tunnel_topic_list = async ({
+  topicQuery,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
-}: IExampleApiTunnelList) => {
+  tunnelId,
+}: IExampleApiTunnelTopicList) => {
   /***** EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
@@ -27,16 +29,16 @@ export const example_api_tunnel_list = async ({
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
 
-  const query: ITunnelQuery = tunnelQuery ?? {
+  const query: ITopicQuery = topicQuery ?? {
     status: EStatus.Active,
     size: 10,
     page: 1,
-    search: "tunnel_name_search_goes_here",
+    search: "topic_name_search_goes_here",
   };
 
-  const response = await apiTunnel.tunnels(query);
-
-  const { records, pagination } = response;
+  const { records, pagination } = await apiTunnel
+    .tunnel(tunnelId ?? "")
+    .topics.listTopics(query);
 
   /***** EXAMPLE CODE END *****/
 

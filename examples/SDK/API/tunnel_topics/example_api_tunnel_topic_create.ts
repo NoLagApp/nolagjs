@@ -1,25 +1,27 @@
 /**
- * Create new Tunnel attached to a Project
- * Can read more about this here: https://developer.nolag.app/#project-tunnels
+ * Create Tunnel topic
+ * Can read more about this here: https://developer.nolag.app/#tunnel-topics
  */
-import globalVars from "../../../constants/globalVars";
 
-import type { IConnectOptions, ITunnelModel } from "nolagjs";
+import type { IConnectOptions, ITopicModel, ITunnelModel } from "nolagjs";
 import { Api } from "nolagjs";
 
-export interface IExampleApiTunnelCreate {
+export interface IExampleApiTunnelTopicCreate {
+  payload: ITopicModel;
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
   tunnelName: string;
-  payload: ITunnelModel;
+  tunnelId: string;
+  topicId: string;
 }
 
-export const example_api_tunnel_create = async ({
+export const example_api_tunnel_topic_create = async ({
+  payload,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
   tunnelName,
-  payload,
-}: IExampleApiTunnelCreate) => {
+  tunnelId,
+}: IExampleApiTunnelTopicCreate) => {
   /***** EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
@@ -30,14 +32,15 @@ export const example_api_tunnel_create = async ({
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
 
-  // tunnel payload
   const createPayload: ITunnelModel = payload ?? {
     name: tunnelName,
     // you can not create sandbox tunnels if no billing details attached to project
     sandbox: true,
   };
 
-  const response = await apiTunnel.createTunnel(createPayload);
+  const response = await apiTunnel
+    .tunnel(tunnelId ?? "")
+    .topics.createTopic(createPayload);
 
   /***** EXAMPLE CODE END *****/
 
