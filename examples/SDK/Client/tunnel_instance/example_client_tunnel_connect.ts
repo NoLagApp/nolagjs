@@ -1,6 +1,6 @@
 /**
  * Connect to NoLag Message broker
- * Can read more about this here: https://developer.nolag.app/#connecting-to-a-tunnel
+ * Can read more about this here: https://developer.nolag.app/#tunnel-instance
  */
 
 import type { ITunnel } from "nolagjs";
