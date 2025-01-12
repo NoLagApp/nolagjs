@@ -1,6 +1,6 @@
 import {
-  IDeviceListQuery,
-  IDeviceTokenModel,
+  IDeviceQuery,
+  IDeviceModel,
   IPaginated,
   IRequestParams,
 } from "../../../shared/interfaces";
@@ -11,17 +11,17 @@ export interface ITunnelDevice {
    * Create new Tunnel device
    * @param payload
    */
-  createDevice(payload: IDeviceTokenModel): Promise<IDeviceTokenModel>;
+  createDevice(payload: IDeviceModel): Promise<IDeviceModel>;
   /**
    * Retrieve Tunnel device using ID
    * @param query
    */
-  getDeviceById(deviceTokenId: string): Promise<IDeviceTokenModel>;
+  getDeviceById(deviceTokenId: string): Promise<IDeviceModel>;
   /**
    * List all Tunnel devices
    * @param query
    */
-  listDevices(query?: IDeviceListQuery): Promise<IPaginated<IDeviceTokenModel>>;
+  listDevices(query?: IDeviceQuery): Promise<IPaginated<IDeviceModel>>;
   /**
    * Update a Tunnel device
    * @param deviceTokenId
@@ -29,13 +29,13 @@ export interface ITunnelDevice {
    */
   updateDevice(
     deviceTokenId: string,
-    payload: IDeviceTokenModel,
-  ): Promise<IDeviceTokenModel>;
+    payload: IDeviceModel,
+  ): Promise<IDeviceModel>;
   /**
    * Delete a Tunnel device
    * @param deviceTokenId
    */
-  deleteDevice(deviceTokenId: string): Promise<IDeviceTokenModel>;
+  deleteDevice(deviceTokenId: string): Promise<IDeviceModel>;
 }
 export class TunnelDevice implements ITunnelDevice {
   private routeNamespace = "devices";
@@ -53,7 +53,7 @@ export class TunnelDevice implements ITunnelDevice {
     this.requestParams = requestParams;
   }
 
-  async createDevice(payload: IDeviceTokenModel): Promise<IDeviceTokenModel> {
+  async createDevice(payload: IDeviceModel): Promise<IDeviceModel> {
     const response = await fetch(
       `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
       {
@@ -66,7 +66,7 @@ export class TunnelDevice implements ITunnelDevice {
     return response.json();
   }
 
-  async getDeviceById(deviceTokenId: string): Promise<IDeviceTokenModel> {
+  async getDeviceById(deviceTokenId: string): Promise<IDeviceModel> {
     const response = await fetch(
       `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
       {
@@ -79,8 +79,8 @@ export class TunnelDevice implements ITunnelDevice {
   }
 
   async listDevices(
-    query?: IDeviceListQuery,
-  ): Promise<IPaginated<IDeviceTokenModel>> {
+    query?: IDeviceQuery,
+  ): Promise<IPaginated<IDeviceModel>> {
     const queryString = generateQueryString(query);
     const response = await fetch(
       `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
@@ -95,8 +95,8 @@ export class TunnelDevice implements ITunnelDevice {
 
   async updateDevice(
     deviceTokenId: string,
-    payload: IDeviceTokenModel,
-  ): Promise<IDeviceTokenModel> {
+    payload: IDeviceModel,
+  ): Promise<IDeviceModel> {
     const response = await fetch(
       `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
       {
@@ -109,7 +109,7 @@ export class TunnelDevice implements ITunnelDevice {
     return response.json();
   }
 
-  async deleteDevice(deviceTokenId: string): Promise<IDeviceTokenModel> {
+  async deleteDevice(deviceTokenId: string): Promise<IDeviceModel> {
     const response = await fetch(
       `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
       {

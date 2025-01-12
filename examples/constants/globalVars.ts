@@ -1,5 +1,5 @@
 import { IEnvVars } from "./interfaces";
-import type { ITopicModel, ITunnelModel } from "nolagjs";
+import type { IDeviceModel, ITopicModel, ITunnelModel } from "nolagjs";
 import dayjs from "dayjs";
 
 interface IGlobalVars {
@@ -23,6 +23,11 @@ interface IGlobalVars {
   topicName: string;
 
   /**
+   * Global device name that will be used in all the tests
+   */
+  deviceName: string;
+
+  /**
    * Set the global tunnel model
    */
   setTunnel(tunnel: ITunnelModel): void;
@@ -41,6 +46,16 @@ interface IGlobalVars {
    * Get the global topic model
    */
   topic: ITopicModel;
+
+  /**
+   * Set the global device model
+   */
+  setDevice(device: IDeviceModel): void;
+
+  /**
+   * Get the global device model
+   */
+  device: IDeviceModel;
 }
 
 class GlobalVars implements IGlobalVars {
@@ -80,6 +95,16 @@ class GlobalVars implements IGlobalVars {
   private createTestTopicName(): string {
     this.vars.TOPIC_NAME = `e2e_Topic_${dayjs().valueOf()}`;
     return this.vars.TOPIC_NAME;
+  }
+
+  /**
+   * Create device name with timestamp in milliseconds
+   * We do this so that we can re-run the test if it fails without having to
+   * revert all previous actions
+   */
+  private createTestDeviceName(): string {
+    this.vars.DEVICE_NAME = `e2e_Device_${dayjs().valueOf()}`;
+    return this.vars.DEVICE_NAME;
   }
 
   public get yourProjectApiKey(): string {
@@ -128,6 +153,28 @@ class GlobalVars implements IGlobalVars {
    */
   public get topic(): ITopicModel {
     return this.vars.TOPIC_MODEL ?? {};
+  }
+
+  /**
+   * Global topic name that will be used in all the tests
+   */
+  public get deviceName(): string {
+    if (this.vars.DEVICE_NAME) return this.vars.DEVICE_NAME;
+    return this.createTestDeviceName();
+  }
+
+  /**
+   * Set the global device model
+   */
+  public setDevice(device: IDeviceModel): void {
+    this.vars.DEVICE_MODEL = device;
+  }
+
+  /**
+   * Get the global device model
+   */
+  public get device(): IDeviceModel {
+    return this.vars.DEVICE_MODEL ?? {};
   }
 }
 

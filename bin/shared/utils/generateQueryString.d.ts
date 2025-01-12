@@ -1,3 +1,3 @@
-import { IDeviceListQuery } from "../interfaces";
-export declare const generateQueryString: (query?: IDeviceListQuery) => string;
+import { IDeviceQuery } from "../interfaces";
+export declare const generateQueryString: (query?: IDeviceQuery) => string;
 //# sourceMappingURL=generateQueryString.d.ts.map

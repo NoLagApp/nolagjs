@@ -16,7 +16,7 @@ export const example_api_tunnel_delete = async ({
   noLagDeveloperTestConfigIgnore,
   tunnel,
 }: IExampleApiTunnelDelete) => {
-  /***** EXAMPLE CODE START *****/
+  /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
   // we only need to supply the PROJECT API KEY obtained from the NoLag portal
@@ -30,7 +30,7 @@ export const example_api_tunnel_delete = async ({
     .tunnel(tunnel?.tunnelId ?? "")
     .deleteTunnel();
 
-  /***** EXAMPLE CODE END *****/
+  /***** COPY EXAMPLE CODE END *****/
 
   return response;
 };

@@ -2,7 +2,6 @@
  * Create new Tunnel attached to a Project
  * Can read more about this here: https://developer.nolag.app/#project-tunnels
  */
-import globalVars from "../../../constants/globalVars";
 
 import type { IConnectOptions, ITunnelModel } from "nolagjs";
 import { Api } from "nolagjs";
@@ -20,7 +19,7 @@ export const example_api_tunnel_create = async ({
   tunnelName,
   payload,
 }: IExampleApiTunnelCreate) => {
-  /***** EXAMPLE CODE START *****/
+  /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
   // we only need to supply the PROJECT API KEY obtained from the NoLag portal
@@ -39,7 +38,7 @@ export const example_api_tunnel_create = async ({
 
   const response = await apiTunnel.createTunnel(createPayload);
 
-  /***** EXAMPLE CODE END *****/
+  /***** COPY EXAMPLE CODE END *****/
 
   return response;
 };

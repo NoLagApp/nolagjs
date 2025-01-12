@@ -60,7 +60,7 @@ export interface IPaginated<T> {
 /**
  * Available query parameters to query a device list.
  */
-export interface IDeviceListQuery {
+export interface IDeviceQuery {
   deviceAccessToken?: string;
   expireFromDate?: number;
   expireToDate?: number;
@@ -71,9 +71,9 @@ export interface IDeviceListQuery {
 }
 
 /**
- * Properties in creating or updating a Device Token
+ * Properties in creating or updating a Device. We use the attached Token as the access key
  */
-export interface IDeviceTokenModel {
+export interface IDeviceModel {
   name: string;
   accessPermission: EAccessPermission;
   deviceTokenId?: string;

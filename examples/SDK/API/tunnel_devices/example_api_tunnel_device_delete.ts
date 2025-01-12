@@ -1,24 +1,27 @@
 /**
- * Get Tunnel topic using topic ID
- * Can read more about this here: https://developer.nolag.app/#tunnel-topics
+ * Delete Tunnel device
+ * Can read more about this here: https://developer.nolag.app/#tunnel-devices
  */
 
 import type { IConnectOptions } from "nolagjs";
 import { Api } from "nolagjs";
 
-export interface IExampleApiTunnelTopicGet {
+export interface IExampleApiTunnelDeviceDelete {
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
   tunnelId: string;
-  topicId: string;
+  deviceId: string;
 }
 
-export const example_api_tunnel_topic_get = async ({
+/**
+ * Edit just the name of the topic
+ */
+export const example_api_tunnel_device_delete = async ({
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
   tunnelId,
-  topicId,
-}: IExampleApiTunnelTopicGet) => {
+  deviceId,
+}: IExampleApiTunnelDeviceDelete) => {
   /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
@@ -31,7 +34,7 @@ export const example_api_tunnel_topic_get = async ({
 
   const response = await apiTunnel
     .tunnel(tunnelId ?? "")
-    .topics.getTopicById(topicId);
+    .devices.deleteDevice(deviceId);
 
   /***** COPY EXAMPLE CODE END *****/
 

@@ -19,7 +19,7 @@ export const example_api_tunnel_topic_list = async ({
   noLagDeveloperTestConfigIgnore,
   tunnelId,
 }: IExampleApiTunnelTopicList) => {
-  /***** EXAMPLE CODE START *****/
+  /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
   // we only need to supply the PROJECT API KEY obtained from the NoLag portal
@@ -40,7 +40,7 @@ export const example_api_tunnel_topic_list = async ({
     .tunnel(tunnelId ?? "")
     .topics.listTopics(query);
 
-  /***** EXAMPLE CODE END *****/
+  /***** COPY EXAMPLE CODE END *****/
 
   return {
     records,

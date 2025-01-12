@@ -1,24 +1,27 @@
 /**
- * Get Tunnel topic using topic ID
- * Can read more about this here: https://developer.nolag.app/#tunnel-topics
+ * Create Tunnel device
+ * Can read more about this here: https://developer.nolag.app/#tunnel-devices
  */
 
-import type { IConnectOptions } from "nolagjs";
+import type { IConnectOptions, IDeviceModel, ITunnelModel } from "nolagjs";
 import { Api } from "nolagjs";
 
-export interface IExampleApiTunnelTopicGet {
+export interface IExampleApiTunnelDeviceCreate {
+  payload: IDeviceModel;
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
+  deviceName: string;
   tunnelId: string;
-  topicId: string;
+  deviceId: string;
 }
 
-export const example_api_tunnel_topic_get = async ({
+export const example_api_tunnel_device_create = async ({
+  payload,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
+  deviceName,
   tunnelId,
-  topicId,
-}: IExampleApiTunnelTopicGet) => {
+}: IExampleApiTunnelDeviceCreate) => {
   /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
@@ -29,9 +32,13 @@ export const example_api_tunnel_topic_get = async ({
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
 
+  const createPayload: IDeviceModel = payload ?? {
+    name: deviceName,
+  };
+
   const response = await apiTunnel
     .tunnel(tunnelId ?? "")
-    .topics.getTopicById(topicId);
+    .devices.createDevice(createPayload);
 
   /***** COPY EXAMPLE CODE END *****/
 

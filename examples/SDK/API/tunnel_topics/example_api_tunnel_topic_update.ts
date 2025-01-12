@@ -21,7 +21,7 @@ export const example_api_tunnel_topic_update = async ({
   tunnelId,
   topicId,
 }: IExampleApiTunnelTopicUpdate) => {
-  /***** EXAMPLE CODE START *****/
+  /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
   // we only need to supply the PROJECT API KEY obtained from the NoLag portal
@@ -40,7 +40,7 @@ export const example_api_tunnel_topic_update = async ({
     .tunnel(tunnelId ?? "")
     .topics.updateTopic(topicId, updatePayload);
 
-  /***** EXAMPLE CODE END *****/
+  /***** COPY EXAMPLE CODE END *****/
 
   return response;
 };

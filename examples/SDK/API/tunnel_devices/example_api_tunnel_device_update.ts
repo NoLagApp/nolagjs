@@ -1,24 +1,26 @@
 /**
- * Update Tunnel details attached to a Project using tunnelID
- * Can read more about this here: https://developer.nolag.app/#project-tunnels
+ * Update Tunnel device
+ * Can read more about this here: https://developer.nolag.app/#tunnel-devices
  */
 
-import type { IConnectOptions, ITunnelModel } from "nolagjs";
+import type { IConnectOptions, IDeviceModel } from "nolagjs";
 import { Api } from "nolagjs";
 
-export interface IExampleApiTunnelEdit {
-  e2ePayload: ITunnelModel;
+export interface IExampleApiTunnelTopicUpdate {
+  payload: IDeviceModel;
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
-  tunnel: ITunnelModel;
+  tunnelId: string;
+  deviceId: string;
 }
 
-export const example_api_tunnel_edit = async ({
-  e2ePayload,
+export const example_api_tunnel_device_update = async ({
+  payload,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
-  tunnel,
-}: IExampleApiTunnelEdit) => {
+  tunnelId,
+  deviceId,
+}: IExampleApiTunnelTopicUpdate) => {
   /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
@@ -29,16 +31,14 @@ export const example_api_tunnel_edit = async ({
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
 
-  const tunnelId = tunnel?.tunnelId ?? "";
-
   // we update the name or any end-to-end data we want to test
-  const payload: ITunnelModel = e2ePayload
-    ? e2ePayload
-    : {
-        name: `updated_tunnel_name`,
-      };
+  const updatePayload: IDeviceModel = payload ?? {
+    name: `updated_device_name`,
+  };
 
-  const response = await apiTunnel.tunnel(tunnelId).updateTunnel(payload);
+  const response = await apiTunnel
+    .tunnel(tunnelId ?? "")
+    .devices.updateDevice(deviceId, updatePayload);
 
   /***** COPY EXAMPLE CODE END *****/
 
