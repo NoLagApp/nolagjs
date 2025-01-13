@@ -14,6 +14,4 @@ export type FOnReceive = (err?: any, data?: ITransport) => void;
 
 export type FConnection = (err?: any, data?: any) => void;
 
-export type TData = ArrayBuffer;
-
 export type dataType<T> = { [key: string]: T };

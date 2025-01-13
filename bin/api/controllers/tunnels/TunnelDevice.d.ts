@@ -7,7 +7,7 @@ export interface ITunnelDevice {
     createDevice(payload: IDeviceModel): Promise<IDeviceModel>;
     /**
      * Retrieve Tunnel device using ID
-     * @param query
+     * @param deviceTokenId
      */
     getDeviceById(deviceTokenId: string): Promise<IDeviceModel>;
     /**

@@ -1,4 +1,3 @@
-import { TData } from "./constants";
 import { EAccessPermission, EEnvironment, EStatus } from "./enum";
 import { dataType } from "./types";
 /**
@@ -89,7 +88,7 @@ export interface IStaticTopic {
  * Sending messages to the Message Broker via HTTP call
  */
 export interface IHttpPublish {
-    data: TData;
+    data: ArrayBuffer;
     topicName: string;
     identifiers: string[];
 }

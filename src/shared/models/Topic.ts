@@ -1,5 +1,4 @@
 import { NoLagClient } from "../../client/NoLagClient";
-import { TData } from "../constants";
 import { ETransportCommand } from "../enum/ETransportCommand";
 import { INqlIdentifiers, ITransport } from "../interfaces";
 import { transportCommands } from "../utils/TransportCommands";

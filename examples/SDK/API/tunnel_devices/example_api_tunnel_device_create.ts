@@ -12,7 +12,6 @@ export interface IExampleApiTunnelDeviceCreate {
   noLagDeveloperTestConfigIgnore: IConnectOptions;
   deviceName: string;
   tunnelId: string;
-  deviceId: string;
 }
 
 export const example_api_tunnel_device_create = async ({

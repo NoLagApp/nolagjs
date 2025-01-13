@@ -12,7 +12,6 @@ export interface IExampleApiTunnelTopicCreate {
   noLagDeveloperTestConfigIgnore: IConnectOptions;
   tunnelName: string;
   tunnelId: string;
-  topicId: string;
 }
 
 export const example_api_tunnel_topic_create = async ({

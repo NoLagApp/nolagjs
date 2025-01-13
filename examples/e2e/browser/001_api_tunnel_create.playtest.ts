@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
-
 import globalVars from "../../constants/globalVars";
-
 import type { IErrorMessage, ITunnelModel } from "nolagjs";
 import { example_api_tunnel_create } from "../../SDK/API/tunnels/example_api_tunnel_create";
 

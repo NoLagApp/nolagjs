@@ -4,7 +4,7 @@ import {
   IPaginated,
   IRequestParams,
 } from "../../../shared/interfaces";
-import { generateQueryString } from "../../../shared/utils/generateQueryString";
+import { generateQueryString } from "../../../shared/utils";
 
 export interface ITunnelDevice {
   /**
@@ -14,7 +14,7 @@ export interface ITunnelDevice {
   createDevice(payload: IDeviceModel): Promise<IDeviceModel>;
   /**
    * Retrieve Tunnel device using ID
-   * @param query
+   * @param deviceTokenId
    */
   getDeviceById(deviceTokenId: string): Promise<IDeviceModel>;
   /**

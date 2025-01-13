@@ -1,25 +1,20 @@
-/**
- * List Tunnels attached to a Project
- * Can read more about this here: https://developer.nolag.app/#project-tunnels
- */
 import { test, expect } from "@playwright/test";
-
 import globalVars from "../../constants/globalVars";
+import { example_api_tunnel_list } from "../../SDK/API/tunnels/example_api_tunnel_list";
+import type { ITunnelQuery } from "nolagjs";
 
-import { Api } from "nolagjs";
-import { example_api_tunnel_list, example_api_tunnel_search_name } from "../../SDK/API/tunnels/example_api_tunnel_list";
-
-// setup connection to NoLag API
-// we only need to supply the API KEY obtained from the NoLag portal
-// https://developer.nolag.app/#api
 const yourProjectApiKey = globalVars.yourProjectApiKey;
 const noLagDeveloperTestConfigIgnore =
   globalVars.noLagDeveloperTestConfigIgnore;
+const tunnelQuery: ITunnelQuery = {};
 
 test.describe("Playwright Api List Tunnels", () => {
-  // happy path, retrieve a list of tunnels
   test("should retrieve a list of tunnels", async ({ page }) => {
-    const response = await example_api_tunnel_list();
+    const response = await example_api_tunnel_list({
+      tunnelQuery,
+      yourProjectApiKey,
+      noLagDeveloperTestConfigIgnore,
+    });
 
     const { records, pagination } = response;
 
@@ -30,7 +25,15 @@ test.describe("Playwright Api List Tunnels", () => {
   });
 
   test("query for a specific tunnel name", async ({ page }) => {
-    const foundTunnel = await example_api_tunnel_search_name();
+    tunnelQuery.search = globalVars.tunnelName;
+
+    const response = await example_api_tunnel_list({
+      tunnelQuery,
+      yourProjectApiKey,
+      noLagDeveloperTestConfigIgnore,
+    });
+
+    const foundTunnel = response.records?.[0];
 
     if (!foundTunnel) {
       expect(false).toBeTruthy();

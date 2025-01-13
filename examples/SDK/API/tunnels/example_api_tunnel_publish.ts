@@ -3,18 +3,22 @@
  * Can read more about this here: https://developer.nolag.app/#project-tunnels
  */
 
-import type { IConnectOptions, ITopicModel, ITunnelModel } from "nolagjs";
-import { Api } from "nolagjs";
+import type { IConnectOptions, IHttpPublish, ITunnelModel } from "nolagjs";
+import { Api, stringToBuffer } from "nolagjs";
 
 export interface IExampleApiTunnelEdit {
-  payload: ITunnelModel;
+  topicName: string;
+  identifiers: string[];
+  data: Record<string, unknown>;
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
   tunnel: ITunnelModel;
 }
 
-export const example_api_tunnel_edit = async ({
-                                                payload,
+export const example_api_tunnel_publish = async ({
+  topicName,
+  identifiers,
+  data,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
   tunnel,
@@ -31,14 +35,13 @@ export const example_api_tunnel_edit = async ({
 
   const tunnelId = tunnel?.tunnelId ?? "";
 
-  // we update the name or any end-to-end data we want to test
-  const updatePayload: ITunnelModel = payload
-    ? payload
-    : {
-        name: `updated_tunnel_name`,
-      };
+  const httpPublish: IHttpPublish = {
+    data: stringToBuffer(JSON.stringify(data)),
+    topicName,
+    identifiers,
+  };
 
-  const response = await apiTunnel.tunnel(tunnelId).updateTunnel(updatePayload);
+  const response = await apiTunnel.tunnel(tunnelId).publish(httpPublish);
 
   /***** COPY EXAMPLE CODE END *****/
 
