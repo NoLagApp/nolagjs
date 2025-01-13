@@ -12,7 +12,9 @@ import { example_api_tunnel_list, example_api_tunnel_search_name } from "../../S
 // setup connection to NoLag API
 // we only need to supply the API KEY obtained from the NoLag portal
 // https://developer.nolag.app/#api
-const apiTunnel = Api(globalVars.yourProjectApiKey, globalVars.noLagDeveloperTestConfigIgnore);
+const yourProjectApiKey = globalVars.yourProjectApiKey;
+const noLagDeveloperTestConfigIgnore =
+  globalVars.noLagDeveloperTestConfigIgnore;
 
 test.describe("Playwright Api List Tunnels", () => {
   // happy path, retrieve a list of tunnels
