@@ -21,6 +21,7 @@ test.describe("Playwright Api List Tunnels", () => {
     const { records, pagination } = response;
 
     const foundTunnel = records.find((i) => i.name === globalVars.topic.name);
+
     expect(typeof pagination?.page === "number").toBeTruthy();
     expect(typeof pagination?.size === "number").toBeTruthy();
     expect(foundTunnel?.name).toBe(globalVars.topic.name);

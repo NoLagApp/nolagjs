@@ -23,6 +23,11 @@ export interface IConnectOptions {
     checkConnectionTimeout?: number;
     apiKey?: string;
 }
+export interface IBaseModel {
+    createdAt?: number;
+    updatedAt?: number;
+    deletedAt?: number;
+}
 /**
  * Response received from Message Broker
  */
@@ -64,9 +69,9 @@ export interface IDeviceQuery {
 /**
  * Properties in creating or updating a Device. We use the attached Token as the access key
  */
-export interface IDeviceModel {
-    name: string;
-    accessPermission: EAccessPermission;
+export interface IDeviceModel extends IBaseModel {
+    name?: string;
+    accessPermission?: EAccessPermission;
     deviceTokenId?: string;
     deviceAccessToken?: string;
     projectId?: string;
@@ -95,7 +100,7 @@ export interface IHttpPublish {
 /**
  * Topic properties used to creating or updating a model
  */
-export interface ITopicModel {
+export interface ITopicModel extends IBaseModel {
     topicId?: string;
     projectId?: string;
     tunnelId?: string;
@@ -109,7 +114,7 @@ export interface ITopicModel {
  * Topic API model
  * Used to save Trigger and Hydration API's
  */
-export interface ITopicApiModel {
+export interface ITopicApiModel extends IBaseModel {
     url: string;
     queryParams?: dataType;
     headers?: dataType;
@@ -133,7 +138,7 @@ export interface ITunnelQuery {
     page?: number;
     search?: string;
 }
-export interface ITunnelModel {
+export interface ITunnelModel extends IBaseModel {
     tunnelId?: string;
     projectId?: string;
     status?: EStatus;

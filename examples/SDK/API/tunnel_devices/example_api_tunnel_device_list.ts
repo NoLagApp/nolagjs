@@ -7,14 +7,14 @@ import type { IConnectOptions, IDeviceQuery } from "nolagjs";
 import { Api, EStatus } from "nolagjs";
 
 export interface IExampleApiTunnelTopicList {
-  topicQuery: IDeviceQuery;
+  deviceQuery: IDeviceQuery;
   yourProjectApiKey: string;
   noLagDeveloperTestConfigIgnore: IConnectOptions;
   tunnelId: string;
 }
 
 export const example_api_tunnel_device_list = async ({
-  topicQuery,
+  deviceQuery,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
   tunnelId,
@@ -29,7 +29,7 @@ export const example_api_tunnel_device_list = async ({
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
 
-  const query: IDeviceQuery = topicQuery ?? {
+  const query: IDeviceQuery = deviceQuery ?? {
     status: EStatus.Active,
     size: 10,
     page: 1,
