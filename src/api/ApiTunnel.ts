@@ -66,11 +66,17 @@ export class ApiTunnel {
   }
 
   async createTunnel(payload: ITunnelModel): Promise<ITunnelModel> {
-    return fetch(`${this.requestParams.baseURL}/tunnels`, {
+    const response = await fetch(`${this.requestParams.baseURL}/tunnels`, {
       method: "POST",
       headers: this.requestParams.headers,
       body: JSON.stringify(payload),
-    }).then((response) => response.json());
+    });
+
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
   public tunnel(tunnelId: string): ITunnelApi {

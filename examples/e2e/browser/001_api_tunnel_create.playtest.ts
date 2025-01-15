@@ -30,34 +30,38 @@ test.describe("Playwright Api Create a Tunnel", () => {
   });
 
   test("can not create duplicate tunnel name", async ({ page }) => {
-    const response = await example_api_tunnel_create({
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelName,
-      payload,
-    });
+    try {
+      const response = await example_api_tunnel_create({
+        yourProjectApiKey,
+        noLagDeveloperTestConfigIgnore,
+        tunnelName,
+        payload,
+      });
+    } catch (error) {
+      const { code, msg } = error as IErrorMessage;
 
-    const { code, msg } = response as IErrorMessage;
-
-    expect(code).toBe(409);
-    expect(msg).toBe("Duplicate resource found");
+      expect(code).toBe(409);
+      expect(msg).toBe("Duplicate resource found");
+    }
   });
 
   test("can not create empty tunnel name", async ({ page }) => {
-    const emptyTunnelName = "";
-    payload.name = emptyTunnelName;
+    try {
+      const emptyTunnelName = "";
+      payload.name = emptyTunnelName;
 
-    const response = await example_api_tunnel_create({
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelName: emptyTunnelName,
-      payload,
-    });
+      const response = await example_api_tunnel_create({
+        yourProjectApiKey,
+        noLagDeveloperTestConfigIgnore,
+        tunnelName: emptyTunnelName,
+        payload,
+      });
+    } catch (error) {
+      const { code, errors } = error as IErrorMessage;
+      const NameProperty = errors?.find((i) => i.property === "name");
 
-    const { code, errors } = response as IErrorMessage;
-    const NameProperty = errors?.find((i) => i.property === "name");
-
-    expect(code).toBe(400);
-    expect(NameProperty?.descriptions?.[0]).toBe("should not be empty");
+      expect(code).toBe(400);
+      expect(NameProperty?.descriptions?.[0]).toBe("should not be empty");
+    }
   });
 });

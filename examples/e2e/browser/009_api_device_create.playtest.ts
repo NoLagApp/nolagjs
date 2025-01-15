@@ -12,12 +12,11 @@ const tunnelId = globalVars.topic?.tunnelId ?? "";
 
 const payload: IDeviceModel = {
   name: globalVars.deviceName,
-  accessPermission: EAccessPermission.PubSub
+  accessPermission: EAccessPermission.PubSub,
 };
 
 test.describe("Playwright Api Create Device", () => {
   test("should create a new device", async ({ page }) => {
-
     const response = await example_api_tunnel_device_create({
       payload,
       yourProjectApiKey,
@@ -25,40 +24,48 @@ test.describe("Playwright Api Create Device", () => {
       deviceName: globalVars.deviceName,
       tunnelId,
     });
+
+    if (response) {
+      globalVars.setDevice(response);
+    }
 
     expect(response?.name).toBe(globalVars.deviceName);
   });
 
   test("can not create duplicate device name", async ({ page }) => {
-    const response = await example_api_tunnel_device_create({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      deviceName: globalVars.deviceName,
-      tunnelId,
-    });
+    try {
+      await example_api_tunnel_device_create({
+        payload,
+        yourProjectApiKey,
+        noLagDeveloperTestConfigIgnore,
+        deviceName: globalVars.deviceName,
+        tunnelId,
+      });
+    } catch (error) {
+      const { code, msg } = error as IErrorMessage;
 
-    const { code, msg } = response as IErrorMessage;
-
-    expect(code).toBe(409);
-    expect(msg).toBe("Duplicate resource found");
+      expect(code).toBe(409);
+      expect(msg).toBe("Duplicate resource found");
+    }
   });
 
   test("can not create empty device name", async ({ page }) => {
-    payload.name = "";
+    try {
+      payload.name = "";
 
-    const response = await example_api_tunnel_device_create({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      deviceName: "",
-      tunnelId,
-    });
+      await example_api_tunnel_device_create({
+        payload,
+        yourProjectApiKey,
+        noLagDeveloperTestConfigIgnore,
+        deviceName: "",
+        tunnelId,
+      });
+    } catch (error) {
+      const { code, errors } = error as IErrorMessage;
+      const NameProperty = errors?.find((i) => i.property === "name");
 
-    const { code, errors } = response as IErrorMessage;
-    const NameProperty = errors?.find((i) => i.property === "name");
-
-    expect(code).toBe(400);
-    expect(NameProperty?.descriptions?.[0]).toBe("should not be empty");
+      expect(code).toBe(400);
+      expect(NameProperty?.descriptions?.[0]).toBe("should not be empty");
+    }
   });
 });

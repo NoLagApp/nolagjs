@@ -76,15 +76,25 @@ export class TunnelApi implements ITunnelApi {
       },
     );
 
+    if(response.status >= 400) {
+      throw await response.json();
+    }
+
     return response.json();
   }
 
   async updateTunnel(payload: ITunnelModel): Promise<ITunnelModel> {
-    return fetch(`${this.requestParams.baseURL}/${this.routeNamespace}/${this.tunnelId}`, {
+    const response = await fetch(`${this.requestParams.baseURL}/${this.routeNamespace}/${this.tunnelId}`, {
       method: "PATCH",
       headers: this.requestParams.headers,
       body: JSON.stringify(payload),
-    }).then((response) => response.json());
+    })
+
+    if(response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
   async deleteTunnel(): Promise<ITunnelModel> {
@@ -95,6 +105,10 @@ export class TunnelApi implements ITunnelApi {
         headers: this.requestParams.headers,
       },
     );
+
+    if(response.status >= 400) {
+      throw await response.json();
+    }
 
     return response.json();
   }

@@ -1,4 +1,4 @@
-import { IDeviceQuery, IDeviceModel, IPaginated, IRequestParams } from "../../../shared/interfaces";
+import { IDeviceModel, IDeviceQuery, IPaginated, IRequestParams } from "../../../shared/interfaces";
 export interface ITunnelDevice {
     /**
      * Create new Tunnel device

@@ -1,6 +1,7 @@
 import {
-  IDeviceQuery,
   IDeviceModel,
+  IDeviceQuery,
+  IErrorsModel,
   IPaginated,
   IRequestParams,
 } from "../../../shared/interfaces";
@@ -53,17 +54,23 @@ export class TunnelDevice implements ITunnelDevice {
     this.requestParams = requestParams;
   }
 
-  async createDevice(payload: IDeviceModel): Promise<IDeviceModel> {
-    const response = await fetch(
-      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
-      {
-        method: "POST",
-        headers: this.requestParams.headers,
-        body: JSON.stringify(payload),
-      },
-    );
+  async createDevice(
+    payload: IDeviceModel,
+  ): Promise<IDeviceModel> {
+      const response = await fetch(
+        `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
+        {
+          method: "POST",
+          headers: this.requestParams.headers,
+          body: JSON.stringify(payload),
+        },
+      );
 
-    return response.json();
+      if(response.status >= 400) {
+        throw await response.json();
+      }
+
+      return response.json();
   }
 
   async getDeviceById(deviceTokenId: string): Promise<IDeviceModel> {
@@ -75,12 +82,14 @@ export class TunnelDevice implements ITunnelDevice {
       },
     );
 
+    if(response.status >= 400) {
+      throw await response.json();
+    }
+
     return response.json();
   }
 
-  async listDevices(
-    query?: IDeviceQuery,
-  ): Promise<IPaginated<IDeviceModel>> {
+  async listDevices(query?: IDeviceQuery): Promise<IPaginated<IDeviceModel>> {
     const queryString = generateQueryString(query);
     const response = await fetch(
       `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
@@ -89,6 +98,10 @@ export class TunnelDevice implements ITunnelDevice {
         headers: this.requestParams.headers,
       },
     );
+
+    if(response.status >= 400) {
+      throw await response.json();
+    }
 
     return response.json();
   }
@@ -106,6 +119,10 @@ export class TunnelDevice implements ITunnelDevice {
       },
     );
 
+    if(response.status >= 400) {
+      throw await response.json();
+    }
+
     return response.json();
   }
 
@@ -117,6 +134,10 @@ export class TunnelDevice implements ITunnelDevice {
         headers: this.requestParams.headers,
       },
     );
+
+    if(response.status >= 400) {
+      throw await response.json();
+    }
 
     return response.json();
   }
