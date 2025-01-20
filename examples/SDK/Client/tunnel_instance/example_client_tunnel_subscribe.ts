@@ -8,7 +8,7 @@ import type { ITunnel } from "nolagjs";
 export interface IExampleApiTunnelSubscribe {
   tunnelInstance: ITunnel;
   topicName: string;
-  identifiers: string[];
+  identifiers: string[] | undefined;
 }
 
 export const example_client_tunnel_subscribe = async ({
@@ -18,9 +18,9 @@ export const example_client_tunnel_subscribe = async ({
 }: IExampleApiTunnelSubscribe) => {
   /***** COPY EXAMPLE CODE START *****/
 
-  const topicInstance = tunnelInstance.subscribe(topicName, {
+  const topicInstance = tunnelInstance.subscribe(topicName, identifiers ? {
     OR: identifiers,
-  });
+  } : undefined);
 
   /***** COPY EXAMPLE CODE END *****/
 

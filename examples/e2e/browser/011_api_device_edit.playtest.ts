@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import globalVars from "../../constants/globalVars";
-import type { IDeviceModel } from "nolagjs";
+import { EAccessPermission, IDeviceModel } from "nolagjs";
 import { example_api_tunnel_device_update } from "../../SDK/API/tunnel_devices/example_api_tunnel_device_update";
 import dayjs from "dayjs";
 
@@ -33,6 +33,81 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     }
 
     expect(response?.name).toBe(globalVars.device.name);
+  });
+
+  test("edit tunnel device set access permissions - subscribe", async ({ page }) => {
+    if (!globalVars.device) {
+      expect(false).toBeTruthy();
+      return;
+    }
+
+    const payload: IDeviceModel = {
+      accessPermission: EAccessPermission.Subscribe,
+    };
+
+    const response = await example_api_tunnel_device_update({
+      payload,
+      yourProjectApiKey,
+      noLagDeveloperTestConfigIgnore,
+      tunnelId,
+      deviceId: globalVars.device.deviceTokenId ?? "",
+    });
+
+    if (response) {
+      globalVars.setDevice(response);
+    }
+
+    expect(response?.accessPermission).toBe(EAccessPermission.Subscribe);
+  });
+
+  test("edit tunnel device set access permissions - publish", async ({ page }) => {
+    if (!globalVars.device) {
+      expect(false).toBeTruthy();
+      return;
+    }
+
+    const payload: IDeviceModel = {
+      accessPermission: EAccessPermission.Publish,
+    };
+
+    const response = await example_api_tunnel_device_update({
+      payload,
+      yourProjectApiKey,
+      noLagDeveloperTestConfigIgnore,
+      tunnelId,
+      deviceId: globalVars.device.deviceTokenId ?? "",
+    });
+
+    if (response) {
+      globalVars.setDevice(response);
+    }
+
+    expect(response?.accessPermission).toBe(EAccessPermission.Publish);
+  });
+
+  test("edit tunnel device set access permissions - pubsub", async ({ page }) => {
+    if (!globalVars.device) {
+      expect(false).toBeTruthy();
+      return;
+    }
+
+    const payload: IDeviceModel = {
+      accessPermission: EAccessPermission.Publish,
+    };
+
+    const response = await example_api_tunnel_device_update({
+      payload,
+      yourProjectApiKey,
+      noLagDeveloperTestConfigIgnore,
+      tunnelId,
+      deviceId: globalVars.device.deviceTokenId ?? "",
+    });
+
+    if (response) {
+      globalVars.setDevice(response);
+    }
+
+    expect(response?.accessPermission).toBe(EAccessPermission.Publish);
   });
 
   test("set staticTopics", async ({ page }) => {

@@ -9,7 +9,7 @@ import { stringToBuffer } from "nolagjs";
 export interface IExampleApiTunnelPublish {
   tunnelInstance: ITunnel;
   topicName: string;
-  identifiers: string[];
+  identifiers: string[] | undefined;
   data: Record<string, unknown>
 }
 

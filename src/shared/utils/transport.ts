@@ -37,7 +37,7 @@ export class NqlTransport {
 
     const buf = new ArrayBuffer(bitLength);
 
-    let tmp = new Uint8Array(buf);
+    const tmp = new Uint8Array(buf);
     tmp.set(transportCommandsUintArray, 0);
 
     if (payload) {

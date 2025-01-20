@@ -8,6 +8,10 @@ interface IGlobalVars {
    */
   noLagDeveloperTestConfigIgnore: Record<any, any>;
   /**
+   * IGNORE THIS, it's only used by NoLag developers for testing
+   */
+  noLagDeveloperTestConfigIgnoreWs: Record<any, any>;
+  /**
    * Get the project API key
    */
   yourProjectApiKey: string;
@@ -73,6 +77,15 @@ class GlobalVars implements IGlobalVars {
     return {
       host: "localhost:5001",
       protocol: "http",
+      devMode: true,
+    };
+  }
+
+  public get noLagDeveloperTestConfigIgnoreWs() {
+    if (!this.vars.NOLAG_DEVELOPER_TESTING) return {};
+    return {
+      host: "localhost:5003",
+      protocol: "ws",
       devMode: true,
     };
   }
