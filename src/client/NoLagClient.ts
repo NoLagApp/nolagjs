@@ -227,10 +227,13 @@ export class NoLagClient implements INoLagClient {
       return;
     }
 
+    const identifier = decoded.getCommand(ETransportCommand.Identifier);
+    const presences = decoded.getCommand(ETransportCommand.Presence);
+
     this.callbackOnReceive(undefined, {
       topicName: decoded.getCommand(ETransportCommand.Topic) as string,
-      presences: decoded.getCommand(ETransportCommand.Presence) as string[],
-      identifiers: decoded.getCommand(ETransportCommand.Identifier) as string[],
+      presences: presences === true ? [] : presences as string[],
+      identifiers: identifier === true ? [] : identifier as string[],
       data: decoded.payload,
     });
   }

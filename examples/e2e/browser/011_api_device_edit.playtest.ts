@@ -206,11 +206,11 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(identifiers);
     expect(response?.lockTopics).toBeTruthy();
     expect(response?.expireIn).toBe(expireIn);
-    expect(response?.expireDate).toBeGreaterThanOrEqual(
+    expect(response?.expireDate).toBeCloseTo(
       dayjs()
         .add(expireIn, "seconds")
         .unix(),
-    );
+    2);
     expect(response?.name).toBe(globalVars.device?.name);
   });
 });
