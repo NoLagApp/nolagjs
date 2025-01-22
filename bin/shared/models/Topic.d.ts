@@ -1,5 +1,6 @@
 import { NoLagClient } from "../../client/NoLagClient";
 import { INqlIdentifiers, ITransport } from "../interfaces";
+import { ITunnel } from "../../client";
 export interface ITopic {
     /**
      * Add NQL identifers to the Topic
@@ -28,7 +29,7 @@ export interface ITopic {
      * @param identifiers List of identifiers used to send targeted messages
      * @returns
      */
-    publish(data: ArrayBuffer, identifiers: string[]): Topic;
+    publish(data: ArrayBuffer, identifiers?: string[]): Topic;
     /**
      * PRIVATE Inject messages into the Topic instance
      * @param data
@@ -49,8 +50,8 @@ export declare class Topic implements ITopic {
     private onReceiveCallback;
     private identifiers;
     private presence;
-    constructor(connection: NoLagClient, topicName: string, identifiers: INqlIdentifiers);
-    private findSavedIdentifier;
+    private tunnel;
+    constructor(tunnel: ITunnel, connection: NoLagClient, topicName: string, identifiers: INqlIdentifiers);
     private saveIdentifiers;
     private deleteSavedIdentifiers;
     private subscribe;
@@ -61,7 +62,7 @@ export declare class Topic implements ITopic {
     addIdentifiers(identifiersList: INqlIdentifiers): Topic;
     removeIdentifiers(identifiers: string[]): Topic;
     unsubscribe(): boolean;
-    publish(data: ArrayBuffer, identifiers: string[]): Topic;
+    publish(data: ArrayBuffer, identifiers?: string[]): Topic;
     private send;
 }
 //# sourceMappingURL=Topic.d.ts.map

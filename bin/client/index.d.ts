@@ -9,7 +9,7 @@ export interface ITunnel {
      */
     getTopic(topicName: string): ITopic | undefined;
     /**
-     * Delete instanciated topic
+     * Delete instantiated topic
      * @param topicName Topic name regisrered in NoLag Portal
      * @return boolean
      */
@@ -47,6 +47,11 @@ export interface ITunnel {
      * @param callbackFn
      */
     onErrors(callbackFn: ((errorMessage: IErrorMessage) => void) | undefined): void;
+    /**
+     * Remove Topic instance from tunnel, but does not unsubscribe from NoLag
+     * @param topicName
+     */
+    removeTopicInstance(topicName: string): void;
 }
 /**
  * To get access NoLag message broker you need access to a Tunnel
@@ -85,6 +90,7 @@ export declare class Tunnel implements ITunnel {
     onReconnect(callback: FConnection): void;
     onErrors(callback: FConnection): void;
     getTopic(topicName: string): ITopic | undefined;
+    removeTopicInstance(topicName: string): void;
     unsubscribe(topicName: string): boolean;
     subscribe(topicName: string, identifiers?: INqlIdentifiers): ITopic | undefined;
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
