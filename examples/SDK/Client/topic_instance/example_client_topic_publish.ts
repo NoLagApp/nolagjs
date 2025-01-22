@@ -3,19 +3,17 @@
  * Can read more about this here: https://developer.nolag.app/#publish-on-a-topic
  */
 
-import type { ITunnel } from "nolagjs";
+import type { ITopic, ITunnel } from "nolagjs";
 import { stringToBuffer } from "nolagjs";
 
 export interface IExampleApiTunnelPublish {
-  tunnelInstance: ITunnel;
-  topicName: string;
+  topicInstance: ITopic;
+  identifiers: string[] | undefined;
   data: Record<string, unknown>
-  identifiers?: string[];
 }
 
-export const example_client_tunnel_publish = async ({
-  tunnelInstance,
-  topicName,
+export const example_client_topic_publish = async ({
+                                                      topicInstance,
   identifiers,
   data
 }: IExampleApiTunnelPublish) => {
@@ -23,7 +21,7 @@ export const example_client_tunnel_publish = async ({
 
   const payload: ArrayBuffer = stringToBuffer(JSON.stringify(data));
 
-  tunnelInstance.publish(topicName, payload, identifiers);
+  topicInstance.publish(payload, identifiers);
 
   /***** COPY EXAMPLE CODE END *****/
 };

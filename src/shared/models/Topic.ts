@@ -3,6 +3,7 @@ import { ETransportCommand } from "../enum/ETransportCommand";
 import { INqlIdentifiers, ITransport } from "../interfaces";
 import { transportCommands } from "../utils/TransportCommands";
 import { NqlTransport } from "../utils/transport";
+import { ITunnel } from "../../client";
 
 export interface ITopic {
   /**
@@ -32,7 +33,7 @@ export interface ITopic {
    * @param identifiers List of identifiers used to send targeted messages
    * @returns
    */
-  publish(data: ArrayBuffer, identifiers: string[]): Topic;
+  publish(data: ArrayBuffer, identifiers?: string[]): Topic;
   /**
    * PRIVATE Inject messages into the Topic instance
    * @param data
@@ -54,27 +55,18 @@ export class Topic implements ITopic {
   private onReceiveCallback: ((data: ITransport) => void) | undefined;
   private identifiers: string[] = [];
   private presence: string | undefined;
+  private tunnel: ITunnel;
   constructor(
+    tunnel: ITunnel,
     connection: NoLagClient,
     topicName: string,
     identifiers: INqlIdentifiers,
   ) {
+    this.tunnel = tunnel;
     this.setConnection(connection);
     this.topicName = topicName;
     this.saveIdentifiers(identifiers?.OR ?? []);
     this.subscribe();
-  }
-
-  private findSavedIdentifier(identifier: string) {
-    const key = Object.keys(identifier)[0] ?? "";
-    const value = Object.values(identifier)[0] ?? "";
-    return this.identifiers.find((s) => {
-      if (s) {
-        const findKey = Object.keys(s)[0] ?? "";
-        const findValue = Object.values(s)[0] ?? "";
-        return key === findKey && value === findValue;
-      }
-    });
   }
 
   private saveIdentifiers(identifiers: string[]): void {
@@ -199,6 +191,8 @@ export class Topic implements ITopic {
   }
 
   unsubscribe(): boolean {
+    this.tunnel.removeTopicInstance(this.topicName);
+
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, this.topicName)
       .setCommand(ETransportCommand.DeleteAction);
@@ -209,7 +203,7 @@ export class Topic implements ITopic {
     return true;
   }
 
-  public publish(data: ArrayBuffer, identifiers: string[]): Topic {
+  public publish(data: ArrayBuffer, identifiers?: string[]): Topic {
     if (data.byteLength === 0) return this;
 
     const commands = transportCommands().setCommand(
@@ -217,7 +211,7 @@ export class Topic implements ITopic {
       this.topicName,
     );
 
-    if (identifiers?.length > 0) {
+    if (identifiers && identifiers?.length > 0) {
       commands.setCommand(ETransportCommand.Identifier, identifiers);
     }
 

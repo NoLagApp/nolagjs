@@ -35,7 +35,9 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     expect(response?.name).toBe(globalVars.device.name);
   });
 
-  test("edit tunnel device set access permissions - subscribe", async ({ page }) => {
+  test("edit tunnel device set access permissions - subscribe", async ({
+    page,
+  }) => {
     if (!globalVars.device) {
       expect(false).toBeTruthy();
       return;
@@ -60,7 +62,9 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     expect(response?.accessPermission).toBe(EAccessPermission.Subscribe);
   });
 
-  test("edit tunnel device set access permissions - publish", async ({ page }) => {
+  test("edit tunnel device set access permissions - publish", async ({
+    page,
+  }) => {
     if (!globalVars.device) {
       expect(false).toBeTruthy();
       return;
@@ -85,7 +89,9 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     expect(response?.accessPermission).toBe(EAccessPermission.Publish);
   });
 
-  test("edit tunnel device set access permissions - pubsub", async ({ page }) => {
+  test("edit tunnel device set access permissions - pubsub", async ({
+    page,
+  }) => {
     if (!globalVars.device) {
       expect(false).toBeTruthy();
       return;
@@ -206,11 +212,11 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(identifiers);
     expect(response?.lockTopics).toBeTruthy();
     expect(response?.expireIn).toBe(expireIn);
-    expect(response?.expireDate).toBeCloseTo(
-      dayjs()
-        .add(expireIn, "seconds")
-        .unix(),
-    2);
+    expect(
+      Math.abs(
+        (response?.expireDate ?? 0) - dayjs().add(expireIn, "seconds").unix(),
+      ),
+    ).toBeLessThanOrEqual(2);
     expect(response?.name).toBe(globalVars.device?.name);
   });
 });

@@ -25,7 +25,7 @@ export interface ITunnel {
   getTopic(topicName: string): ITopic | undefined;
 
   /**
-   * Delete instanciated topic
+   * Delete instantiated topic
    * @param topicName Topic name regisrered in NoLag Portal
    * @return boolean
    */
@@ -77,6 +77,12 @@ export interface ITunnel {
   onErrors(
     callbackFn: ((errorMessage: IErrorMessage) => void) | undefined,
   ): void;
+
+  /**
+   * Remove Topic instance from tunnel, but does not unsubscribe from NoLag
+   * @param topicName
+   */
+  removeTopicInstance(topicName: string): void;
 }
 
 /**
@@ -98,7 +104,7 @@ export class Tunnel implements ITunnel {
 
   private defaultCheckConnectionInterval = 10000;
   private checkConnectionInterval: number;
-  private heartBeatInterval: number = 20000;
+  private heartBeatInterval = 20000;
   private visibilityState: string = EVisibilityState.Visible;
 
   private callbackOnReceive: ((data: ITransport) => void) | undefined;
@@ -180,12 +186,18 @@ export class Tunnel implements ITunnel {
 
   private onReceiveMessage() {
     if (this.noLagClient) {
+      const tunnelInstance: ITunnel = this;
       this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
         const { topicName, identifiers } = data;
         if (this.noLagClient && !this.topics[topicName]) {
-          this.topics[topicName] = new Topic(this.noLagClient, topicName, {
-            OR: identifiers,
-          });
+          this.topics[topicName] = new Topic(
+            tunnelInstance,
+            this.noLagClient,
+            topicName,
+            {
+              OR: identifiers,
+            },
+          );
         }
         if (topicName && this.topics[topicName]) {
           this.topics[topicName]?._onReceiveMessage(data);
@@ -269,16 +281,19 @@ export class Tunnel implements ITunnel {
     // if you are trying to get the specific topic but its not been set
     // set it now
     if (!this.topics[topicName] && this.noLagClient) {
-      this.topics[topicName] = new Topic(this.noLagClient, topicName, {});
+      this.topics[topicName] = new Topic(this, this.noLagClient, topicName, {});
     }
 
     return this.topics[topicName];
   }
 
+  public removeTopicInstance(topicName: string) {
+    delete this.topics[topicName];
+  }
+
   public unsubscribe(topicName: string): boolean {
     if (this.topics[topicName]) {
       this.topics[topicName]?.unsubscribe();
-      delete this.topics[topicName];
       return true;
     }
     return false;
@@ -293,6 +308,7 @@ export class Tunnel implements ITunnel {
         return this.topics[topicName];
       } else {
         this.topics[topicName] = new Topic(
+          this,
           this.noLagClient,
           topicName,
           identifiers,

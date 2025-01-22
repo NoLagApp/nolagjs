@@ -19,7 +19,8 @@ export interface IExampleApiTunnelCallbackOnReceiveResponse {
 
 export const example_client_tunnel_callback_on_receive = async ({
   tunnelInstance,
-}: IExampleApiTunnelCallbackOnReceive): Promise<IExampleApiTunnelCallbackOnReceiveResponse> => {
+}: IExampleApiTunnelCallbackOnReceive,
+callback?:(data: IExampleApiTunnelCallbackOnReceiveResponse) => void): Promise<IExampleApiTunnelCallbackOnReceiveResponse> => {
   return new Promise((resolve, reject) => {
     /***** COPY EXAMPLE CODE START *****/
 
@@ -36,6 +37,10 @@ export const example_client_tunnel_callback_on_receive = async ({
         identifiers,
         presences,
       };
+
+      if(callback && typeof callback === 'function') {
+        callback(parsedResponse);
+      }
 
       // only used for this promise example and E2E testing
       resolve(parsedResponse);
