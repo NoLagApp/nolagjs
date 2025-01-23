@@ -4,12 +4,12 @@ import { ITunnel } from "../../client";
 export interface ITopic {
     /**
      * Add NQL identifers to the Topic
-     * @param INqlIdentifiers identifiers - List of reverse NQL query items
+     * @param identifiers
      */
     addIdentifiers(identifiers: INqlIdentifiers): Topic;
     /**
      * Remove saved NQL identifiers
-     * @param INqlIdentifiers identifiers - List of reverse NQL query items
+     * @param identifiers
      */
     removeIdentifiers(identifiers: string[]): Topic;
     /**
@@ -20,7 +20,7 @@ export interface ITopic {
     /**
      * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
      * is onReceive
-     * @param ITransport data - Received data published by another device
+     * @param callbackFn
      */
     onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
     /**

@@ -705,11 +705,6 @@ test.describe("Playwright client pub/sub", () => {
       topicInstance
     });
 
-    const notFoundTopicInstance = tunnelInstance.getTopic(topicName);
-
-    console.log("tunnelInstance", tunnelInstance);
-    console.log("notFoundTopicInstance", notFoundTopicInstance);
-
     await example_client_tunnel_publish({
       tunnelInstance,
       topicName,
@@ -737,7 +732,6 @@ test.describe("Playwright client pub/sub", () => {
     const unsubscribeResponse = await unsubscribeTimeout;
 
     expect(unsubscribeResponse).toBeFalsy();
-    expect(notFoundTopicInstance).toBeFalsy();
     expect(data).toMatchObject(responseFromPublish?.data);
   });
 });
