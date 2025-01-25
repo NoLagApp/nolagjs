@@ -1,10 +1,12 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, PlaywrightTestConfig } from "@playwright/test";
 import * as dotenv from "dotenv";
 
 dotenv.config(); // Load environment variables from .env file
 
 export default defineConfig({
-  testDir: "./examples/e2e/browser", // Directory where your test files are located
+  globalSetup: "./examples/e2e/playwrightGlobalSetup",
+  globalTeardown: "./examples/e2e/playwrightGlobalTeardown",
+  testDir: "./examples/e2e/playwright", // Directory where your test files are located
   testMatch: "**/*.playtest.ts", // Only include files with "playtest" in their name
   timeout: 30000, // Set timeout for each test
   expect: {

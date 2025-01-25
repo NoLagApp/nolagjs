@@ -65,6 +65,7 @@ interface IGlobalVars {
 class GlobalVars implements IGlobalVars {
   // local state
   private vars: Record<any, any> = {};
+  public viteHostUrl = "http://localhost:5111";
 
   constructor(env: IEnvVars) {
     if (!env?.PROJECT_API_KEY) throw new Error("PROJECT_API_KEY is required");

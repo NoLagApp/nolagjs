@@ -3,7 +3,7 @@ import { IUnifiedWebsocket } from "../shared/interfaces";
 
 export const unifiedWebsocket = (url: string) => {
   const ws = new WebSocket(url);
-
+  console.log("NODE!!!!");
   const wsInstance: IUnifiedWebsocket = {
     send: (message: ArrayBuffer) => {
       ws.send(message);
