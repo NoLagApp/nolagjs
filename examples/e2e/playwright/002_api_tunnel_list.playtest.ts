@@ -85,11 +85,6 @@ test.describe("Playwright Api List Tunnels", () => {
       return;
     }
 
-    // WE HAVE TO set the tunnelId for the rest of the e2e tests to work
-    if (foundTunnel.tunnelId) {
-      globalVars.setTunnel(foundTunnel);
-    }
-
     expect(foundTunnel?.name).toBe(globalVars.tunnelName);
   });
 });

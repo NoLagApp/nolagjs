@@ -11,6 +11,7 @@ import {
   shouldRetrieveAListOfTunnels,
 } from "../../procedures/002_api_tunnel_list.ts";
 import { editTunnelNameUsingTunnelId, IApiTunnelEdit } from "../../procedures/003_api_tunnel_edit.ts";
+import { getTunnelUsingTunnelId } from "../../procedures/004_api_tunnel_get.ts";
 
 declare global {
   interface Window {
@@ -28,6 +29,7 @@ declare global {
       arg: IApiTunnelList,
     ) => Promise<ITunnelModel | undefined>;
     editTunnelNameUsingTunnelId: (arg: IApiTunnelEdit) => Promise<ITunnelModel>;
+    getTunnelUsingTunnelId: (arg: IApiTunnelEdit) => Promise<ITunnelModel>;
   }
 }
 
@@ -42,3 +44,6 @@ window.queryForASpecificTunnel = queryForASpecificTunnel;
 
 // 003_api_tunnel_edit
 window.editTunnelNameUsingTunnelId = editTunnelNameUsingTunnelId;
+
+// 004_api_tunnel_get
+window.getTunnelUsingTunnelId = getTunnelUsingTunnelId;
