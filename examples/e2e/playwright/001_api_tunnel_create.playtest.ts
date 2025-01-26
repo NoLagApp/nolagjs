@@ -3,7 +3,8 @@ import globalVars from "../../constants/globalVars";
 import type { IErrorMessage, ITunnelModel } from "nolagjs";
 import { example_api_tunnel_create } from "../../SDK/API/tunnels/example_api_tunnel_create";
 import {
-  canNotCreateDuplicateTunnelName, canNotCreateEmptyTunnelName,
+  canNotCreateDuplicateTunnelName,
+  canNotCreateEmptyTunnelName,
   shouldCreateTunnel,
 } from "../procedures/001_api_tunnel_create";
 
@@ -12,29 +13,8 @@ const yourProjectApiKey = globalVars.yourProjectApiKey;
 const noLagDeveloperTestConfigIgnore =
   globalVars.noLagDeveloperTestConfigIgnore;
 
-// test.beforeAll(async () => {
-//   viteServer = exec(
-//     "yarn viteHost",
-//     { cwd: parentDir },
-//     (err, stdout, stderr) => {
-//       if (err) {
-//         console.error(`Error starting Vite: ${stderr}`);
-//       } else {
-//         console.log(`Vite output: ${stdout}`);
-//       }
-//     },
-//   );
-//
-//   // Wait for the server to be ready
-//   await new Promise((resolve) => setTimeout(resolve, 2000));
-// });
-//
-// test.afterAll(() => {
-//   if (viteServer) viteServer.kill();
-// });
-
 test.describe("Playwright Api Create a Tunnel", () => {
-  test("should create a new tunnel", async ({ page }) => {
+  test("BROWSER: Should create a new tunnel", async ({ page }) => {
     const args = {
       noLagDeveloperTestConfigIgnore,
       yourProjectApiKey,
@@ -43,22 +23,28 @@ test.describe("Playwright Api Create a Tunnel", () => {
 
     await page.goto(globalVars.viteHostUrl);
 
-    const responseBrowser = await page.evaluate((args) => {
+    const { name } = await page.evaluate((args) => {
       return shouldCreateTunnel(args);
     }, args);
 
-    args.tunnelName = `${tunnelName}_node`;
-
-    const responseNode = await shouldCreateTunnel(args);
-
-    const { name: nameBrowser } = responseBrowser;
-    const { name: nameNode } = responseNode;
-
-    expect(nameBrowser).toBe(tunnelName);
-    expect(nameNode).toBe(args.tunnelName);
+    expect(name).toBe(tunnelName);
   });
 
-  test("can not create duplicate tunnel name", async ({ page }) => {
+  test("NODE: Should create a new tunnel", async ({ page }) => {
+    const args = {
+      noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey,
+      tunnelName,
+    };
+
+    args.tunnelName = `${tunnelName}_node`;
+
+    const { name } = await shouldCreateTunnel(args);
+
+    expect(name).toBe(args.tunnelName);
+  });
+
+  test("BROWSER: Can not create duplicate tunnel name", async ({ page }) => {
     const args = {
       noLagDeveloperTestConfigIgnore,
       yourProjectApiKey,
@@ -67,20 +53,28 @@ test.describe("Playwright Api Create a Tunnel", () => {
 
     await page.goto(globalVars.viteHostUrl);
 
-    const browserErrors = await page.evaluate((args) => {
+    const response = await page.evaluate((args) => {
       return canNotCreateDuplicateTunnelName(args);
     }, args);
 
-    const nodeErrors = await canNotCreateDuplicateTunnelName(args);
-
-    expect(browserErrors?.code).toBe(409);
-    expect(browserErrors?.msg).toBe("Duplicate resource found");
-
-    expect(nodeErrors?.code).toBe(409);
-    expect(nodeErrors?.msg).toBe("Duplicate resource found");
+    expect(response?.code).toBe(409);
+    expect(response?.msg).toBe("Duplicate resource found");
   });
 
-  test("can not create empty tunnel name", async ({ page }) => {
+  test("NODE: Can not create duplicate tunnel name", async ({ page }) => {
+    const args = {
+      noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey,
+      tunnelName,
+    };
+
+    const response = await canNotCreateDuplicateTunnelName(args);
+
+    expect(response?.code).toBe(409);
+    expect(response?.msg).toBe("Duplicate resource found");
+  });
+
+  test("BROWSER: Can not create empty tunnel name", async ({ page }) => {
     const args = {
       noLagDeveloperTestConfigIgnore,
       yourProjectApiKey,
@@ -89,18 +83,36 @@ test.describe("Playwright Api Create a Tunnel", () => {
 
     await page.goto(globalVars.viteHostUrl);
 
-    const browserErrors = await page.evaluate((args) => {
+    const response = await page.evaluate((args) => {
       return canNotCreateEmptyTunnelName(args);
     }, args);
 
     const nodeErrors = await canNotCreateEmptyTunnelName(args);
 
-    expect(browserErrors?.code).toBe(400);
-    const browserNamePropertyError = nodeErrors?.errors?.find((i) => i.property === "name");
-    expect(browserNamePropertyError?.descriptions?.[0]).toBe("should not be empty");
+    expect(response?.code).toBe(400);
+    const browserNamePropertyError = nodeErrors?.errors?.find(
+      (i) => i.property === "name",
+    );
+    expect(browserNamePropertyError?.descriptions?.[0]).toBe(
+      "should not be empty",
+    );
+  });
 
-    expect(nodeErrors?.code).toBe(400);
-    const nodeNamePropertyError = nodeErrors?.errors?.find((i) => i.property === "name");
-    expect(nodeNamePropertyError?.descriptions?.[0]).toBe("should not be empty");
+  test("NODE: Can not create empty tunnel name", async ({ page }) => {
+    const args = {
+      noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey,
+      tunnelName,
+    };
+
+    const response = await canNotCreateEmptyTunnelName(args);
+
+    expect(response?.code).toBe(400);
+    const nodeNamePropertyError = response?.errors?.find(
+      (i) => i.property === "name",
+    );
+    expect(nodeNamePropertyError?.descriptions?.[0]).toBe(
+      "should not be empty",
+    );
   });
 });
