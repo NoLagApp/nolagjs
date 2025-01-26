@@ -4,7 +4,7 @@ import {
   canNotCreateEmptyTunnelName,
   IApiTunnelCreate,
 } from "../../procedures/001_api_tunnel_create.ts";
-import type { IErrorMessage, IPaginated, ITunnelModel } from "nolagjs";
+import type { IErrorMessage, IPaginated, ITopicModel, ITunnelModel } from "nolagjs";
 import {
   IApiTunnelList,
   queryForASpecificTunnel,
@@ -12,6 +12,7 @@ import {
 } from "../../procedures/002_api_tunnel_list.ts";
 import { editTunnelNameUsingTunnelId, IApiTunnelEdit } from "../../procedures/003_api_tunnel_edit.ts";
 import { getTunnelUsingTunnelId } from "../../procedures/004_api_tunnel_get.ts";
+import { createTunnelTopicUsingTunnelID, IApiTopicCreate } from "../../procedures/005_api_topic_create.ts";
 
 declare global {
   interface Window {
@@ -30,6 +31,7 @@ declare global {
     ) => Promise<ITunnelModel | undefined>;
     editTunnelNameUsingTunnelId: (arg: IApiTunnelEdit) => Promise<ITunnelModel>;
     getTunnelUsingTunnelId: (arg: IApiTunnelEdit) => Promise<ITunnelModel>;
+    createTunnelTopicUsingTunnelID: (arg: IApiTopicCreate) => Promise<ITopicModel>;
   }
 }
 
@@ -47,3 +49,6 @@ window.editTunnelNameUsingTunnelId = editTunnelNameUsingTunnelId;
 
 // 004_api_tunnel_get
 window.getTunnelUsingTunnelId = getTunnelUsingTunnelId;
+
+// 005_api_topic_create
+window.createTunnelTopicUsingTunnelID = createTunnelTopicUsingTunnelID;
