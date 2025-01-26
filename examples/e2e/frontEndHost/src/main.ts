@@ -5,7 +5,12 @@ import {
   IApiTunnelCreate,
 } from "../../procedures/001_api_tunnel_create.ts";
 import type { IErrorMessage, IPaginated, ITunnelModel } from "nolagjs";
-import { queryForASpecificTunnel, shouldRetrieveAListOfTunnels } from "../../procedures/002_api_tunnel_list.ts";
+import {
+  IApiTunnelList,
+  queryForASpecificTunnel,
+  shouldRetrieveAListOfTunnels,
+} from "../../procedures/002_api_tunnel_list.ts";
+import { editTunnelNameUsingTunnelId, IApiTunnelEdit } from "../../procedures/003_api_tunnel_edit.ts";
 
 declare global {
   interface Window {
@@ -17,17 +22,23 @@ declare global {
       arg: IApiTunnelCreate,
     ) => Promise<IErrorMessage | undefined>;
     shouldRetrieveAListOfTunnels: (
-      arg: IApiTunnelCreate,
+      arg: IApiTunnelList,
     ) =>  Promise<IPaginated<ITunnelModel>>;
     queryForASpecificTunnel: (
-      arg: IApiTunnelCreate,
+      arg: IApiTunnelList,
     ) => Promise<ITunnelModel | undefined>;
+    editTunnelNameUsingTunnelId: (arg: IApiTunnelEdit) => Promise<ITunnelModel>;
   }
 }
 
+// 001_api_tunnel_create
 window.shouldCreateTunnel = shouldCreateTunnel;
 window.canNotCreateDuplicateTunnelName = canNotCreateDuplicateTunnelName;
 window.canNotCreateEmptyTunnelName = canNotCreateEmptyTunnelName;
 
+// 002_api_tunnel_list
 window.shouldRetrieveAListOfTunnels = shouldRetrieveAListOfTunnels;
 window.queryForASpecificTunnel = queryForASpecificTunnel;
+
+// 003_api_tunnel_edit
+window.editTunnelNameUsingTunnelId = editTunnelNameUsingTunnelId;
