@@ -1,31 +1,47 @@
 import { test, expect } from "@playwright/test";
-import globalVars from "../../constants/globalVars";
+import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import { example_api_tunnel_topic_get } from "../../SDK/API/tunnel_topics/example_api_tunnel_topic_get";
-
-const yourProjectApiKey = globalVars.yourProjectApiKey;
-const noLagDeveloperTestConfigIgnore =
-  globalVars.noLagDeveloperTestConfigIgnore;
-const tunnelId = globalVars.topic?.tunnelId ?? "";
-const topicId = globalVars.topic?.topicId ?? "";
+import { editTunnelTopicUsingTopicId } from "../procedures/006_api_topic_edit";
+import { getTunnelTopicUsingTopicId } from "../procedures/007_api_topic_get";
 
 test.describe("Playwright Api Get Tunnel Topic", () => {
-  test("get tunnel topic using topicID", async ({ page }) => {
-    if (!globalVars.topic) {
-      expect(false).toBeTruthy();
-      return;
-    }
+  test("BROWSER: Get tunnel topic using topicID", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
 
-    const response = await example_api_tunnel_topic_get({
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      topicId,
-    });
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return getTunnelTopicUsingTopicId(args);
+    }, args);
 
     if (response) {
-      globalVars.setTopic(response);
+      browserInstance.setTopic(response);
     }
 
-    expect(response).toMatchObject(globalVars.topic as Record<any, any>);
+    expect(response).toMatchObject(browserInstance.topic as Record<any, any>);
+  });
+
+  test("NODE: Get tunnel topic using topicID", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await getTunnelTopicUsingTopicId(args);
+
+    if (response) {
+      browserInstance.setTopic(response);
+    }
+
+    expect(response).toMatchObject(browserInstance.topic as Record<any, any>);
   });
 });

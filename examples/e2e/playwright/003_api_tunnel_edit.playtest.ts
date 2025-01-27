@@ -1,54 +1,39 @@
 import { test, expect } from "@playwright/test";
-import globalVars from "../../constants/globalVars";
-import type { ITunnelModel } from "nolagjs";
-import { example_api_tunnel_edit } from "../../SDK/API/tunnels/example_api_tunnel_update";
+import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import { editTunnelNameUsingTunnelId } from "../procedures/003_api_tunnel_edit";
-import { shouldRetrieveAListOfTunnels } from "../procedures/002_api_tunnel_list";
-
-const tunnelName = globalVars.tunnelName;
-const yourProjectApiKey = globalVars.yourProjectApiKey;
-const noLagDeveloperTestConfigIgnore =
-  globalVars.noLagDeveloperTestConfigIgnore;
-
-// tunnel payload
-const payload: ITunnelModel = {
-  name: `updated_${tunnelName}`,
-};
-
-editTunnelNameUsingTunnelId
 
 test.describe("Playwright Api Edit Tunnel", () => {
   test("BROWSER: Edit tunnel name using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName: globalVars.tunnelName,
-      tunnel: globalVars.tunnel
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelName: browserInstance.tunnelName,
+      tunnel: browserInstance.tunnel,
     };
 
-    await page.goto(globalVars.viteHostUrl);
+    await page.goto(browserInstance.viteHostUrl);
 
     const response = await page.evaluate((args) => {
       return editTunnelNameUsingTunnelId(args);
     }, args);
 
-    globalVars.setTunnel(response);
+    browserInstance.setTunnel(response);
 
-    expect(response?.name).toBe(globalVars.tunnel.name);
+    expect(response?.name).toBe(browserInstance.tunnel.name);
   });
 
   test("NODE: Edit tunnel name using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName: globalVars.tunnelName,
-      tunnel: globalVars.tunnel
+      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelName: nodeInstance.tunnelName,
+      tunnel: nodeInstance.tunnel,
     };
 
     const response = await editTunnelNameUsingTunnelId(args);
 
-    globalVars.setTunnel(response);
+    nodeInstance.setTunnel(response);
 
-    expect(response?.name).toBe(globalVars.tunnel.name);
+    expect(response?.name).toBe(nodeInstance.tunnel.name);
   });
 });

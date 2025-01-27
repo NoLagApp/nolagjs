@@ -1,43 +1,36 @@
 import { test, expect } from "@playwright/test";
-import globalVars from "../../constants/globalVars";
-import type { IErrorMessage, ITunnelModel } from "nolagjs";
-import { example_api_tunnel_create } from "../../SDK/API/tunnels/example_api_tunnel_create";
+import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import {
   canNotCreateDuplicateTunnelName,
   canNotCreateEmptyTunnelName,
   shouldCreateTunnel,
 } from "../procedures/001_api_tunnel_create";
 
-const tunnelName = globalVars.tunnelName;
-const yourProjectApiKey = globalVars.yourProjectApiKey;
-const noLagDeveloperTestConfigIgnore =
-  globalVars.noLagDeveloperTestConfigIgnore;
-
 test.describe("Playwright Api Create a Tunnel", () => {
   test("BROWSER: Should create a new tunnel", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelName: browserInstance.tunnelName,
     };
 
-    await page.goto(globalVars.viteHostUrl);
+    await page.goto(browserInstance.viteHostUrl);
 
     const { name } = await page.evaluate((args) => {
       return shouldCreateTunnel(args);
     }, args);
 
-    expect(name).toBe(tunnelName);
+    expect(name).toBe(browserInstance.tunnelName);
   });
 
   test("NODE: Should create a new tunnel", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelName: nodeInstance.tunnelName,
     };
-
-    args.tunnelName = `${tunnelName}_node`;
 
     const { name } = await shouldCreateTunnel(args);
 
@@ -46,12 +39,13 @@ test.describe("Playwright Api Create a Tunnel", () => {
 
   test("BROWSER: Can not create duplicate tunnel name", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelName: browserInstance.tunnelName,
     };
 
-    await page.goto(globalVars.viteHostUrl);
+    await page.goto(browserInstance.viteHostUrl);
 
     const response = await page.evaluate((args) => {
       return canNotCreateDuplicateTunnelName(args);
@@ -63,9 +57,10 @@ test.describe("Playwright Api Create a Tunnel", () => {
 
   test("NODE: Can not create duplicate tunnel name", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelName: nodeInstance.tunnelName,
     };
 
     const response = await canNotCreateDuplicateTunnelName(args);
@@ -76,12 +71,13 @@ test.describe("Playwright Api Create a Tunnel", () => {
 
   test("BROWSER: Can not create empty tunnel name", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelName: browserInstance.tunnelName,
     };
 
-    await page.goto(globalVars.viteHostUrl);
+    await page.goto(browserInstance.viteHostUrl);
 
     const response = await page.evaluate((args) => {
       return canNotCreateEmptyTunnelName(args);
@@ -100,9 +96,10 @@ test.describe("Playwright Api Create a Tunnel", () => {
 
   test("NODE: Can not create empty tunnel name", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnelName,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelName: nodeInstance.tunnelName,
     };
 
     const response = await canNotCreateEmptyTunnelName(args);

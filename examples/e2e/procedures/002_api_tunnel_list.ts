@@ -1,5 +1,3 @@
-import { test, expect } from "@playwright/test";
-import globalVars from "../../constants/globalVars";
 import { example_api_tunnel_list } from "../../SDK/API/tunnels/example_api_tunnel_list";
 import type { ITunnelQuery } from "nolagjs";
 

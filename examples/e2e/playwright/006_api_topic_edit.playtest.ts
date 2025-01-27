@@ -1,200 +1,267 @@
 import { test, expect } from "@playwright/test";
-import globalVars from "../../constants/globalVars";
-import type { ITopicModel } from "nolagjs";
+import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import { EStatus } from "nolagjs";
-import { example_api_tunnel_topic_update } from "../../SDK/API/tunnel_topics/example_api_tunnel_topic_update";
-
-const yourProjectApiKey = globalVars.yourProjectApiKey;
-const noLagDeveloperTestConfigIgnore =
-  globalVars.noLagDeveloperTestConfigIgnore;
-const tunnelId = globalVars.topic?.tunnelId ?? "";
-const topicId = globalVars.topic?.topicId ?? "";
+import {
+  editTunnelTopicUsingTopicId,
+  setHydrationWebhook,
+  setNoEchoToFalse, setStatusToInactive,
+  setTriggerWebhook,
+} from "../procedures/006_api_topic_edit";
 
 test.describe("Playwright Api Edit Tunnel Topic", () => {
-  test("edit tunnel topic using topicID", async ({ page }) => {
-    if (!globalVars.topic) {
-      expect(false).toBeTruthy();
-      return;
-    }
-
-    const payload: ITopicModel = {
-      name: `${globalVars.topicName}_edited`,
+  test("BROWSER: Edit tunnel topic using topicID", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
     };
 
-    const response = await example_api_tunnel_topic_update({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      topicId,
-    });
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return editTunnelTopicUsingTopicId(args);
+    }, args);
 
     if (response) {
-      globalVars.setTopic(response);
+      browserInstance.setTopic(response);
     }
 
-    expect(response?.name).toBe(globalVars.topic.name);
+    expect(response?.name).toBe(browserInstance.topic.name);
   });
 
-  test("set noEcho to false", async ({ page }) => {
-    const topic = globalVars.topic;
-
-    if (!topic) {
-      expect(false).toBeTruthy();
-      return;
-    }
-
-    const payload: ITopicModel = {
-      noEcho: false,
+  test("NODE: Edit tunnel topic using topicID", async ({ page }) => {
+    const args = {
+      topicId: nodeInstance.topic.topicId ?? "",
+      tunnelName: nodeInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
     };
 
-    const response = await example_api_tunnel_topic_update({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      topicId,
-    });
+    await page.goto(nodeInstance.viteHostUrl);
+
+    const response = await editTunnelTopicUsingTopicId(args);
 
     if (response) {
-      globalVars.setTopic(response);
+      nodeInstance.setTopic(response);
+    }
+
+    expect(response?.name).toBe(nodeInstance.topic.name);
+  });
+
+  test("BROWSER: Set noEcho to false", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return setNoEchoToFalse(args);
+    }, args);
+
+    if (response) {
+      browserInstance.setTopic(response);
     }
 
     expect(response?.noEcho).toBeFalsy();
-    expect(response?.name).toBe(globalVars.topic?.name);
+    expect(response?.name).toBe(browserInstance.topic?.name);
   });
 
-  test("set Trigger webhook", async ({ page }) => {
-    const topic = globalVars.topic;
-
-    if (!topic) {
-      expect(false).toBeTruthy();
-      return;
-    }
-
-    const payload: ITopicModel = {
-      triggerApi: {
-        url: "http://your-url.com/api/trigger",
-        queryParams: {
-          queryParamOne: "queryParamOne",
-          queryParamTwo: "queryParamTwo",
-          queryParamThree: "queryParamThree",
-        },
-        headers: {
-          headersParamOne: "headersParamOne",
-          headersParamTwo: "headersParamTwo",
-          headersParamThree: "headersParamThree",
-        },
-      },
+  test("NODE: Set noEcho to false", async ({ page }) => {
+    const args = {
+      topicId: nodeInstance.topic.topicId ?? "",
+      tunnelName: nodeInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
     };
 
-    const response = await example_api_tunnel_topic_update({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      topicId,
-    });
+    const response = await setNoEchoToFalse(args);
 
     if (response) {
-      globalVars.setTopic(response);
+      nodeInstance.setTopic(response);
+    }
+
+    expect(response?.noEcho).toBeFalsy();
+    expect(response?.name).toBe(nodeInstance.topic?.name);
+  });
+
+  test("BROWSER: Set Trigger webhook", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return setTriggerWebhook(args);
+    }, args);
+
+    if (response) {
+      browserInstance.setTopic(response);
     }
 
     expect(response.triggerApi).toMatchObject(
-      globalVars.topic?.triggerApi as Record<any, any>,
+      browserInstance.topic?.triggerApi as Record<any, any>,
     );
   });
 
-  test("set Hydration webhook", async ({ page }) => {
-    const topic = globalVars.topic;
-
-    if (!topic) {
-      expect(false).toBeTruthy();
-      return;
-    }
-
-    const payload: ITopicModel = {
-      hydrateApi: {
-        url: "http://your-url.com/api/hydration",
-        queryParams: {
-          queryParamOne: "queryParamOne",
-          queryParamTwo: "queryParamTwo",
-          queryParamThree: "queryParamThree",
-        },
-        headers: {
-          headersParamOne: "headersParamOne",
-          headersParamTwo: "headersParamTwo",
-          headersParamThree: "headersParamThree",
-        },
-      },
+  test("NODE: Set Trigger webhook", async ({ page }) => {
+    const args = {
+      topicId: nodeInstance.topic.topicId ?? "",
+      tunnelName: nodeInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
     };
 
-    const response = await example_api_tunnel_topic_update({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      topicId,
-    });
+    const response = await setTriggerWebhook(args);
 
     if (response) {
-      globalVars.setTopic(response);
+      nodeInstance.setTopic(response);
+    }
+
+    expect(response.triggerApi).toMatchObject(
+      nodeInstance.topic?.triggerApi as Record<any, any>,
+    );
+  });
+
+  test("BROWSER: Set Hydration webhook", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return setHydrationWebhook(args);
+    }, args);
+
+    if (response) {
+      browserInstance.setTopic(response);
     }
 
     expect(response.hydrateApi).toMatchObject(
-      globalVars.topic?.hydrateApi as Record<any, any>,
+      browserInstance.topic?.hydrateApi as Record<any, any>,
     );
   });
 
-  test("set status to Inactive", async ({ page }) => {
-    const topic = globalVars.topic;
-
-    if (!topic) {
-      expect(false).toBeTruthy();
-      return;
-    }
-
-    const payload: ITopicModel = {
-      status: EStatus.Inactive,
+  test("NODE: Set Hydration webhook", async ({ page }) => {
+    const args = {
+      topicId: nodeInstance.topic.topicId ?? "",
+      tunnelName: nodeInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
     };
 
-    const response = await example_api_tunnel_topic_update({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      topicId,
-    });
+    await page.goto(nodeInstance.viteHostUrl);
+
+    const response = await setHydrationWebhook(args);
 
     if (response) {
-      globalVars.setTopic(response);
+      nodeInstance.setTopic(response);
+    }
+
+    expect(response.hydrateApi).toMatchObject(
+      nodeInstance.topic?.hydrateApi as Record<any, any>,
+    );
+  });
+
+  test("BROWSER: Set status to Inactive", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return setStatusToInactive(args);
+    }, args);
+
+    if (response) {
+      browserInstance.setTopic(response);
     }
 
     expect(response?.status).toBe(EStatus.Inactive);
   });
 
-  test("set status to Active", async ({ page }) => {
-    const topic = globalVars.topic;
-
-    if (!topic) {
-      expect(false).toBeTruthy();
-      return;
-    }
-
-    const payload: ITopicModel = {
-      status: EStatus.Active,
+  test("NODE: Set status to Inactive", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
     };
 
-    const response = await example_api_tunnel_topic_update({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      topicId,
-    });
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await setStatusToInactive(args);
 
     if (response) {
-      globalVars.setTopic(response);
+      browserInstance.setTopic(response);
+    }
+
+    expect(response?.status).toBe(EStatus.Inactive);
+  });
+
+  test("BROWSER: Set status to Active", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return setStatusToInactive(args);
+    }, args);
+
+    if (response) {
+      browserInstance.setTopic(response);
+    }
+
+    expect(response?.status).toBe(EStatus.Active);
+  });
+
+  test("NODE: Set status to Active", async ({ page }) => {
+    const args = {
+      topicId: browserInstance.topic.topicId ?? "",
+      tunnelName: browserInstance.tunnel.name ?? "",
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await setStatusToInactive(args);
+
+    if (response) {
+      browserInstance.setTopic(response);
     }
 
     expect(response?.status).toBe(EStatus.Active);

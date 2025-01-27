@@ -1,41 +1,35 @@
 import { test, expect } from "@playwright/test";
-import globalVars from "../../constants/globalVars";
-import { example_api_tunnel_get } from "../../SDK/API/tunnels/example_api_tunnel_get";
-import { editTunnelNameUsingTunnelId } from "../procedures/003_api_tunnel_edit";
+import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import { getTunnelUsingTunnelId } from "../procedures/004_api_tunnel_get";
-
-const yourProjectApiKey = globalVars.yourProjectApiKey;
-const noLagDeveloperTestConfigIgnore =
-  globalVars.noLagDeveloperTestConfigIgnore;
 
 test.describe("Playwright Api Get Tunnel", () => {
   test("BROWSER: Get tunnel using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnel: globalVars.tunnel
+      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+      tunnel: browserInstance.tunnel
     };
 
-    await page.goto(globalVars.viteHostUrl);
+    await page.goto(browserInstance.viteHostUrl);
 
     const response = await page.evaluate((args) => {
       return getTunnelUsingTunnelId(args);
     }, args);
 
-    expect(response?.name).toBe(globalVars.tunnel.name);
-    expect(response?.tunnelId).toBe(globalVars.tunnel.tunnelId);
+    expect(response?.name).toBe(browserInstance.tunnel.name);
+    expect(response?.tunnelId).toBe(browserInstance.tunnel.tunnelId);
   });
 
   test("NODE: Get tunnel using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey,
-      tunnel: globalVars.tunnel
+      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnel: nodeInstance.tunnel
     };
 
     const response = await getTunnelUsingTunnelId(args);
 
-    expect(response?.name).toBe(globalVars.tunnel.name);
-    expect(response?.tunnelId).toBe(globalVars.tunnel.tunnelId);
+    expect(response?.name).toBe(nodeInstance.tunnel.name);
+    expect(response?.tunnelId).toBe(nodeInstance.tunnel.tunnelId);
   });
 });

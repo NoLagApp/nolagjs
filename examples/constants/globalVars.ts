@@ -1,6 +1,7 @@
 import { IEnvVars } from "./interfaces";
 import type { IDeviceModel, ITopicModel, ITunnelModel } from "nolagjs";
 import dayjs from "dayjs";
+import { EEnvironments } from "./enums";
 
 interface IGlobalVars {
   /**
@@ -65,12 +66,14 @@ interface IGlobalVars {
 class GlobalVars implements IGlobalVars {
   // local state
   private vars: Record<any, any> = {};
+  private envName: EEnvironments;
   public viteHostUrl = "http://localhost:5111";
 
-  constructor(env: IEnvVars) {
-    if (!env?.PROJECT_API_KEY) throw new Error("PROJECT_API_KEY is required");
-    this.vars.PROJECT_API_KEY = env.PROJECT_API_KEY;
-    this.vars.NOLAG_DEVELOPER_TESTING = env.NOLAG_DEVELOPER_TESTING === "true";
+  constructor(envName:EEnvironments,envVars: IEnvVars) {
+    if (!envVars?.PROJECT_API_KEY) throw new Error("PROJECT_API_KEY is required");
+    this.vars.PROJECT_API_KEY = envVars.PROJECT_API_KEY;
+    this.vars.NOLAG_DEVELOPER_TESTING = envVars.NOLAG_DEVELOPER_TESTING === "true";
+    this.envName = envName;
   }
 
   public get noLagDeveloperTestConfigIgnore() {
@@ -97,7 +100,7 @@ class GlobalVars implements IGlobalVars {
    * revert all previous actions
    */
   private createTestTunnelName(): string {
-    this.vars.TUNNEL_NAME = `e2e_Tunnel_${dayjs().valueOf()}`;
+    this.vars.TUNNEL_NAME = `${this.envName}:e2e_Tunnel_${dayjs().valueOf()}`;
     return this.vars.TUNNEL_NAME;
   }
 
@@ -107,7 +110,7 @@ class GlobalVars implements IGlobalVars {
    * revert all previous actions
    */
   private createTestTopicName(): string {
-    this.vars.TOPIC_NAME = `e2e_Topic_${dayjs().valueOf()}`;
+    this.vars.TOPIC_NAME = `${this.envName}:e2e_Topic_${dayjs().valueOf()}`;
     return this.vars.TOPIC_NAME;
   }
 
@@ -117,7 +120,7 @@ class GlobalVars implements IGlobalVars {
    * revert all previous actions
    */
   private createTestDeviceName(): string {
-    this.vars.DEVICE_NAME = `e2e_Device_${dayjs().valueOf()}`;
+    this.vars.DEVICE_NAME = `${this.envName}:e2e_Device_${dayjs().valueOf()}`;
     return this.vars.DEVICE_NAME;
   }
 
@@ -192,6 +195,13 @@ class GlobalVars implements IGlobalVars {
   }
 }
 
-export const globalVars = new GlobalVars(process.env as unknown as IEnvVars);
+const globalVarsBrowser = () => {
+  return new GlobalVars(EEnvironments.BROWSER,process.env as unknown as IEnvVars);
+}
 
-export default globalVars;
+const globalVarsNode = () => {
+  return new GlobalVars(EEnvironments.NODE,process.env as unknown as IEnvVars);
+}
+
+export const browserInstance = globalVarsBrowser();
+export const nodeInstance = globalVarsNode();
