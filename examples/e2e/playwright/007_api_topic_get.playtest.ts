@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
 import { browserInstance, nodeInstance } from "../../constants/globalVars";
-import { example_api_tunnel_topic_get } from "../../SDK/API/tunnel_topics/example_api_tunnel_topic_get";
-import { editTunnelTopicUsingTopicId } from "../procedures/006_api_topic_edit";
 import { getTunnelTopicUsingTopicId } from "../procedures/007_api_topic_get";
 
 test.describe("Playwright Api Get Tunnel Topic", () => {
@@ -28,20 +26,20 @@ test.describe("Playwright Api Get Tunnel Topic", () => {
 
   test("NODE: Get tunnel topic using topicID", async ({ page }) => {
     const args = {
-      topicId: browserInstance.topic.topicId ?? "",
-      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
-      yourProjectApiKey: browserInstance.yourProjectApiKey,
-      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+      topicId: nodeInstance.topic.topicId ?? "",
+      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
     };
 
-    await page.goto(browserInstance.viteHostUrl);
+    await page.goto(nodeInstance.viteHostUrl);
 
     const response = await getTunnelTopicUsingTopicId(args);
 
     if (response) {
-      browserInstance.setTopic(response);
+      nodeInstance.setTopic(response);
     }
 
-    expect(response).toMatchObject(browserInstance.topic as Record<any, any>);
+    expect(response).toMatchObject(nodeInstance.topic as Record<any, any>);
   });
 });

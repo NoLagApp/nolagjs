@@ -17,7 +17,7 @@ export const editTunnelNameUsingTunnelId = async ({
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
 }: IApiTunnelEdit) => {
-  payload.name = `updated_${tunnelName}`;
+  payload.name = `${tunnelName}_edited`;
   return example_api_tunnel_edit({
     tunnel: tunnel,
     yourProjectApiKey,

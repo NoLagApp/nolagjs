@@ -1,5 +1,3 @@
-import { test, expect } from "@playwright/test";
-import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import { example_api_tunnel_topic_get } from "../../SDK/API/tunnel_topics/example_api_tunnel_topic_get";
 
 export interface IApiTopicGet {

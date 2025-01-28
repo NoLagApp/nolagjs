@@ -5,6 +5,7 @@ import {
   IApiTunnelCreate,
 } from "../../procedures/001_api_tunnel_create.ts";
 import type {
+  IDeviceModel,
   IErrorMessage,
   IPaginated,
   ITopicModel,
@@ -25,13 +26,43 @@ import {
   IApiTopicCreate,
 } from "../../procedures/005_api_topic_create.ts";
 import {
-  editTunnelTopicUsingTopicId, IApiTopicEdit,
+  editTunnelTopicUsingTopicId,
+  IApiTopicEdit,
   setHydrationWebhook,
-  setNoEchoToFalse, setStatusToActive,
+  setNoEchoToFalse,
+  setStatusToActive,
   setStatusToInactive,
   setTriggerWebhook,
 } from "../../procedures/006_api_topic_edit.ts";
-import { getTunnelTopicUsingTopicId, IApiTopicGet } from "../../procedures/007_api_topic_get.ts";
+import {
+  getTunnelTopicUsingTopicId,
+  IApiTopicGet,
+} from "../../procedures/007_api_topic_get.ts";
+import {
+  IApiTopicList,
+  queryForASpecificTopicName,
+  shouldRetrieveAListOfTopics,
+} from "../../procedures/008_api_topic_list.ts";
+import {
+  canNotCreateDuplicateDeviceName,
+  canNotCreateEmptyDeviceName,
+  IApiDeviceCreate,
+  shouldCreateNewDevice,
+} from "../../procedures/009_api_device_create.ts";
+import {
+  IApiDeviceList,
+  shouldSeeAListOfDevices,
+  shouldSeeAListOfSearchResultsForDevices,
+} from "../../procedures/010_api_device_list.ts";
+import {
+  editTunnelDeviceSetAccessPermissionsPublish, editTunnelDeviceSetAccessPermissionsPubSub,
+  editTunnelDeviceSetAccessPermissionsSubscribe,
+  editTunnelDeviceUsingDeviceTokenId,
+  IApiDeviceEdit,
+  lockDeviceTopics,
+  setExpireInSeconds,
+  setStaticTopics,
+} from "../../procedures/011_api_device_edit.ts";
 
 declare global {
   interface Window {
@@ -67,6 +98,44 @@ declare global {
     setStatusToActive: (arg: IApiTopicEdit) => Promise<ITopicModel>;
     // 007_api_topic_get
     getTunnelTopicUsingTopicId: (arg: IApiTopicGet) => Promise<ITopicModel>;
+    // 008_api_topic_list
+    shouldRetrieveAListOfTopics: (
+      arg: IApiTopicList,
+    ) => Promise<IPaginated<ITopicModel>>;
+    queryForASpecificTopicName: (
+      arg: IApiTopicList,
+    ) => Promise<IPaginated<ITopicModel>>;
+    // 009_api_device_create
+    shouldCreateNewDevice: (arg: IApiDeviceCreate) => Promise<IDeviceModel>;
+    canNotCreateDuplicateDeviceName: (
+      arg: IApiDeviceCreate,
+    ) => Promise<IErrorMessage | undefined>;
+    canNotCreateEmptyDeviceName: (
+      arg: IApiDeviceCreate,
+    ) => Promise<IErrorMessage | undefined>;
+    // 010_api_device_list
+    shouldSeeAListOfDevices: (
+      arg: IApiDeviceList,
+    ) => Promise<IPaginated<IDeviceModel>>;
+    shouldSeeAListOfSearchResultsForDevices: (
+      arg: IApiDeviceList,
+    ) => Promise<IPaginated<IDeviceModel>>;
+    // 011_api_device_edit
+    editTunnelDeviceUsingDeviceTokenId: (
+      arg: IApiDeviceEdit,
+    ) => Promise<IDeviceModel>;
+    editTunnelDeviceSetAccessPermissionsSubscribe: (
+      arg: IApiDeviceEdit,
+    ) => Promise<IDeviceModel>;
+    editTunnelDeviceSetAccessPermissionsPublish: (
+      arg: IApiDeviceEdit,
+    ) => Promise<IDeviceModel>;
+    editTunnelDeviceSetAccessPermissionsPubSub: (
+      arg: IApiDeviceEdit,
+    ) => Promise<IDeviceModel>;
+    setStaticTopics: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
+    lockDeviceTopics: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
+    setExpireInSeconds: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
   }
 }
 
@@ -98,3 +167,29 @@ window.setStatusToActive = setStatusToActive;
 
 // 007_api_topic_get
 window.getTunnelTopicUsingTopicId = getTunnelTopicUsingTopicId;
+
+// 008_api_topic_list
+window.shouldRetrieveAListOfTopics = shouldRetrieveAListOfTopics;
+window.queryForASpecificTopicName = queryForASpecificTopicName;
+
+// 009_api_device_create
+window.shouldCreateNewDevice = shouldCreateNewDevice;
+window.canNotCreateDuplicateDeviceName = canNotCreateDuplicateDeviceName;
+window.canNotCreateEmptyDeviceName = canNotCreateEmptyDeviceName;
+
+// 010_api_device_list
+window.shouldSeeAListOfDevices = shouldSeeAListOfDevices;
+window.shouldSeeAListOfSearchResultsForDevices =
+  shouldSeeAListOfSearchResultsForDevices;
+
+// 011_api_device_edit
+window.editTunnelDeviceUsingDeviceTokenId = editTunnelDeviceUsingDeviceTokenId;
+window.editTunnelDeviceSetAccessPermissionsSubscribe =
+  editTunnelDeviceSetAccessPermissionsSubscribe;
+window.editTunnelDeviceSetAccessPermissionsPublish =
+  editTunnelDeviceSetAccessPermissionsPublish;
+window.editTunnelDeviceSetAccessPermissionsPubSub =
+  editTunnelDeviceSetAccessPermissionsPubSub;
+window.setStaticTopics = setStaticTopics;
+window.lockDeviceTopics = lockDeviceTopics;
+window.setExpireInSeconds = setExpireInSeconds;

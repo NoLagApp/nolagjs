@@ -1,71 +1,128 @@
 import { expect, test } from "@playwright/test";
-import globalVars from "../../constants/globalVars";
-import type { IDeviceModel, IErrorMessage } from "nolagjs";
-import { EAccessPermission } from "nolagjs";
-import { example_api_tunnel_topic_list } from "../../SDK/API/tunnel_topics/example_api_tunnel_topic_list";
-import { example_api_tunnel_device_create } from "../../SDK/API/tunnel_devices/example_api_tunnel_device_create";
-
-const yourProjectApiKey = globalVars.yourProjectApiKey;
-const noLagDeveloperTestConfigIgnore =
-  globalVars.noLagDeveloperTestConfigIgnore;
-const tunnelId = globalVars.topic?.tunnelId ?? "";
-
-const payload: IDeviceModel = {
-  name: globalVars.deviceName,
-  accessPermission: EAccessPermission.PubSub,
-};
+import { browserInstance, nodeInstance } from "../../constants/globalVars";
+import type { IErrorMessage } from "nolagjs";
+import { canNotCreateDuplicateDeviceName, shouldCreateNewDevice } from "../procedures/009_api_device_create";
 
 test.describe("Playwright Api Create Device", () => {
-  test("should create a new device", async ({ page }) => {
-    const response = await example_api_tunnel_device_create({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      deviceName: globalVars.deviceName,
-      tunnelId,
-    });
+  test("BROWSER: Should create a new device", async ({ page }) => {
+    const args = {
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+      deviceName: browserInstance.device.name ?? "",
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return shouldCreateNewDevice(args);
+    }, args);
 
     if (response) {
-      globalVars.setDevice(response);
+      browserInstance.setDevice(response);
     }
 
-    expect(response?.name).toBe(globalVars.deviceName);
+    expect(response?.name).toBe(browserInstance.deviceName);
   });
 
-  test("can not create duplicate device name", async ({ page }) => {
-    try {
-      await example_api_tunnel_device_create({
-        payload,
-        yourProjectApiKey,
-        noLagDeveloperTestConfigIgnore,
-        deviceName: globalVars.deviceName,
-        tunnelId,
-      });
-    } catch (error) {
-      const { code, msg } = error as IErrorMessage;
+  test("NODE: Should create a new device", async ({ page }) => {
+    const args = {
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
+      deviceName: nodeInstance.device.name ?? "",
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+    };
 
-      expect(code).toBe(409);
-      expect(msg).toBe("Duplicate resource found");
+    const response = await shouldCreateNewDevice(args);
+
+    if (response) {
+      nodeInstance.setDevice(response);
     }
+
+    expect(response?.name).toBe(nodeInstance.deviceName);
   });
 
-  test("can not create empty device name", async ({ page }) => {
-    try {
-      payload.name = "";
+  test("BROWSER: Can not create duplicate device name", async ({ page }) => {
+    const args = {
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+      deviceName: browserInstance.device.name ?? "",
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+    };
 
-      await example_api_tunnel_device_create({
-        payload,
-        yourProjectApiKey,
-        noLagDeveloperTestConfigIgnore,
-        deviceName: "",
-        tunnelId,
-      });
-    } catch (error) {
-      const { code, errors } = error as IErrorMessage;
-      const NameProperty = errors?.find((i) => i.property === "name");
+    await page.goto(browserInstance.viteHostUrl);
 
-      expect(code).toBe(400);
-      expect(NameProperty?.descriptions?.[0]).toBe("should not be empty");
-    }
+    const response = await page.evaluate((args) => {
+      return canNotCreateDuplicateDeviceName(args);
+    }, args);
+
+    const { code, msg } = response as IErrorMessage;
+
+    expect(code).toBe(409);
+    expect(msg).toBe("Duplicate resource found");
+  });
+
+  test("NODE: Can not create duplicate device name", async ({ page }) => {
+    const args = {
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
+      deviceName: nodeInstance.device.name ?? "",
+      noLagDeveloperTestConfigIgnore:
+      nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+    };
+
+    const response = await canNotCreateDuplicateDeviceName(args);
+
+    const { code, msg } = response as IErrorMessage;
+
+    expect(code).toBe(409);
+    expect(msg).toBe("Duplicate resource found");
+  });
+
+  test("BROWSER: Can not create empty device name", async ({ page }) => {
+    const args = {
+      tunnelId: browserInstance.tunnel.tunnelId ?? "",
+      deviceName: browserInstance.device.name ?? "",
+      noLagDeveloperTestConfigIgnore:
+      browserInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: browserInstance.yourProjectApiKey,
+    };
+
+    await page.goto(browserInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return canNotCreateDuplicateDeviceName(args);
+    }, args);
+
+    const { code, errors } = response as IErrorMessage;
+    const NameProperty = errors?.find((i) => i.property === "name");
+
+    expect(code).toBe(400);
+    expect(NameProperty?.descriptions?.[0]).toBe("should not be empty");
+  });
+
+  test("NODE: Can not create empty device name", async ({ page }) => {
+    const args = {
+      tunnelId: nodeInstance.tunnel.tunnelId ?? "",
+      deviceName: nodeInstance.device.name ?? "",
+      noLagDeveloperTestConfigIgnore:
+      nodeInstance.noLagDeveloperTestConfigIgnore,
+      yourProjectApiKey: nodeInstance.yourProjectApiKey,
+    };
+
+    await page.goto(nodeInstance.viteHostUrl);
+
+    const response = await page.evaluate((args) => {
+      return canNotCreateDuplicateDeviceName(args);
+    }, args);
+
+    const { code, errors } = response as IErrorMessage;
+    const NameProperty = errors?.find((i) => i.property === "name");
+
+    expect(code).toBe(400);
+    expect(NameProperty?.descriptions?.[0]).toBe("should not be empty");
   });
 });
