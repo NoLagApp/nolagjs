@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { browserInstance, nodeInstance } from "../../constants/globalVars";
+import { example_api_tunnel_device_update } from "../../SDK/API/tunnel_devices/example_api_tunnel_device_update";
 import dayjs from "dayjs";
+import { shouldSeeAListOfDevices } from "../procedures/010_api_device_list";
 import {
   editTunnelDeviceSetAccessPermissionsPublish,
   editTunnelDeviceSetAccessPermissionsPubSub,

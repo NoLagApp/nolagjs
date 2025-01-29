@@ -136,6 +136,7 @@ declare global {
     setStaticTopics: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
     lockDeviceTopics: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
     setExpireInSeconds: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
+    // 012_client_pub_sub
   }
 }
 

@@ -3,7 +3,7 @@ import type { IDeviceModel, ITopicModel, ITunnelModel } from "nolagjs";
 import dayjs from "dayjs";
 import { EEnvironments } from "./enums";
 
-interface IGlobalVars {
+export interface IGlobalVars {
   /**
    * IGNORE THIS, it's only used by NoLag developers for testing
    */
