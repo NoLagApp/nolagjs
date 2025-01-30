@@ -18,6 +18,8 @@ import { example_client_topic_callback_on_receive } from "../../SDK/Client/topic
 import { example_client_topic_unsubscribe } from "../../SDK/Client/topic_instance/example_client_topic_unsubscribe";
 import { IGlobalVars } from "../../constants/globalVars";
 import { example_client_tunnel_topic_get } from "../../SDK/Client/tunnel_instance/example_client_tunnel_topic_get";
+import { example_client_topic_remove_identifiers } from "../../SDK/Client/topic_instance/example_client_topic_remove_identifiers";
+import { delay } from "../../constants/util/delay";
 
 export interface IClientPubSub {
   tunnelId: string;
@@ -311,8 +313,8 @@ export const TOPIC_addIdentifiersToInstance = async ({
   });
 
   browserTopic?.addIdentifiers({
-    OR: identifiers
-  })
+    OR: identifiers,
+  });
 
   await example_client_tunnel_publish({
     tunnelInstance: nodeTunnelInstance,
@@ -321,9 +323,11 @@ export const TOPIC_addIdentifiersToInstance = async ({
     data,
   });
 
-  const responseOneIdentifier = await example_client_tunnel_callback_on_receive({
-    tunnelInstance: browserTunnelInstance,
-  });
+  const responseOneIdentifier = await example_client_tunnel_callback_on_receive(
+    {
+      tunnelInstance: browserTunnelInstance,
+    },
+  );
 
   if (responseOneIdentifier.data.prop1 !== data.prop1) {
     browserTunnelInstance.disconnect();
@@ -338,7 +342,7 @@ export const TOPIC_addIdentifiersToInstance = async ({
     data,
   });
 
-  const responseTwoIdentifier = await example_client_tunnel_callback_on_receive({
+  await example_client_tunnel_callback_on_receive({
     tunnelInstance: browserTunnelInstance,
   });
 
@@ -349,9 +353,10 @@ export const TOPIC_addIdentifiersToInstance = async ({
     data,
   });
 
-  const responseAllIdentifiers = await example_client_tunnel_callback_on_receive({
-    tunnelInstance: browserTunnelInstance,
-  });
+  const responseAllIdentifiers =
+    await example_client_tunnel_callback_on_receive({
+      tunnelInstance: browserTunnelInstance,
+    });
 
   if (responseAllIdentifiers.data.prop1 !== data.prop1) {
     browserTunnelInstance.disconnect();
@@ -363,6 +368,256 @@ export const TOPIC_addIdentifiersToInstance = async ({
   nodeTunnelInstance.disconnect();
 
   return responseAllIdentifiers;
+};
+
+export const TOPIC_removeIdentifiersToInstance = async ({
+  topicName,
+  noLagDeveloperTestConfigIgnoreWs,
+  browserInstance,
+  nodeInstance,
+  tunnelName,
+}: IClientPubSub) => {
+  const data = {
+    prop1: "data1",
+  };
+
+  const browserTunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: browserInstance?.device?.deviceAccessToken ?? "",
+  });
+
+  const nodeTunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: nodeInstance?.device?.deviceAccessToken ?? "",
+  });
+
+  await example_client_tunnel_subscribe({
+    tunnelInstance: browserTunnelInstance,
+    topicName,
+    identifiers: identifiers,
+  });
+
+  await example_client_tunnel_publish({
+    tunnelInstance: nodeTunnelInstance,
+    topicName,
+    identifiers: identifiers,
+    data,
+  });
+
+  await example_client_tunnel_callback_on_receive({
+    tunnelInstance: browserTunnelInstance,
+  });
+
+  const browserTopic = await example_client_tunnel_topic_get({
+    tunnelInstance: browserTunnelInstance,
+    topicName,
+  });
+
+  if (!browserTopic) {
+    return false;
+  }
+
+  await example_client_topic_remove_identifiers({
+    topicInstance: browserTopic,
+    identifiers: [identifiers?.[0] ?? ""],
+  });
+
+  await example_client_tunnel_publish({
+    tunnelInstance: nodeTunnelInstance,
+    topicName,
+    identifiers: [identifiers?.[0] ?? ""],
+    data,
+  });
+
+  const unsubscribeTimeout: Promise<boolean> = new Promise((resolve) => {
+    setTimeout(() => {
+      let timeout = true;
+      example_client_tunnel_callback_on_receive(
+        {
+          tunnelInstance: browserTunnelInstance,
+        },
+        (response) => {
+          timeout = false;
+        },
+      );
+      resolve(timeout);
+    }, 1000);
+  });
+
+  browserTunnelInstance.disconnect();
+  nodeTunnelInstance.disconnect();
+
+  return unsubscribeTimeout;
+};
+
+export const TOPIC_deviceOneSetPresenceDeviceTwoReceivePresence = async ({
+  topicName,
+  noLagDeveloperTestConfigIgnoreWs,
+  browserInstance,
+  nodeInstance,
+  tunnelName,
+}: IClientPubSub) => {
+  const presenceDataBrowser = {
+    prop: "presenceBrowser",
+  };
+
+  const presenceDataNode = {
+    prop: "presenceNode",
+  };
+
+  const browserTunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: browserInstance?.device?.deviceAccessToken ?? "",
+  });
+
+  const nodeTunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: nodeInstance?.device?.deviceAccessToken ?? "",
+  });
+
+  await example_client_tunnel_subscribe({
+    tunnelInstance: browserTunnelInstance,
+    topicName,
+    identifiers,
+  });
+
+  await example_client_tunnel_subscribe({
+    tunnelInstance: nodeTunnelInstance,
+    topicName,
+    identifiers,
+  });
+
+  const browserTopic = await example_client_tunnel_topic_get({
+    tunnelInstance: browserTunnelInstance,
+    topicName,
+  });
+
+  const nodeTopic = await example_client_tunnel_topic_get({
+    tunnelInstance: nodeTunnelInstance,
+    topicName,
+  });
+
+  const browserReceive: any[] = [];
+  const nodeReceive: any[] = [];
+
+  example_client_topic_callback_on_receive(
+    {
+      topicInstance: browserTopic as ITopic,
+    },
+    (response) => {
+      response?.presences.forEach((i) => {
+        browserReceive.push(JSON.parse(i));
+      });
+    },
+  );
+
+  example_client_topic_callback_on_receive(
+    {
+      topicInstance: browserTopic as ITopic,
+    },
+    (response) => {
+      response?.presences.forEach((i) => {
+        nodeReceive.push(JSON.parse(i));
+      });
+    },
+  );
+
+  await example_client_topic_set_presence({
+    topicInstance: browserTopic as ITopic,
+    presenceData: presenceDataBrowser,
+  });
+
+  await example_client_topic_set_presence({
+    topicInstance: nodeTopic as ITopic,
+    presenceData: presenceDataNode,
+  });
+
+  await delay;
+
+  browserTunnelInstance.disconnect();
+  nodeTunnelInstance.disconnect();
+
+  return {
+    browserReceive,
+    nodeReceive,
+  };
+};
+
+export const TOPIC_publishUnsubscribe = async ({
+  topicName,
+  noLagDeveloperTestConfigIgnoreWs,
+  browserInstance,
+  nodeInstance,
+  tunnelName,
+}: IClientPubSub) => {
+  const data = {
+    prop1: "data1",
+  };
+
+  const browserTunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: browserInstance?.device?.deviceAccessToken ?? "",
+  });
+
+  const nodeTunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: nodeInstance?.device?.deviceAccessToken ?? "",
+  });
+
+  await example_client_tunnel_subscribe({
+    tunnelInstance: browserTunnelInstance,
+    topicName,
+    identifiers: identifiers,
+  });
+
+  const browserTopic = await example_client_tunnel_topic_get({
+    tunnelInstance: nodeTunnelInstance,
+    topicName,
+  });
+
+  const nodeTopic = await example_client_tunnel_topic_get({
+    tunnelInstance: nodeTunnelInstance,
+    topicName,
+  });
+
+  await example_client_topic_publish({
+    topicInstance: nodeTopic as ITopic,
+    identifiers: identifiers,
+    data,
+  });
+
+  await example_client_tunnel_callback_on_receive({
+    tunnelInstance: browserTunnelInstance,
+  });
+
+  await example_client_topic_unsubscribe({topicInstance: browserTopic as ITopic});
+
+  await example_client_tunnel_publish({
+    topicName,
+    tunnelInstance: browserInstance as ITunnel,
+    identifiers: identifiers,
+    data,
+  });
+
+  const unsubscribeTimeout: Promise<boolean> = new Promise((resolve) => {
+    setTimeout(() => {
+      let receivedResponse = false;
+      example_client_tunnel_callback_on_receive(
+        {
+          tunnelInstance,
+        },
+        (response) => {
+          receivedResponse = true;
+        },
+      );
+      resolve(receivedResponse);
+    }, 1000);
+  });
+
+  browserTunnelInstance.disconnect();
+  nodeTunnelInstance.disconnect();
+
+  return response;
 };
 
 test.describe("Playwright client pub/sub", () => {
@@ -676,92 +931,92 @@ test.describe("Playwright client pub/sub", () => {
   //   expect(0).toBe(responseWithIdentifiers?.presences.length);
   // });
 
-  test("Topic: remove Identifiers to topic instance", async ({ page }) => {
-    if (!globalVars.device) {
-      expect(false).toBeTruthy();
-      return;
-    }
-
-    const topicName = globalVars.topic?.name ?? "";
-    const identifiers = ["identifier1", "identifier2"];
-    const data = {
-      prop1: "data1",
-    };
-
-    // reset device
-    const payload: IDeviceModel = {
-      name: globalVars.deviceName,
-      accessPermission: EAccessPermission.PubSub,
-      staticTopics: [],
-      lockTopics: false,
-      expireIn: 0,
-    };
-
-    const resetResponse = await example_api_tunnel_device_update({
-      payload,
-      yourProjectApiKey,
-      noLagDeveloperTestConfigIgnore,
-      tunnelId,
-      deviceId: globalVars.device.deviceTokenId ?? "",
-    });
-
-    if (resetResponse) {
-      globalVars.setDevice(resetResponse);
-    }
-
-    const { deviceAccessToken } = resetResponse;
-
-    const tunnelInstance = await example_client_tunnel_connect({
-      noLagDeveloperTestConfigIgnoreWs,
-      deviceToken: deviceAccessToken ?? "",
-    });
-
-    await example_client_tunnel_subscribe({
-      tunnelInstance,
-      topicName,
-      identifiers: undefined,
-    });
-
-    await example_client_tunnel_publish({
-      tunnelInstance,
-      topicName,
-      identifiers: undefined,
-      data,
-    });
-
-    const responseNoIdentifiers =
-      await example_client_tunnel_callback_on_receive({
-        tunnelInstance,
-      });
-
-    tunnelInstance.getTopic(topicName)?.addIdentifiers({
-      OR: identifiers,
-    });
-
-    await example_client_tunnel_publish({
-      tunnelInstance,
-      topicName,
-      identifiers,
-      data,
-    });
-
-    const responseWithIdentifiers =
-      await example_client_tunnel_callback_on_receive({
-        tunnelInstance,
-      });
-
-    tunnelInstance.disconnect();
-
-    expect(data).toMatchObject(responseNoIdentifiers?.data);
-    expect(topicName).toBe(responseNoIdentifiers?.topicName);
-    expect([]).toMatchObject(responseNoIdentifiers?.identifiers);
-    expect(0).toBe(responseNoIdentifiers?.presences.length);
-
-    expect(data).toMatchObject(responseWithIdentifiers?.data);
-    expect(topicName).toBe(responseWithIdentifiers?.topicName);
-    expect(identifiers).toMatchObject(responseWithIdentifiers?.identifiers);
-    expect(0).toBe(responseWithIdentifiers?.presences.length);
-  });
+  // test("Topic: remove Identifiers to topic instance", async ({ page }) => {
+  //   if (!globalVars.device) {
+  //     expect(false).toBeTruthy();
+  //     return;
+  //   }
+  //
+  //   const topicName = globalVars.topic?.name ?? "";
+  //   const identifiers = ["identifier1", "identifier2"];
+  //   const data = {
+  //     prop1: "data1",
+  //   };
+  //
+  //   // reset device
+  //   const payload: IDeviceModel = {
+  //     name: globalVars.deviceName,
+  //     accessPermission: EAccessPermission.PubSub,
+  //     staticTopics: [],
+  //     lockTopics: false,
+  //     expireIn: 0,
+  //   };
+  //
+  //   const resetResponse = await example_api_tunnel_device_update({
+  //     payload,
+  //     yourProjectApiKey,
+  //     noLagDeveloperTestConfigIgnore,
+  //     tunnelId,
+  //     deviceId: globalVars.device.deviceTokenId ?? "",
+  //   });
+  //
+  //   if (resetResponse) {
+  //     globalVars.setDevice(resetResponse);
+  //   }
+  //
+  //   const { deviceAccessToken } = resetResponse;
+  //
+  //   const tunnelInstance = await example_client_tunnel_connect({
+  //     noLagDeveloperTestConfigIgnoreWs,
+  //     deviceToken: deviceAccessToken ?? "",
+  //   });
+  //
+  //   await example_client_tunnel_subscribe({
+  //     tunnelInstance,
+  //     topicName,
+  //     identifiers: undefined,
+  //   });
+  //
+  //   await example_client_tunnel_publish({
+  //     tunnelInstance,
+  //     topicName,
+  //     identifiers: undefined,
+  //     data,
+  //   });
+  //
+  //   const responseNoIdentifiers =
+  //     await example_client_tunnel_callback_on_receive({
+  //       tunnelInstance,
+  //     });
+  //
+  //   tunnelInstance.getTopic(topicName)?.addIdentifiers({
+  //     OR: identifiers,
+  //   });
+  //
+  //   await example_client_tunnel_publish({
+  //     tunnelInstance,
+  //     topicName,
+  //     identifiers,
+  //     data,
+  //   });
+  //
+  //   const responseWithIdentifiers =
+  //     await example_client_tunnel_callback_on_receive({
+  //       tunnelInstance,
+  //     });
+  //
+  //   tunnelInstance.disconnect();
+  //
+  //   expect(data).toMatchObject(responseNoIdentifiers?.data);
+  //   expect(topicName).toBe(responseNoIdentifiers?.topicName);
+  //   expect([]).toMatchObject(responseNoIdentifiers?.identifiers);
+  //   expect(0).toBe(responseNoIdentifiers?.presences.length);
+  //
+  //   expect(data).toMatchObject(responseWithIdentifiers?.data);
+  //   expect(topicName).toBe(responseWithIdentifiers?.topicName);
+  //   expect(identifiers).toMatchObject(responseWithIdentifiers?.identifiers);
+  //   expect(0).toBe(responseWithIdentifiers?.presences.length);
+  // });
 
   test("Topic: device ONE set presences, device TWO receive presence", async ({
     page,
