@@ -57,7 +57,7 @@ export const setTriggerWebhook = async ({
 }: IApiTopicEdit) => {
   const payload: ITopicModel = {
     triggerApi: {
-      url: "http://your-url.com/api/trigger",
+      url: "http://127.0.0.1:5010/api/trigger",
       queryParams: {
         queryParamOne: "queryParamOne",
         queryParamTwo: "queryParamTwo",
@@ -88,7 +88,7 @@ export const setHydrationWebhook = async ({
 }: IApiTopicEdit) => {
   const payload: ITopicModel = {
     hydrateApi: {
-      url: "http://your-url.com/api/hydration",
+      url: "http://127.0.0.1:5010/api/hydration",
       queryParams: {
         queryParamOne: "queryParamOne",
         queryParamTwo: "queryParamTwo",

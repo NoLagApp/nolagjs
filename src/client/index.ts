@@ -83,6 +83,11 @@ export interface ITunnel {
    * @param topicName
    */
   removeTopicInstance(topicName: string): void;
+
+  /**
+   * Unique device id
+   */
+  deviceTokenId: string | null | undefined;
 }
 
 /**
@@ -335,7 +340,7 @@ export class Tunnel implements ITunnel {
         commands.setCommand(ETransportCommand.Identifier, identifiers);
 
       const encodedBuffer = NqlTransport.encode(commands, data);
-
+      console.log("publish global", encodedBuffer);
       this.noLagClient.send(encodedBuffer);
       this.startHeartbeat();
     }

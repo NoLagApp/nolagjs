@@ -4,7 +4,7 @@ import { EStatus } from "nolagjs";
 import {
   editTunnelTopicUsingTopicId,
   setHydrationWebhook,
-  setNoEchoToFalse, setStatusToInactive,
+  setNoEchoToFalse, setStatusToActive, setStatusToInactive,
   setTriggerWebhook,
 } from "../procedures/006_api_topic_edit";
 
@@ -237,7 +237,7 @@ test.describe("Playwright Api Edit Tunnel Topic", () => {
     await page.goto(browserInstance.viteHostUrl);
 
     const response = await page.evaluate((args) => {
-      return setStatusToInactive(args);
+      return setStatusToActive(args);
     }, args);
 
     if (response) {
@@ -258,7 +258,7 @@ test.describe("Playwright Api Edit Tunnel Topic", () => {
 
     await page.goto(browserInstance.viteHostUrl);
 
-    const response = await setStatusToInactive(args);
+    const response = await setStatusToActive(args);
 
     if (response) {
       browserInstance.setTopic(response);

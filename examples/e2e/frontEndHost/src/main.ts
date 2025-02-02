@@ -8,7 +8,9 @@ import type {
   IDeviceModel,
   IErrorMessage,
   IPaginated,
+  ITopic,
   ITopicModel,
+  ITunnel,
   ITunnelModel,
 } from "nolagjs";
 import {
@@ -55,7 +57,8 @@ import {
   shouldSeeAListOfSearchResultsForDevices,
 } from "../../procedures/010_api_device_list.ts";
 import {
-  editTunnelDeviceSetAccessPermissionsPublish, editTunnelDeviceSetAccessPermissionsPubSub,
+  editTunnelDeviceSetAccessPermissionsPublish,
+  editTunnelDeviceSetAccessPermissionsPubSub,
   editTunnelDeviceSetAccessPermissionsSubscribe,
   editTunnelDeviceUsingDeviceTokenId,
   IApiDeviceEdit,
@@ -63,9 +66,28 @@ import {
   setExpireInSeconds,
   setStaticTopics,
 } from "../../procedures/011_api_device_edit.ts";
+import {
+  clientTunnelConnect, clientTunnelDisconnect,
+  clientTunnelOnReceive,
+  clientTunnelPublish,
+  clientTunnelSubscribe, clientTunnelUnsubscribe,
+  IClientPubSub,
+  // IPresenceReceive,
+  // TOPIC_addIdentifiersToInstance,
+  // TOPIC_deviceOneSetPresenceDeviceTwoReceivePresence,
+  // TOPIC_publishUnsubscribe,
+  // TOPIC_removeIdentifiersToInstance,
+  TUNNEL_standardPubSub,
+  // TUNNEL_standardPubSubAddIdentifiers,
+  // TUNNEL_standardPubSubWithIdentifiers,
+  // TUNNEL_unsubscribe,
+} from "../../procedures/012_client_pub_sub.ts";
+import { IExampleApiTunnelCallbackOnReceiveResponse } from "../../../SDK/Client/tunnel_instance/example_client_tunnel_callback_on_receive.ts";
+import { delay } from "../../../constants/util/delay.ts";
 
 declare global {
   interface Window {
+    delay: typeof delay;
     // 001_api_tunnel_create
     shouldCreateTunnel: (arg: IApiTunnelCreate) => Promise<ITunnelModel>;
     canNotCreateDuplicateTunnelName: (
@@ -137,8 +159,32 @@ declare global {
     lockDeviceTopics: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
     setExpireInSeconds: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
     // 012_client_pub_sub
+    clientTunnelConnect: (arg: IClientPubSub) => Promise<ITunnel>;
+    clientTunnelSubscribe: (arg: IClientPubSub) => Promise<ITopic | undefined>;
+    clientTunnelPublish: (arg: IClientPubSub) => Promise<void>;
+    clientTunnelOnReceive: (
+      arg: IClientPubSub,
+      callback: (
+        data: IExampleApiTunnelCallbackOnReceiveResponse,
+      ) => void | undefined,
+    ) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
+    clientTunnelUnsubscribe: (arg: IClientPubSub) => Promise<boolean>;
+    clientTunnelDisconnect: (arg: IClientPubSub) => Promise<void>;
+    TUNNEL_standardPubSub: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
+    // TUNNEL_standardPubSubAddIdentifiers: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
+    // TUNNEL_standardPubSubWithIdentifiers: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
+    // TUNNEL_unsubscribe: (arg: IClientPubSub) => Promise<boolean>;
+    // TOPIC_addIdentifiersToInstance: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse | null>;
+    // TOPIC_removeIdentifiersToInstance: (arg: IClientPubSub) => Promise<boolean>;
+    // TOPIC_deviceOneSetPresenceDeviceTwoReceivePresence: (
+    //   arg: IClientPubSub,
+    // ) => Promise<IPresenceReceive>;
+    // TOPIC_publishUnsubscribe: (arg: IClientPubSub) => Promise<boolean>;
   }
 }
+
+// utils
+window.delay = delay;
 
 // 001_api_tunnel_create
 window.shouldCreateTunnel = shouldCreateTunnel;
@@ -194,3 +240,18 @@ window.editTunnelDeviceSetAccessPermissionsPubSub =
 window.setStaticTopics = setStaticTopics;
 window.lockDeviceTopics = lockDeviceTopics;
 window.setExpireInSeconds = setExpireInSeconds;
+
+// 012_client_pub_sub
+window.clientTunnelConnect = clientTunnelConnect;
+window.clientTunnelDisconnect = clientTunnelDisconnect;
+window.clientTunnelSubscribe = clientTunnelSubscribe;
+window.clientTunnelPublish = clientTunnelPublish;
+window.clientTunnelOnReceive = clientTunnelOnReceive;
+window.clientTunnelUnsubscribe = clientTunnelUnsubscribe;
+window.TUNNEL_standardPubSub = TUNNEL_standardPubSub;
+// window.TUNNEL_standardPubSubAddIdentifiers = TUNNEL_standardPubSubAddIdentifiers;
+// window.TUNNEL_unsubscribe = TUNNEL_unsubscribe;
+// window.TOPIC_addIdentifiersToInstance = TOPIC_addIdentifiersToInstance;
+// window.TOPIC_removeIdentifiersToInstance = TOPIC_removeIdentifiersToInstance;
+// window.TOPIC_deviceOneSetPresenceDeviceTwoReceivePresence = TOPIC_deviceOneSetPresenceDeviceTwoReceivePresence;
+// window.TOPIC_publishUnsubscribe = TOPIC_publishUnsubscribe;

@@ -180,7 +180,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       browserInstance.setDevice(response);
     }
 
-    expect(response?.accessPermission).toBe(EAccessPermission.Publish);
+    expect(response?.accessPermission).toBe(EAccessPermission.PubSub);
   });
 
   test("NODE: Edit tunnel device set access permissions - pubsub", async ({
@@ -203,7 +203,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       nodeInstance.setDevice(response);
     }
 
-    expect(response?.accessPermission).toBe(EAccessPermission.Publish);
+    expect(response?.accessPermission).toBe(EAccessPermission.PubSub);
   });
 
   test("BROWSER: Set staticTopics", async ({ page }) => {

@@ -1,13 +1,17 @@
 import { expect, test } from "@playwright/test";
 import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import type { IErrorMessage } from "nolagjs";
-import { canNotCreateDuplicateDeviceName, shouldCreateNewDevice } from "../procedures/009_api_device_create";
+import {
+  canNotCreateDuplicateDeviceName,
+  canNotCreateEmptyDeviceName,
+  shouldCreateNewDevice,
+} from "../procedures/009_api_device_create";
 
 test.describe("Playwright Api Create Device", () => {
   test("BROWSER: Should create a new device", async ({ page }) => {
     const args = {
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
-      deviceName: browserInstance.device.name ?? "",
+      deviceName: browserInstance.deviceName ?? "",
       noLagDeveloperTestConfigIgnore:
         browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
@@ -29,7 +33,7 @@ test.describe("Playwright Api Create Device", () => {
   test("NODE: Should create a new device", async ({ page }) => {
     const args = {
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
-      deviceName: nodeInstance.device.name ?? "",
+      deviceName: nodeInstance.deviceName ?? "",
       noLagDeveloperTestConfigIgnore:
         nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
@@ -94,10 +98,10 @@ test.describe("Playwright Api Create Device", () => {
     await page.goto(browserInstance.viteHostUrl);
 
     const response = await page.evaluate((args) => {
-      return canNotCreateDuplicateDeviceName(args);
+      return canNotCreateEmptyDeviceName(args);
     }, args);
 
-    const { code, errors } = response as IErrorMessage;
+    const { code, errors, msg } = response as IErrorMessage;
     const NameProperty = errors?.find((i) => i.property === "name");
 
     expect(code).toBe(400);
@@ -113,11 +117,7 @@ test.describe("Playwright Api Create Device", () => {
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
     };
 
-    await page.goto(nodeInstance.viteHostUrl);
-
-    const response = await page.evaluate((args) => {
-      return canNotCreateDuplicateDeviceName(args);
-    }, args);
+    const response = await canNotCreateEmptyDeviceName(args);
 
     const { code, errors } = response as IErrorMessage;
     const NameProperty = errors?.find((i) => i.property === "name");

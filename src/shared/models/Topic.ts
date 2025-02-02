@@ -115,7 +115,7 @@ export class Topic implements ITopic {
     commands.setCommand(ETransportCommand.AddAction);
 
     const transport = NqlTransport.encode(commands);
-
+    console.log("Subscribe", transport);
     this.send(transport);
   }
 
@@ -214,7 +214,7 @@ export class Topic implements ITopic {
     }
 
     const transport = NqlTransport.encode(commands, data);
-
+    console.log("publish topic", transport);
     this.send(transport);
 
     return this;
