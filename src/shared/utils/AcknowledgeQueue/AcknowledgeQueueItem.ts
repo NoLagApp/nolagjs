@@ -6,11 +6,13 @@ export interface IAcknowledgeQueueItem {
 
 export class AcknowledgeQueueItem {
   private _expirePeriodInMs = 180000; // 3min
-  public timestamp: number;
+  public expireTimestamp: number;
+  public key: string;
 
   constructor(properties: IAcknowledgeQueueItem, expirePeriodInMs?: number) {
-    this.timestamp = Date.now();
+    this.key = properties?.key;
     this._expirePeriodInMs = expirePeriodInMs || this._expirePeriodInMs;
+    this.expireTimestamp = Date.now() + this.expirePeriodInMs;
   }
 
   public set expirePeriodInMs(periodInMs: number) {
@@ -22,11 +24,11 @@ export class AcknowledgeQueueItem {
   }
 
   public get isExpired() {
-    return this.timestamp + this.expirePeriodInMs <= Date.now();
+    return this.expireTimestamp <= Date.now();
   }
 
   public expire() {
-    this.timestamp = Date.now() - this.expirePeriodInMs;
+    this.expireTimestamp = Date.now();
   }
 }
 
