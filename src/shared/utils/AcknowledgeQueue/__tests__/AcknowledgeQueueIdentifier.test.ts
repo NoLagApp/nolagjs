@@ -1,10 +1,10 @@
-import { FunctionQueueIdentifier } from "../FunctionQueueIdentifier";
+import { AcknowledgeQueueIdentifier } from "../AcknowledgeQueueIdentifier";
 
 describe("FunctionQueueIdentifier", () => {
   test("Generate ID from topic name and identifiers", () => {
     const topicName = "topicName";
     const identifiers = ["identifierTwo","identifierOne"];
-    const queueIdentifier = new FunctionQueueIdentifier({
+    const queueIdentifier = new AcknowledgeQueueIdentifier({
       topicName,
       identifiers,
     })
@@ -16,7 +16,7 @@ describe("FunctionQueueIdentifier", () => {
 
   test("Generate ID from topic name", () => {
     const topicName = "topicName";
-    const queueIdentifier = new FunctionQueueIdentifier({
+    const queueIdentifier = new AcknowledgeQueueIdentifier({
       topicName
     })
 
