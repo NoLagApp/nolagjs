@@ -7,7 +7,7 @@ import { TransportCommands } from "./TransportCommands";
 export interface IDecode {
   commands: Record<ETransportCommand, string | string[] | boolean>;
   payload: ArrayBuffer;
-  getCommand(command: ETransportCommand): string | string[] | boolean;
+  getCommand(command: ETransportCommand): string | string[] | boolean | undefined;
 }
 export interface INqlTransport {
   encode(TransportCommands: TransportCommands, payload: Uint8Array): Uint8Array;

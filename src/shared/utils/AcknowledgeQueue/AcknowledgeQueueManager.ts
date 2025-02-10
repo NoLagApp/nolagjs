@@ -22,8 +22,10 @@ export class AcknowledgeQueueManager {
     Object.keys(this.queues.sent).forEach((key) => {
       const item = this.queues.sent[key];
       const foundReceiveQueueItem = this.queues.received[key];
-
       if (item?.callbackFn && foundReceiveQueueItem) {
+        console.log("key", key);
+        console.log("item", item);
+        console.log("foundReceiveQueueItem", foundReceiveQueueItem);
         item.callbackFn(
           foundReceiveQueueItem.error,
           foundReceiveQueueItem.data,
@@ -57,17 +59,12 @@ export class AcknowledgeQueueManager {
     });
   }
 
-  public expirePeriodInMs(periodInMs: number) {
-    this._expirePeriodInMs = periodInMs;
-    return this;
-  }
-
   /**
    * Non-blocking long-running process
    * This process is responsible for matching the sent queue with the received queue
    * also doing a bit of cleanup
    */
-  public runQueue() {
+  private runQueue() {
     setTimeout(() => {
       // we stop the interval here
       this.matchSentQueueWithReceiveQueue();
@@ -77,40 +74,72 @@ export class AcknowledgeQueueManager {
     return this;
   }
 
+  constructor() {
+    this.runQueue();
+  }
+
+  public expirePeriodInMs(periodInMs: number) {
+    this._expirePeriodInMs = periodInMs;
+    return this;
+  }
+
   /**
-   * Add
+   * All subscriptions require an ACK to say that all is good to go
+   * We place all these sent subscriptions in this queue to match up later with
+   * a received ACK
    * @param key
    * @param callbackFn
    */
-  addToSentQueue(
-    key: AcknowledgeQueueIdentifier,
-    callbackFn: (error: Error | null, data: ITransport | null) => void,
-  ) {
-    const generatedKey = key.generateKey();
-    this.queues.sent[generatedKey] = new AcknowledgeQueueSentItem({
-      key: generatedKey,
-      callbackFn,
-    }, this._expirePeriodInMs);
+  public async addToSentQueue(key: AcknowledgeQueueIdentifier, callbackFn?: (error: Error | null, data: ITransport | null) => void) {
+    return new Promise((resolve, reject) => {
+      const generatedKey = key.generateKey();
+      this.queues.sent[generatedKey] = new AcknowledgeQueueSentItem(
+        {
+          key: generatedKey,
+          callbackFn: (error: Error | null, data: ITransport | null) => {
+            if(callbackFn) {
+              callbackFn(error, data);
+            }
+            if (error) {
+              reject(error);
+              return;
+            }
+            resolve(data);
+          },
+        },
+        this._expirePeriodInMs,
+      );
+    });
   }
 
-  addToReceivedQueue(
+  /**
+   * All received ACK messages from the broker will be queued here
+   * we will cycle through them to find its friend int he sent queue
+   * @param key
+   * @param error
+   * @param data
+   */
+  public addToReceivedQueue(
     key: AcknowledgeQueueIdentifier,
     error: Error | null,
     data: ITransport,
   ) {
     const generatedKey = key.generateKey();
-    this.queues.received[generatedKey] = new AcknowledgeQueueReceivedItem({
-      key: generatedKey,
-      error,
-      data,
-    }, this._expirePeriodInMs);
+    this.queues.received[generatedKey] = new AcknowledgeQueueReceivedItem(
+      {
+        key: generatedKey,
+        error,
+        data,
+      },
+      this._expirePeriodInMs,
+    );
   }
 
-  getSentQueue(): AcknowledgeQueueSentItem[] {
+  public getSentQueue(): AcknowledgeQueueSentItem[] {
     return Object.values(this.queues.sent).filter((i) => i);
   }
 
-  getReceivedQueue(): AcknowledgeQueueReceivedItem[] {
+  public getReceivedQueue(): AcknowledgeQueueReceivedItem[] {
     return Object.values(this.queues.received).filter((i) => i);
   }
 }

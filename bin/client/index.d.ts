@@ -7,7 +7,7 @@ export interface ITunnel {
      * @param topicName Topic name regisrered in NoLag Portal
      * @return Topic | undefined
      */
-    getTopic(topicName: string): ITopic | undefined;
+    getTopic(topicName: string): Promise<ITopic>;
     /**
      * Delete instantiated topic
      * @param topicName Topic name regisrered in NoLag Portal
@@ -18,8 +18,9 @@ export interface ITunnel {
      * Set a new topic that is attached to tunnel
      * @param topicName Topic name regisrered in NoLag Portal
      * @param identifiers Set if reverse query identifiers which the topic will listen two
+     * @param callbackFn
      */
-    subscribe(topicName: string, identifiers?: INqlIdentifiers): ITopic | undefined;
+    subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): Promise<ITopic>;
     /**
      * Publish data before setting a Topic
      * @param topicName string - Topic name regisrered in NoLag Portal
@@ -48,10 +49,9 @@ export interface ITunnel {
      */
     onErrors(callbackFn: ((errorMessage: IErrorMessage) => void) | undefined): void;
     /**
-     * Remove Topic instance from tunnel, but does not unsubscribe from NoLag
-     * @param topicName
+     * Unique device id
      */
-    removeTopicInstance(topicName: string): void;
+    deviceTokenId: string | null | undefined;
 }
 /**
  * To get access NoLag message broker you need access to a Tunnel
@@ -72,8 +72,9 @@ export declare class Tunnel implements ITunnel {
     private callbackOnDisconnect;
     private callbackOnReconnect;
     private callbackOnReceivedError;
+    private acknowledgeQueueManager;
     constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions);
-    get deviceTokenId(): string | null | undefined;
+    get deviceTokenId(): string | null;
     private startHeartbeat;
     private stopHeartbeat;
     initiate(reconnect?: boolean): Promise<this>;
@@ -89,11 +90,10 @@ export declare class Tunnel implements ITunnel {
     onDisconnect(callback: FConnection): void;
     onReconnect(callback: FConnection): void;
     onErrors(callback: FConnection): void;
-    getTopic(topicName: string): ITopic | undefined;
-    removeTopicInstance(topicName: string): void;
+    getTopic(topicName: string, callbackFn?: (error: Error | null, topic: ITopic | null) => void): Promise<ITopic>;
     unsubscribe(topicName: string): boolean;
-    subscribe(topicName: string, identifiers?: INqlIdentifiers): ITopic | undefined;
+    subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): Promise<ITopic>;
     publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
-    get status(): import("../shared/enum").EConnectionStatus | null;
+    get status(): import("../shared/enum").EConnectionStatus;
 }
 //# sourceMappingURL=index.d.ts.map

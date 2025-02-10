@@ -1,4 +1,4 @@
-import type { ITopic, ITunnel } from "nolagjs";
+import type { ITopic, ITransport, ITunnel } from "nolagjs";
 import { example_client_tunnel_connect } from "../../SDK/Client/tunnel_instance/example_client_tunnel_connect";
 import { example_client_tunnel_publish } from "../../SDK/Client/tunnel_instance/example_client_tunnel_publish";
 import { example_client_tunnel_subscribe } from "../../SDK/Client/tunnel_instance/example_client_tunnel_subscribe";
@@ -26,6 +26,7 @@ export interface IClientPubSub {
   deviceAccessToken?: string;
   identifiers?: string[];
   data?: Record<string, unknown>;
+  callbackFn?: (error: Error | null, data: ITransport | null) => void;
 }
 
 export interface IPresenceReceive {
@@ -50,12 +51,16 @@ export const clientTunnelSubscribe = ({
   tunnelInstance,
   topicName,
   identifiers,
+  callbackFn,
 }: IClientPubSub) => {
-  return example_client_tunnel_subscribe({
-    tunnelInstance: tunnelInstance ?? ({} as any),
-    topicName: topicName ?? "",
-    identifiers,
-  });
+  return example_client_tunnel_subscribe(
+    {
+      tunnelInstance: tunnelInstance ?? ({} as any),
+      topicName: topicName ?? "",
+      identifiers,
+    },
+    callbackFn,
+  );
 };
 
 export const clientTunnelPublish = ({
@@ -104,7 +109,7 @@ export const TUNNEL_standardPubSub = async ({
   noLagDeveloperTestConfigIgnoreWs,
   environmentInstance,
 }: IClientPubSub) => {
-  const topicName = environmentInstance?.topic.name ?? "";
+  const topicName = environmentInstance?.topic?.name ?? "";
 
   const data = {
     prop1: "data1",
@@ -117,53 +122,46 @@ export const TUNNEL_standardPubSub = async ({
     deviceToken: environmentInstance?.device?.deviceAccessToken ?? "",
   });
 
+  console.log("----connect----");
+
   // const TWO_TunnelInstance = await example_client_tunnel_connect({
   //   noLagDeveloperTestConfigIgnoreWs,
   //   deviceToken: environmentInstance?.device?.deviceAccessToken ?? "",
   // });
 
-  await example_client_tunnel_subscribe({
-    tunnelInstance: ONE_TunnelInstance,
-    topicName,
-    identifiers,
-  });
-
-  let response: any;
-
-  example_client_tunnel_callback_on_receive(
+  await example_client_tunnel_subscribe(
     {
-      tunnelInstance: ONE_TunnelInstance,
-    }, (data) => {
-      response = data;
-      console.log(data);
-    }
+      tunnelInstance: ONE_TunnelInstance ?? {},
+      topicName,
+      identifiers,
+    },
+    (error, data) => {
+      console.log("error", error);
+      console.log("data", data);
+    },
   );
+  console.log("----subscribe----");
 
-  // example_client_tunnel_callback_on_receive(
-  //   {
-  //     tunnelInstance: ONE_TunnelInstance,
-  //   }, (data) => {
-  //     response = data;
-  //     console.log(data);
-  //   }
-  // );
-  //
-  await example_client_tunnel_publish({
+  // await delay(1000);
+
+  // await example_client_tunnel_publish({
+  //   tunnelInstance: ONE_TunnelInstance,
+  //   topicName,
+  //   identifiers,
+  //   data,
+  // });
+
+  const response = await example_client_tunnel_callback_on_receive({
     tunnelInstance: ONE_TunnelInstance,
-    topicName,
-    identifiers,
-    data,
   });
 
-  // await example_client_tunnel_disconnect({
-  //   tunnelInstance: ONE_TunnelInstance ?? ({} as any),
-  // });
-  //
+  await example_client_tunnel_disconnect({
+    tunnelInstance: ONE_TunnelInstance ?? ({} as any),
+  });
+
   // await example_client_tunnel_disconnect({
   //   tunnelInstance: TWO_TunnelInstance ?? ({} as any),
   // });
-
-  await delay(10000);
 
   return response;
 };

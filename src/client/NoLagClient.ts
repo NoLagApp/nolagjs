@@ -1,12 +1,18 @@
 import { CONSTANT, FConnection, FOnReceive } from "../shared/constants";
 import { EConnectionStatus, EEncoding, EEnvironment } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
-import { IConnectOptions, IUnifiedWebsocket } from "../shared/interfaces";
+import {
+  IConnectOptions,
+  ITransport,
+  IUnifiedWebsocket,
+} from "../shared/interfaces";
 import { transportCommands } from "../shared/utils/TransportCommands";
-import { NqlTransport } from "../shared/utils/transport";
+import { IDecode, NqlTransport } from "../shared/utils";
+import { AcknowledgeQueueManager } from "../shared/utils/AcknowledgeQueue/AcknowledgeQueueManager";
+import { AcknowledgeQueueIdentifier } from "../shared/utils/AcknowledgeQueue/AcknowledgeQueueIdentifier";
 
 interface INoLagClient {
-  connect(): Promise<NoLagClient>;
+  connect(): Promise<void>;
   setReConnect(): void;
   onOpen(callback: FConnection): void;
   onReceiveMessage(callback: FConnection): void;
@@ -28,13 +34,21 @@ export class NoLagClient implements INoLagClient {
   private defaultCheckConnectionTimeout = 10000;
   private checkConnectionInterval: number;
   private checkConnectionTimeout: number;
-  private reConnect: boolean = false;
+  private reConnect = false;
 
   // callback function used to return the connection result
-  private callbackOnOpen: FConnection = () => {};
-  private callbackOnReceive: FOnReceive = () => {};
-  private callbackOnClose: FConnection = () => {};
-  private callbackOnError: FConnection = () => {};
+  private callbackOnOpen: FConnection = () => {
+    //
+  };
+  private callbackOnReceive: FOnReceive = () => {
+    //
+  };
+  private callbackOnClose: FConnection = () => {
+    //
+  };
+  private callbackOnError: FConnection = () => {
+    //
+  };
 
   // status of current socket connection
   public connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
@@ -42,12 +56,15 @@ export class NoLagClient implements INoLagClient {
   private backpressureSendInterval = 0;
   private senderInterval: any = 0;
   private unifiedWebsocket: (url: string) => IUnifiedWebsocket;
+  private acknowledgeQueueManager: AcknowledgeQueueManager;
 
   constructor(
     unifiedWebsocket: (url: string) => IUnifiedWebsocket,
     authToken: string,
+    acknowledgeQueueManager: AcknowledgeQueueManager,
     connectOptions?: IConnectOptions,
   ) {
+    this.acknowledgeQueueManager = acknowledgeQueueManager;
     this.authToken = authToken ?? "";
     this.host = connectOptions?.host ?? CONSTANT.DefaultWsHost;
     this.protocol = connectOptions?.protocol ?? CONSTANT.DefaultWsProtocol;
@@ -69,11 +86,12 @@ export class NoLagClient implements INoLagClient {
       if (!sendTransport) return;
       if (!this.wsInstance) return;
       // send the first message in the buffer
+      console.log(NqlTransport.decode(sendTransport));
       this.wsInstance.send ? this.wsInstance.send(sendTransport) : undefined;
     }, this.backpressureSendInterval);
   }
 
-  // to elevate the backpressure we increase the send interval
+  // to elevate the backpressure, we increase the send interval
   slowDownSender(backpressureInterval: number) {
     clearInterval(this.senderInterval);
     this.backpressureSendInterval = backpressureInterval;
@@ -93,23 +111,24 @@ export class NoLagClient implements INoLagClient {
    * @param callbackMain used as a event trigger
    * @returns NoLagClient instance
    */
-  connect(): Promise<NoLagClient> {
+  async connect(): Promise<void> {
     this.connectionStatus = EConnectionStatus.Idle;
-    this.initWebsocketConnection();
-    return new Promise((resolve, reject) => {
-      const checkConnection = setInterval(() => {
-        if (this.connectionStatus === EConnectionStatus.Connected) {
-          resolve(this);
-          clearInterval(checkConnection);
-        }
-      }, this.checkConnectionInterval);
-      setTimeout(() => {
-        if (this.connectionStatus === EConnectionStatus.Idle) {
-          reject(true);
-          clearInterval(checkConnection);
-        }
-      }, this.checkConnectionTimeout);
-    });
+    await this.initWebsocketConnection();
+    await this.authenticate();
+    // return new Promise((resolve, reject) => {
+    //   const checkConnection = setInterval(() => {
+    //     if (this.connectionStatus === EConnectionStatus.Connected) {
+    //       resolve(this);
+    //       clearInterval(checkConnection);
+    //     }
+    //   }, this.checkConnectionInterval);
+    //   setTimeout(() => {
+    //     if (this.connectionStatus === EConnectionStatus.Idle) {
+    //       reject(true);
+    //       clearInterval(checkConnection);
+    //     }
+    //   }, this.checkConnectionTimeout);
+    // });
   }
 
   disconnect() {
@@ -123,11 +142,11 @@ export class NoLagClient implements INoLagClient {
    * Initiate browser WebSocket instance and set it to
    * wsInstance
    */
-  initWebsocketConnection() {
+  async initWebsocketConnection(): Promise<boolean> {
     // prevent the re-initiation of a socket connection when the
     // reconnect function calls this method again
     if (this.connectionStatus === EConnectionStatus.Connected) {
-      return;
+      return true;
     }
 
     this.wsInstance = this.unifiedWebsocket(
@@ -135,7 +154,7 @@ export class NoLagClient implements INoLagClient {
     );
 
     if (!this.wsInstance) {
-      return;
+      return true;
     }
 
     this.wsInstance.onOpen = (event: any) => {
@@ -153,9 +172,17 @@ export class NoLagClient implements INoLagClient {
     this.wsInstance.onError = (event: any) => {
       this._onError(event);
     };
+
+    await this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        initiate: EConnectionStatus.Initiate,
+      }),
+    );
+
+    return true;
   }
 
-  authenticate() {
+  async authenticate() {
     this.connectionStatus = EConnectionStatus.Connecting;
 
     const { authToken } = this;
@@ -169,6 +196,12 @@ export class NoLagClient implements INoLagClient {
     }
 
     this.send(NqlTransport.encode(commands));
+
+    await this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        authentication: EConnectionStatus.Authentication,
+      }),
+    );
   }
 
   public onOpen(callback: FConnection) {
@@ -192,48 +225,143 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnOpen(undefined, event);
   }
 
+  private ackCommand(decoded: IDecode): boolean {
+    if (
+      // we receive a command saying we have successfully connected to the message broker
+      // we can now send the authentication request
+      decoded.getCommand(ETransportCommand.InitConnection) &&
+      this.connectionStatus === EConnectionStatus.Idle
+    ) {
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        new AcknowledgeQueueIdentifier({
+          initiate: EConnectionStatus.Initiate,
+        }),
+        null,
+        {} as ITransport,
+      );
+      return true;
+    } else if (
+      // response to authentication request
+      decoded.getCommand(ETransportCommand.Acknowledge) &&
+      this.connectionStatus === EConnectionStatus.Connecting
+    ) {
+      // TODO: message broker should s
+      this.connectionStatus = EConnectionStatus.Connected;
+      this.deviceTokenId = decoded.getCommand(
+        ETransportCommand.Acknowledge,
+      ) as string;
+
+      let error: Error | null = null;
+
+      if(decoded.getCommand(ETransportCommand.Error)) {
+        error = new Error(decoded.getCommand(ETransportCommand.Error) as string);
+        console.log("--error--", error);
+      }
+
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        new AcknowledgeQueueIdentifier({
+          authentication: EConnectionStatus.Authentication,
+        }),
+        error,
+        {} as ITransport,
+      );
+      return true;
+    } else if (decoded.getCommand(ETransportCommand.Acknowledge)) {
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        new AcknowledgeQueueIdentifier({
+          topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+          identifiers: decoded.getCommand(
+            ETransportCommand.Identifier,
+          ) as string[],
+          presence: decoded.getCommand(ETransportCommand.Presence) as string[],
+        }),
+        null,
+        {} as ITransport,
+      );
+      return true;
+    } else if (decoded.getCommand(ETransportCommand.Error)) {
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        new AcknowledgeQueueIdentifier({
+          topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+          identifiers: decoded.getCommand(
+            ETransportCommand.Identifier,
+          ) as string[],
+          presence: decoded.getCommand(ETransportCommand.Presence) as string[],
+        }),
+        null,
+        {} as ITransport,
+      );
+      return true;
+    }
+
+    return false;
+  }
+
   private _onReceive(event: any) {
     const data: ArrayBuffer = event ?? new ArrayBuffer(0);
     const decoded = NqlTransport.decode(data);
     if (data.byteLength === 0) {
       return;
     }
+    console.log("onReceive", decoded);
 
-    if (
-      decoded.getCommand(ETransportCommand.InitConnection) &&
-      this.connectionStatus === EConnectionStatus.Idle
-    ) {
-      this.authenticate();
-      return;
-    }
+    // check to see if there were any ACK or ERROR messages received
+    if (this.ackCommand(decoded)) return;
 
-    if (
-      decoded.getCommand(ETransportCommand.Acknowledge) &&
-      this.connectionStatus === EConnectionStatus.Connecting
-    ) {
-      this.connectionStatus = EConnectionStatus.Connected;
-      this.deviceTokenId = decoded.getCommand(
-        ETransportCommand.Acknowledge,
-      ) as string;
-      return;
-    }
+    // if (
+    //   decoded.getCommand(ETransportCommand.InitConnection) &&
+    //   this.connectionStatus === EConnectionStatus.Idle
+    // ) {
+    //   this.authenticate();
+    //   return;
+    // }
 
-    if (decoded.getCommand(ETransportCommand.Error)) {
-      this.connectionStatus = EConnectionStatus.Disconnected;
-      this.callbackOnError(
-        decoded.getCommand(ETransportCommand.Alert),
-        undefined,
-      );
-      return;
-    }
+    // if (
+    //   decoded.getCommand(ETransportCommand.Acknowledge) &&
+    //   this.connectionStatus === EConnectionStatus.Connecting
+    // ) {
+    //   this.connectionStatus = EConnectionStatus.Connected;
+    //   this.deviceTokenId = decoded.getCommand(
+    //     ETransportCommand.Acknowledge,
+    //   ) as string;
+    //   return;
+    // }
+
+    // if (
+    //   decoded.getCommand(ETransportCommand.Acknowledge) &&
+    //   decoded.getCommand(ETransportCommand.AddAction)
+    // ) {
+    //   this.connectionStatus = EConnectionStatus.Connected;
+    //   this.deviceTokenId = decoded.getCommand(
+    //     ETransportCommand.Acknowledge,
+    //   ) as string;
+    //   return;
+    // }
+
+    // if (decoded.getCommand(ETransportCommand.Error)) {
+    //   this.connectionStatus = EConnectionStatus.Disconnected;
+    //   this.callbackOnError(
+    //     decoded.getCommand(ETransportCommand.Alert),
+    //     undefined,
+    //   );
+    //   return;
+    // }
 
     const identifier = decoded.getCommand(ETransportCommand.Identifier);
     const presences = decoded.getCommand(ETransportCommand.Presence);
+    // const acknowledge = decoded.getCommand(ETransportCommand.Acknowledge);
+    // const action: ETransportCommandAction =
+    //   (decoded.getCommand(
+    //     ETransportCommand.AddAction,
+    //   ) as unknown as ETransportCommandAction) ??
+    //   (decoded.getCommand(
+    //     ETransportCommand.DeleteAction,
+    //   ) as unknown as ETransportCommandAction);
 
     this.callbackOnReceive(undefined, {
       topicName: decoded.getCommand(ETransportCommand.Topic) as string,
-      presences: presences === true ? [] : presences as string[],
-      identifiers: identifier === true ? [] : identifier as string[],
+      presences: presences === true ? [] : (presences as string[]),
+      identifiers: identifier === true ? [] : (identifier as string[]),
       data: decoded.payload,
     });
   }

@@ -26,7 +26,7 @@ callback?:(data: IExampleApiTunnelCallbackOnReceiveResponse) => void): Promise<I
 
     tunnelInstance.onReceive((received) => {
       const { data, topicName, identifiers, presences } = received;
-      console.log(received);
+
       const receivedData = bufferToString(data);
 
       const parseData = receivedData ? JSON.parse(receivedData) : undefined;

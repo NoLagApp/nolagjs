@@ -1,5 +1,7 @@
 export declare enum EConnectionStatus {
     Idle = "idle",
+    Initiate = "initiate",
+    Authentication = "authentication",
     Connecting = "connecting",
     Connected = "connected",
     Disconnected = "disconnected"
@@ -36,5 +38,12 @@ export declare enum ETopicType {
 }
 export declare enum ELoadBalanceType {
     RoundRobbin = "roundRobin"
+}
+export declare enum ESendAction {
+    Subscribe = "subscribe",
+    Unsubscribe = "unsubscribe",
+    Publish = "publish",
+    AddIdentifier = "addIdentifier",
+    RemoveIdentifier = "removeIdentifier"
 }
 //# sourceMappingURL=enum.d.ts.map

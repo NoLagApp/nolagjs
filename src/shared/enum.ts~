@@ -1,7 +1,5 @@
 export enum EConnectionStatus {
   Idle = "idle",
-  Initiate = "initiate",
-  Authentication = "authentication",
   Connecting = "connecting",
   Connected = "connected",
   Disconnected = "disconnected",

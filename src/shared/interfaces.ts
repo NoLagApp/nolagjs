@@ -40,6 +40,7 @@ export interface ITransport {
   presences: string[];
   identifiers: string[];
   topicName: string;
+  acknowledge?: string | boolean | string[];
 }
 
 /**

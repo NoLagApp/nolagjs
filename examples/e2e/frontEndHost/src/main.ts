@@ -8,9 +8,7 @@ import type {
   IDeviceModel,
   IErrorMessage,
   IPaginated,
-  ITopic,
   ITopicModel,
-  ITunnel,
   ITunnelModel,
 } from "nolagjs";
 import {
@@ -67,10 +65,10 @@ import {
   setStaticTopics,
 } from "../../procedures/011_api_device_edit.ts";
 import {
-  clientTunnelConnect, clientTunnelDisconnect,
-  clientTunnelOnReceive,
-  clientTunnelPublish,
-  clientTunnelSubscribe, clientTunnelUnsubscribe,
+  // clientTunnelConnect, clientTunnelDisconnect,
+  // clientTunnelOnReceive,
+  // clientTunnelPublish,
+  // clientTunnelSubscribe, clientTunnelUnsubscribe,
   IClientPubSub,
   // IPresenceReceive,
   // TOPIC_addIdentifiersToInstance,
@@ -159,17 +157,17 @@ declare global {
     lockDeviceTopics: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
     setExpireInSeconds: (arg: IApiDeviceEdit) => Promise<IDeviceModel>;
     // 012_client_pub_sub
-    clientTunnelConnect: (arg: IClientPubSub) => Promise<ITunnel>;
-    clientTunnelSubscribe: (arg: IClientPubSub) => Promise<ITopic | undefined>;
-    clientTunnelPublish: (arg: IClientPubSub) => Promise<void>;
-    clientTunnelOnReceive: (
-      arg: IClientPubSub,
-      callback: (
-        data: IExampleApiTunnelCallbackOnReceiveResponse,
-      ) => void | undefined,
-    ) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
-    clientTunnelUnsubscribe: (arg: IClientPubSub) => Promise<boolean>;
-    clientTunnelDisconnect: (arg: IClientPubSub) => Promise<void>;
+    // clientTunnelConnect: (arg: IClientPubSub) => Promise<ITunnel>;
+    // clientTunnelSubscribe: (arg: IClientPubSub) => Promise<ITopic | undefined>;
+    // clientTunnelPublish: (arg: IClientPubSub) => Promise<void>;
+    // clientTunnelOnReceive: (
+    //   arg: IClientPubSub,
+    //   callback: (
+    //     data: IExampleApiTunnelCallbackOnReceiveResponse,
+    //   ) => void | undefined,
+    // ) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
+    // clientTunnelUnsubscribe: (arg: IClientPubSub) => Promise<boolean>;
+    // clientTunnelDisconnect: (arg: IClientPubSub) => Promise<void>;
     TUNNEL_standardPubSub: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
     // TUNNEL_standardPubSubAddIdentifiers: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
     // TUNNEL_standardPubSubWithIdentifiers: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
@@ -242,12 +240,12 @@ window.lockDeviceTopics = lockDeviceTopics;
 window.setExpireInSeconds = setExpireInSeconds;
 
 // 012_client_pub_sub
-window.clientTunnelConnect = clientTunnelConnect;
-window.clientTunnelDisconnect = clientTunnelDisconnect;
-window.clientTunnelSubscribe = clientTunnelSubscribe;
-window.clientTunnelPublish = clientTunnelPublish;
-window.clientTunnelOnReceive = clientTunnelOnReceive;
-window.clientTunnelUnsubscribe = clientTunnelUnsubscribe;
+// window.clientTunnelConnect = clientTunnelConnect;
+// window.clientTunnelDisconnect = clientTunnelDisconnect;
+// window.clientTunnelSubscribe = clientTunnelSubscribe;
+// window.clientTunnelPublish = clientTunnelPublish;
+// window.clientTunnelOnReceive = clientTunnelOnReceive;
+// window.clientTunnelUnsubscribe = clientTunnelUnsubscribe;
 window.TUNNEL_standardPubSub = TUNNEL_standardPubSub;
 // window.TUNNEL_standardPubSubAddIdentifiers = TUNNEL_standardPubSubAddIdentifiers;
 // window.TUNNEL_unsubscribe = TUNNEL_unsubscribe;

@@ -12,7 +12,7 @@ export enum ETransportCommand {
   Acknowledge = 6,
   // trigger connection state hydration
   Reconnect = 22,
-  // subscribe to topic
+  // subscribe to a topic
   Topic = 26,
   // list of NQL identifiers
   Identifier = 11,

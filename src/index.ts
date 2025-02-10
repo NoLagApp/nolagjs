@@ -19,7 +19,7 @@ export const WebSocketClient = async (
     unifiedWebsocket,
     authToken,
     options,
-    connectOptions,
+    connectOptions
   );
   return instance.initiate();
 };

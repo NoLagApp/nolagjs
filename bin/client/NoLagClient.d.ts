@@ -1,8 +1,9 @@
 import { FConnection } from "../shared/constants";
 import { EConnectionStatus } from "../shared/enum";
 import { IConnectOptions, IUnifiedWebsocket } from "../shared/interfaces";
+import { AcknowledgeQueueManager } from "../shared/utils/AcknowledgeQueue/AcknowledgeQueueManager";
 interface INoLagClient {
-    connect(): Promise<NoLagClient>;
+    connect(): Promise<void>;
     setReConnect(): void;
     onOpen(callback: FConnection): void;
     onReceiveMessage(callback: FConnection): void;
@@ -32,7 +33,8 @@ export declare class NoLagClient implements INoLagClient {
     private backpressureSendInterval;
     private senderInterval;
     private unifiedWebsocket;
-    constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, connectOptions?: IConnectOptions);
+    private acknowledgeQueueManager;
+    constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, acknowledgeQueueManager: AcknowledgeQueueManager, connectOptions?: IConnectOptions);
     startSender(): void;
     slowDownSender(backpressureInterval: number): void;
     addToBuffer(buffer: ArrayBuffer): void;
@@ -42,19 +44,20 @@ export declare class NoLagClient implements INoLagClient {
      * @param callbackMain used as a event trigger
      * @returns NoLagClient instance
      */
-    connect(): Promise<NoLagClient>;
+    connect(): Promise<void>;
     disconnect(): void;
     /**
      * Initiate browser WebSocket instance and set it to
      * wsInstance
      */
-    initWebsocketConnection(): void;
-    authenticate(): void;
+    initWebsocketConnection(): Promise<boolean>;
+    authenticate(): Promise<void>;
     onOpen(callback: FConnection): void;
     onReceiveMessage(callback: FConnection): void;
     onClose(callback: FConnection): void;
     onError(callback: FConnection): void;
     private _onOpen;
+    private ackCommand;
     private _onReceive;
     private _onClose;
     private _onError;

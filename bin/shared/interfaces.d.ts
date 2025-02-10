@@ -36,6 +36,7 @@ export interface ITransport {
     presences: string[];
     identifiers: string[];
     topicName: string;
+    acknowledge?: string | boolean | string[];
 }
 /**
  * Pagination details indicating the current status of your pagination query

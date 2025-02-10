@@ -20,6 +20,8 @@
     "build": "rollup -c",
     "jest:test": "jest test",
     "playwright:test": "playwright test",
+    "build:app:mac": "yarn build && rm -rf node_modules/ && yarn",
+    "build:app:windows": "yarn build && rmdir /s /q node_modules\\ && yarn",
     "frontEndHost": "cd examples/e2e/frontEndHost && yarn dev"
   },
   "repository": {

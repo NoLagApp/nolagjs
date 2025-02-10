@@ -19,7 +19,7 @@ export const shouldCreateNewDevice = async ({
     name: deviceName,
     accessPermission: EAccessPermission.PubSub,
   };
-console.log(22222);
+
   return example_api_tunnel_device_create({
     payload,
     yourProjectApiKey,

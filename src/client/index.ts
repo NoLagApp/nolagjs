@@ -13,8 +13,9 @@ import { ITopic, Topic } from "../shared/models/Topic";
 import { EVisibilityState } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import { transportCommands } from "../shared/utils/TransportCommands";
-import { NqlTransport } from "../shared/utils/transport";
+import { NqlTransport } from "../shared/utils";
 import { NoLagClient } from "./NoLagClient";
+import { AcknowledgeQueueManager } from "../shared/utils/AcknowledgeQueue/AcknowledgeQueueManager";
 
 export interface ITunnel {
   /**
@@ -22,7 +23,7 @@ export interface ITunnel {
    * @param topicName Topic name regisrered in NoLag Portal
    * @return Topic | undefined
    */
-  getTopic(topicName: string): ITopic | undefined;
+  getTopic(topicName: string): Promise<ITopic>;
 
   /**
    * Delete instantiated topic
@@ -35,11 +36,13 @@ export interface ITunnel {
    * Set a new topic that is attached to tunnel
    * @param topicName Topic name regisrered in NoLag Portal
    * @param identifiers Set if reverse query identifiers which the topic will listen two
+   * @param callbackFn
    */
   subscribe(
     topicName: string,
     identifiers?: INqlIdentifiers,
-  ): ITopic | undefined;
+    callbackFn?: (error: Error | null, topic: ITransport | null) => void,
+  ): Promise<ITopic>;
 
   /**
    * Publish data before setting a Topic
@@ -79,12 +82,6 @@ export interface ITunnel {
   ): void;
 
   /**
-   * Remove Topic instance from tunnel, but does not unsubscribe from NoLag
-   * @param topicName
-   */
-  removeTopicInstance(topicName: string): void;
-
-  /**
    * Unique device id
    */
   deviceTokenId: string | null | undefined;
@@ -97,7 +94,7 @@ export interface ITunnel {
  */
 export class Tunnel implements ITunnel {
   // the WS connection to NoLag
-  private noLagClient: NoLagClient | undefined;
+  private noLagClient: NoLagClient;
   private connectOptions?: IConnectOptions;
 
   private authToken: string;
@@ -113,9 +110,16 @@ export class Tunnel implements ITunnel {
   private visibilityState: string = EVisibilityState.Visible;
 
   private callbackOnReceive: ((data: ITransport) => void) | undefined;
-  private callbackOnDisconnect: FConnection = () => {};
-  private callbackOnReconnect: FConnection = () => {};
-  private callbackOnReceivedError: FConnection = () => {};
+  private callbackOnDisconnect: FConnection = () => {
+    //
+  };
+  private callbackOnReconnect: FConnection = () => {
+    //
+  };
+  private callbackOnReceivedError: FConnection = () => {
+    //
+  };
+  private acknowledgeQueueManager = new AcknowledgeQueueManager();
 
   constructor(
     unifiedWebsocket: (url: string) => IUnifiedWebsocket,
@@ -133,6 +137,7 @@ export class Tunnel implements ITunnel {
     this.noLagClient = new NoLagClient(
       unifiedWebsocket,
       this.authToken,
+      this.acknowledgeQueueManager,
       this.connectOptions,
     );
 
@@ -152,9 +157,7 @@ export class Tunnel implements ITunnel {
 
   private startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
-      if (this.noLagClient) {
-        this.noLagClient.heartbeat();
-      }
+      this.noLagClient.heartbeat();
     }, this.heartBeatInterval);
   }
 
@@ -164,11 +167,12 @@ export class Tunnel implements ITunnel {
 
   // connect to NoLag with Tunnel credentials
   public async initiate(reconnect?: boolean) {
-    if (this.noLagClient) {
-      this.noLagClient.setReConnect(reconnect);
-      await this.noLagClient.connect();
-      this.startHeartbeat();
-    }
+    this.noLagClient.setReConnect(reconnect);
+    console.log("initiate");
+    await this.noLagClient.connect();
+    console.log("connect");
+    this.noLagClient.setReConnect(false);
+    this.startHeartbeat();
     return this;
   }
 
@@ -190,28 +194,28 @@ export class Tunnel implements ITunnel {
   }
 
   private onReceiveMessage() {
-    if (this.noLagClient) {
-      const tunnelInstance: ITunnel = this;
-      this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
-        const { topicName, identifiers } = data;
-        if (this.noLagClient && !this.topics[topicName]) {
-          this.topics[topicName] = new Topic(
-            tunnelInstance,
-            this.noLagClient,
-            topicName,
-            {
-              OR: identifiers,
-            },
-          );
-        }
-        if (topicName && this.topics[topicName]) {
-          this.topics[topicName]?._onReceiveMessage(data);
-        }
-        if (typeof this.callbackOnReceive === "function") {
-          this.callbackOnReceive(data);
-        }
-      });
-    }
+    const tunnelInstance: Tunnel = this;
+    this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
+      const { topicName, identifiers } = data;
+      console.log("onReceiveMessage", data);
+      if (this.noLagClient && !this.topics[topicName]) {
+        this.topics[topicName] = new Topic(
+          tunnelInstance,
+          this.noLagClient,
+          topicName,
+          {
+            OR: identifiers,
+          },
+          this.acknowledgeQueueManager,
+        );
+      }
+      if (topicName && this.topics[topicName]) {
+        this.topics[topicName]?._onReceiveMessage(data);
+      }
+      if (typeof this.callbackOnReceive === "function") {
+        this.callbackOnReceive(data);
+      }
+    });
   }
 
   private reconnect(): void {
@@ -241,24 +245,20 @@ export class Tunnel implements ITunnel {
   }
 
   private onClose() {
-    if (this.noLagClient) {
-      this.noLagClient.onClose((err: any, data: ITransport) => {
-        this.doReconnect();
-        if (typeof this.callbackOnReceivedError === "function") {
-          this.callbackOnReceivedError(err);
-        }
-      });
-    }
+    this.noLagClient.onClose((err: any, data: ITransport) => {
+      this.doReconnect();
+      if (typeof this.callbackOnReceivedError === "function") {
+        this.callbackOnReceivedError(err);
+      }
+    });
   }
 
   private onError() {
-    if (this.noLagClient) {
-      this.noLagClient.onError((err: IErrorMessage, data: ITransport) => {
-        if (typeof this.callbackOnReceivedError === "function") {
-          this.callbackOnReceivedError(err);
-        }
-      });
-    }
+    this.noLagClient.onError((err: IErrorMessage, data: ITransport) => {
+      if (typeof this.callbackOnReceivedError === "function") {
+        this.callbackOnReceivedError(err);
+      }
+    });
   }
 
   public onReceive(callback: (data: ITransport) => void): void {
@@ -282,18 +282,29 @@ export class Tunnel implements ITunnel {
     this.callbackOnReceivedError = callback;
   }
 
-  public getTopic(topicName: string): ITopic | undefined {
-    // if you are trying to get the specific topic but its not been set
-    // set it now
-    if (!this.topics[topicName] && this.noLagClient) {
-      this.topics[topicName] = new Topic(this, this.noLagClient, topicName, {});
+  public async getTopic(
+    topicName: string,
+    callbackFn?: (error: Error | null, topic: ITopic | null) => void,
+  ): Promise<ITopic> {
+    // check if topic is already instantiated
+    // if not, subscribe
+    if (!this.topics[topicName]) {
+      const topic = new Topic(
+        this,
+        this.noLagClient,
+        topicName,
+        {},
+        this.acknowledgeQueueManager,
+      );
+      await topic.subscribe((error, data) => {
+        if (callbackFn) {
+          callbackFn(error, topic);
+        }
+      });
+      this.topics[topicName] = topic;
     }
 
     return this.topics[topicName];
-  }
-
-  public removeTopicInstance(topicName: string) {
-    delete this.topics[topicName];
   }
 
   public unsubscribe(topicName: string): boolean {
@@ -304,23 +315,30 @@ export class Tunnel implements ITunnel {
     return false;
   }
 
-  public subscribe(
+  public async subscribe(
     topicName: string,
     identifiers: INqlIdentifiers = {},
-  ): ITopic | undefined {
-    if (this.noLagClient) {
-      if (this.topics[topicName]) {
-        return this.topics[topicName];
-      } else {
-        this.topics[topicName] = new Topic(
-          this,
-          this.noLagClient,
-          topicName,
-          identifiers,
-        );
+    callbackFn?: (error: Error | null, topic: ITransport | null) => void,
+  ): Promise<ITopic> {
+    if (!this.noLagClient) {
+      throw new Error("Can not subscribe to a Topic ");
+    }
+    if (this.topics[topicName]) {
+      const topic = this.topics[topicName];
+      await topic.addIdentifiers(identifiers);
+      return topic;
+    } else {
+      const topic = (this.topics[topicName] = new Topic(
+        this,
+        this.noLagClient,
+        topicName,
+        identifiers,
+        this.acknowledgeQueueManager,
+      ));
 
-        return this.topics[topicName];
-      }
+      await topic.subscribe(callbackFn);
+
+      return this.topics[topicName];
     }
   }
 
