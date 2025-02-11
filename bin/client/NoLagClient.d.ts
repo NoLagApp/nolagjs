@@ -17,7 +17,6 @@ export declare class NoLagClient implements INoLagClient {
     private protocol;
     private url;
     private deviceConnectionId;
-    private environment;
     deviceTokenId: string | null;
     private defaultCheckConnectionInterval;
     private defaultCheckConnectionTimeout;
@@ -34,6 +33,7 @@ export declare class NoLagClient implements INoLagClient {
     private senderInterval;
     private unifiedWebsocket;
     private acknowledgeQueueManager;
+    private bufferOnDisconnect;
     constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, acknowledgeQueueManager: AcknowledgeQueueManager, connectOptions?: IConnectOptions);
     startSender(): void;
     slowDownSender(backpressureInterval: number): void;

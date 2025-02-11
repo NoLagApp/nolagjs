@@ -73,6 +73,7 @@ export declare class Tunnel implements ITunnel {
     private callbackOnReconnect;
     private callbackOnReceivedError;
     private acknowledgeQueueManager;
+    private connectionOptions?;
     constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions);
     get deviceTokenId(): string | null;
     private startHeartbeat;

@@ -1,11 +1,11 @@
-import { EAccessPermission, EEnvironment, EStatus } from "./enum";
+import { EAccessPermission, EStatus } from "./enum";
 import { dataType } from "./types";
 /**
  * Disconnect from message broker when tab is not in view
  */
 export interface ITunnelOptions {
     disconnectOnNoVisibility?: boolean;
-    environment: EEnvironment;
+    bufferOnDisconnect?: boolean;
 }
 /**
  * NOT FOR NORMAL USE
@@ -22,6 +22,7 @@ export interface IConnectOptions {
     checkConnectionInterval?: number;
     checkConnectionTimeout?: number;
     apiKey?: string;
+    bufferOnDisconnect?: boolean;
 }
 export interface IBaseModel {
     createdAt?: number;

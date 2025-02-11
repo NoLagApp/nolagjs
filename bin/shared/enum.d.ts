@@ -6,10 +6,6 @@ export declare enum EConnectionStatus {
     Connected = "connected",
     Disconnected = "disconnected"
 }
-export declare enum EEnvironment {
-    Nodejs = "nodejs",
-    Browser = "browser"
-}
 export declare enum EEncoding {
     Arraybuffer = "arraybuffer"
 }
