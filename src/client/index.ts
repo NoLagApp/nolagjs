@@ -120,6 +120,7 @@ export class Tunnel implements ITunnel {
     //
   };
   private acknowledgeQueueManager = new AcknowledgeQueueManager();
+  private connectionOptions?: ITunnelOptions;
 
   constructor(
     unifiedWebsocket: (url: string) => IUnifiedWebsocket,
@@ -127,10 +128,11 @@ export class Tunnel implements ITunnel {
     options?: ITunnelOptions,
     connectOptions?: IConnectOptions,
   ) {
+    this.connectionOptions = options;
     this.checkConnectionInterval =
       connectOptions?.checkConnectionInterval ??
       this.defaultCheckConnectionInterval;
-    this.connectOptions = connectOptions ?? undefined;
+    this.connectOptions = {...connectOptions,...options};
     this.authToken = authToken;
 
     // initiate NoLag client connection

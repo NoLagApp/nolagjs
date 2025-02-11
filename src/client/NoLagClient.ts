@@ -1,5 +1,5 @@
 import { CONSTANT, FConnection, FOnReceive } from "../shared/constants";
-import { EConnectionStatus, EEncoding, EEnvironment } from "../shared/enum";
+import { EConnectionStatus } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import {
   IConnectOptions,
@@ -27,7 +27,6 @@ export class NoLagClient implements INoLagClient {
   private protocol: string;
   private url: string;
   private deviceConnectionId: string | undefined = undefined;
-  private environment: EEnvironment | undefined;
   public deviceTokenId: string | null = null;
   //  check connection
   private defaultCheckConnectionInterval = 100;
@@ -57,6 +56,7 @@ export class NoLagClient implements INoLagClient {
   private senderInterval: any = 0;
   private unifiedWebsocket: (url: string) => IUnifiedWebsocket;
   private acknowledgeQueueManager: AcknowledgeQueueManager;
+  private bufferOnDisconnect = false;
 
   constructor(
     unifiedWebsocket: (url: string) => IUnifiedWebsocket,
@@ -75,12 +75,15 @@ export class NoLagClient implements INoLagClient {
     this.checkConnectionTimeout =
       connectOptions?.checkConnectionTimeout ??
       this.defaultCheckConnectionTimeout;
+    this.bufferOnDisconnect =
+      connectOptions?.bufferOnDisconnect ?? this.bufferOnDisconnect;
     this.unifiedWebsocket = unifiedWebsocket;
     this.startSender();
   }
 
   startSender() {
     this.senderInterval = setInterval(() => {
+      if (!this.bufferOnDisconnect && this.connectionStatus === EConnectionStatus.Disconnected) return;
       // get the first message in the buffer
       const sendTransport = this.buffer.shift();
       if (!sendTransport) return;
@@ -91,7 +94,7 @@ export class NoLagClient implements INoLagClient {
     }, this.backpressureSendInterval);
   }
 
-  // to elevate the backpressure, we increase the send interval
+  // to alleviate the backpressure, we increase the send interval
   slowDownSender(backpressureInterval: number) {
     clearInterval(this.senderInterval);
     this.backpressureSendInterval = backpressureInterval;
@@ -253,8 +256,10 @@ export class NoLagClient implements INoLagClient {
 
       let error: Error | null = null;
 
-      if(decoded.getCommand(ETransportCommand.Error)) {
-        error = new Error(decoded.getCommand(ETransportCommand.Error) as string);
+      if (decoded.getCommand(ETransportCommand.Error)) {
+        error = new Error(
+          decoded.getCommand(ETransportCommand.Error) as string,
+        );
         console.log("--error--", error);
       }
 

@@ -124,10 +124,10 @@ export const TUNNEL_standardPubSub = async ({
 
   console.log("----connect----");
 
-  // const TWO_TunnelInstance = await example_client_tunnel_connect({
-  //   noLagDeveloperTestConfigIgnoreWs,
-  //   deviceToken: environmentInstance?.device?.deviceAccessToken ?? "",
-  // });
+  const TWO_TunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: environmentInstance?.device?.deviceAccessToken ?? "",
+  });
 
   await example_client_tunnel_subscribe(
     {
@@ -140,16 +140,31 @@ export const TUNNEL_standardPubSub = async ({
       console.log("data", data);
     },
   );
+
+  await example_client_tunnel_subscribe(
+    {
+      tunnelInstance: ONE_TunnelInstance ?? {},
+      topicName,
+      identifiers,
+    },
+    (error, data) => {
+      console.log("error", error);
+      console.log("data", data);
+    },
+  );
+  
   console.log("----subscribe----");
+
+  // the issue is the message broker is sending back the topic ID and not the TopicName
 
   // await delay(1000);
 
-  // await example_client_tunnel_publish({
-  //   tunnelInstance: ONE_TunnelInstance,
-  //   topicName,
-  //   identifiers,
-  //   data,
-  // });
+  await example_client_tunnel_publish({
+    tunnelInstance: TWO_TunnelInstance,
+    topicName,
+    identifiers,
+    data,
+  });
 
   const response = await example_client_tunnel_callback_on_receive({
     tunnelInstance: ONE_TunnelInstance,
@@ -159,9 +174,9 @@ export const TUNNEL_standardPubSub = async ({
     tunnelInstance: ONE_TunnelInstance ?? ({} as any),
   });
 
-  // await example_client_tunnel_disconnect({
-  //   tunnelInstance: TWO_TunnelInstance ?? ({} as any),
-  // });
+  await example_client_tunnel_disconnect({
+    tunnelInstance: TWO_TunnelInstance ?? ({} as any),
+  });
 
   return response;
 };

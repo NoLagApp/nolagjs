@@ -1,4 +1,4 @@
-import { EAccessPermission, EEnvironment, EStatus } from "./enum";
+import { EAccessPermission, EStatus } from "./enum";
 import { dataType } from "./types";
 
 /**
@@ -6,7 +6,7 @@ import { dataType } from "./types";
  */
 export interface ITunnelOptions {
   disconnectOnNoVisibility?: boolean;
-  environment: EEnvironment;
+  bufferOnDisconnect?: boolean;
 }
 
 /**
@@ -24,6 +24,7 @@ export interface IConnectOptions {
   checkConnectionInterval?: number;
   checkConnectionTimeout?: number;
   apiKey?: string;
+  bufferOnDisconnect?: boolean;
 }
 
 export interface IBaseModel {

@@ -7,11 +7,6 @@ export enum EConnectionStatus {
   Disconnected = "disconnected",
 }
 
-export enum EEnvironment {
-  Nodejs = "nodejs",
-  Browser = "browser",
-}
-
 export enum EEncoding {
   Arraybuffer = "arraybuffer",
 }

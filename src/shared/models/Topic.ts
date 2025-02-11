@@ -318,8 +318,6 @@ export class Topic implements ITopic {
   }
 
   private send(sendAction: ESendAction, transport: ArrayBuffer) {
-    console.log(sendAction);
-    console.log(NqlTransport.decode(transport));
     if (this.connection) {
       this.connection.send(transport);
     }
