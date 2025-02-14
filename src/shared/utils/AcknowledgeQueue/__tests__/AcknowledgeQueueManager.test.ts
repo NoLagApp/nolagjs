@@ -9,8 +9,6 @@ describe("FunctionQueueManager", () => {
     const identifiersBase = ["identifierTwo", "identifierOne"];
     const queueManager = new AcknowledgeQueueManager();
 
-    queueManager.runQueue();
-
     [1, 2, 3, 4, 5].forEach((key) => {
       const topicName = `${topicNameBase}${key}`;
       const identifiers = identifiersBase.map(
@@ -42,8 +40,8 @@ describe("FunctionQueueManager", () => {
     const topicNameBase = "topicName";
     const identifiersBase = ["identifierTwo", "identifierOne"];
     const queueManager = new AcknowledgeQueueManager();
-
-    queueManager.expirePeriodInMs(100).runQueue();
+    // override default expire period
+    queueManager.expirePeriodInMs(200);
 
     [1, 2, 3, 4, 5].forEach((key) => {
       const topicName = `${topicNameBase}${key}`;
@@ -71,8 +69,8 @@ describe("FunctionQueueManager", () => {
     const topicNameBase = "topicName";
     const identifiersBase = ["identifierTwo", "identifierOne"];
     const queueManager = new AcknowledgeQueueManager();
-
-    queueManager.expirePeriodInMs(100).runQueue();
+    // override default expire period
+    queueManager.expirePeriodInMs(200);
 
     [1, 2, 3, 4, 5].forEach((key) => {
       const topicName = `${topicNameBase}${key}`;
