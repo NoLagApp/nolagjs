@@ -327,7 +327,7 @@ export class Tunnel implements ITunnel {
     }
     if (this.topics[topicName]) {
       const topic = this.topics[topicName];
-      await topic.addIdentifiers(identifiers);
+      if(identifiers?.OR?.length && identifiers?.OR?.length !== 0) await topic.addIdentifiers(identifiers);
       return topic;
     } else {
       const topic = (this.topics[topicName] = new Topic(
