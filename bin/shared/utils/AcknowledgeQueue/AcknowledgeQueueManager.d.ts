@@ -4,30 +4,23 @@ import { ITransport } from "../../interfaces";
 export interface IQueues {
     sent: Record<string, AcknowledgeQueueSentItem>;
     received: Record<string, AcknowledgeQueueReceivedItem>;
-    sentIndex: [string, string][];
-    receiveIndex: [string, string][];
 }
 export declare class AcknowledgeQueueManager {
     private queues;
     private _expirePeriodInMs;
     private matchSentQueueWithReceiveQueue;
-    removeFromSentQueue(index: string, key: number): void;
-    removeFromReceiveQueue(index: string, key: number): void;
     /**
      * Remove any received expired items
      * This should never run, but just in case
      * @private
      */
     private cleanUpReceivedQueue;
-    private removeEmptyIndexPositions;
     /**
      * Non-blocking long-running process
      * This process is responsible for matching the sent queue with the received queue
      * also doing a bit of cleanup
      */
     private runQueue;
-    private setSentIndex;
-    private setReceiveIndex;
     constructor();
     expirePeriodInMs(periodInMs: number): this;
     /**
@@ -47,8 +40,6 @@ export declare class AcknowledgeQueueManager {
      */
     addToReceivedQueue(key: AcknowledgeQueueIdentifier, error: Error | null, data: ITransport): void;
     getSentQueue(): AcknowledgeQueueSentItem[];
-    getSentIndex(): [string, string][];
     getReceivedQueue(): AcknowledgeQueueReceivedItem[];
-    getReceiveIndex(): [string, string][];
 }
 //# sourceMappingURL=AcknowledgeQueueManager.d.ts.map
