@@ -23,9 +23,6 @@ export class AcknowledgeQueueManager {
       const item = this.queues.sent[key];
       const foundReceiveQueueItem = this.queues.received[key];
       if (item?.callbackFn && foundReceiveQueueItem) {
-        console.log("key", key);
-        console.log("item", item);
-        console.log("foundReceiveQueueItem", foundReceiveQueueItem);
         item.callbackFn(
           foundReceiveQueueItem.error,
           foundReceiveQueueItem.data,

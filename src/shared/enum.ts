@@ -43,9 +43,20 @@ export enum ELoadBalanceType {
 }
 
 export enum ESendAction {
-  Subscribe = "subscribe",
-  Unsubscribe = "unsubscribe",
-  Publish = "publish",
-  AddIdentifier = "addIdentifier",
-  RemoveIdentifier = "removeIdentifier",
+  AcknowledgeConnected = "acknowledgeConnected",
+  AcknowledgeAuthenticated = "acknowledgeAuthenticated",
+  GeneralAcknowledge = "generalAcknowledge",
+  ErrorAcknowledge = "errorAcknowledge",
+  OnReceive = "onReceive",
+  OnError = "onError",
+  OnClose = "onClose",
+  OnOpen = "onOpen",
+  TunnelAuthenticate = "tunnelAuthenticate",
+  TunnelHeartbeat = "tunnelHeartbeat",
+  TunnelPublish = "tunnelPublish",
+  TopicSubscribe = "topicSubscribe",
+  TopicUnsubscribe = "topicUnsubscribe",
+  TopicPublish = "topicPublish",
+  TopicAddIdentifier = "topicAddIdentifier",
+  TopicRemoveIdentifier = "topicRemoveIdentifier",
 }

@@ -3,7 +3,6 @@ import { ITunnel, Tunnel } from "./client";
 import { unifiedWebsocket } from "./unifiedWebsocket/browser";
 export * from "./imports";
 
-console.log("load browserInstance");
 export const WebSocketClient = async (
   authToken: string,
   options?: ITunnelOptions,

@@ -23,13 +23,9 @@ import {
   editTunnelDeviceUsingDeviceTokenId,
 } from "../procedures/011_api_device_edit";
 import {
-  clientTunnelConnect,
-  clientTunnelDisconnect,
-  clientTunnelOnReceive,
-  clientTunnelPublish,
-  clientTunnelSubscribe,
   identifiers,
   TUNNEL_standardPubSub,
+  TUNNEL_standardPubSubWithIdentifiers,
 } from "../procedures/012_client_pub_sub";
 import { delay } from "../../constants/util/delay";
 
@@ -39,6 +35,13 @@ const noLagDeveloperTestConfigIgnore =
 const noLagDeveloperTestConfigIgnoreWs =
   browserInstance.noLagDeveloperTestConfigIgnoreWs;
 const tunnelId = browserInstance.tunnel?.tunnelId ?? "";
+
+nodeInstance.setDevice({
+  deviceAccessToken: "b1c1c091904494e72a94e6e21616470e",
+});
+nodeInstance.setTopic({
+  name: "node:e2e_Tunnel_1738580709899_edited_edited",
+});
 
 test.describe("Playwright client pub/sub", () => {
   // test("BROWSER:Tunnel:Standard pub/sub NO Identifier and NO presences set", async ({
@@ -71,27 +74,27 @@ test.describe("Playwright client pub/sub", () => {
   //     environmentInstance: browserInstance,
   //   });
   //
-  //   // const response = await page.evaluate(
-  //   //   ({ noLagDeveloperTestConfigIgnoreWs, browserInstance }) => {
-  //   //     console.log("browserInstance_evaluate", browserInstance);
-  //   //     return TUNNEL_standardPubSub({
-  //   //       noLagDeveloperTestConfigIgnoreWs,
-  //   //       environmentInstance: browserInstance,
-  //   //     });
-  //   //   },
-  //   //   { noLagDeveloperTestConfigIgnoreWs, browserInstance },
-  //   // );
+  //   const response = await page.evaluate(
+  //     ({ noLagDeveloperTestConfigIgnoreWs, browserInstance }) => {
+  //       console.log("browserInstance_evaluate", browserInstance);
+  //       return TUNNEL_standardPubSub({
+  //         noLagDeveloperTestConfigIgnoreWs,
+  //         environmentInstance: browserInstance,
+  //       });
+  //     },
+  //     { noLagDeveloperTestConfigIgnoreWs, browserInstance:nodeInstance },
+  //   );
   //
-  //   const topicName = browserInstance?.topic.name ?? "";
+  //   const topicName = nodeInstance?.topic.name ?? "";
   //
   //   const data = {
   //     prop1: "data1",
   //   };
   //
   //   expect(data).toMatchObject(response?.data);
-  //   expect(topicName).toBe(response?.topicName);
-  //   expect(0).toBe(response?.identifiers.length);
-  //   expect(0).toBe(response?.presences.length);
+  //     expect(topicName).toBe(response?.topicName);
+  //     expect(0).toBe(response?.identifiers.length);
+  //     expect(0).toBe(response?.presences.length);
   // });
 
   test("NODE:Tunnel:Standard pub/sub NO Identifier and NO presences set", async ({
@@ -117,13 +120,6 @@ test.describe("Playwright client pub/sub", () => {
     //   nodeInstance.setDevice(resetResponse);
     // }
 
-    nodeInstance.setDevice({
-      deviceAccessToken: "b1c1c091904494e72a94e6e21616470e",
-    })
-    nodeInstance.setTopic({
-      name: "node:e2e_Tunnel_1738580709899_edited_edited",
-    })
-
     const topicName = nodeInstance?.topic.name ?? "";
     const data = {
       prop1: "data1",
@@ -131,11 +127,54 @@ test.describe("Playwright client pub/sub", () => {
 
     const response = await TUNNEL_standardPubSub({
       noLagDeveloperTestConfigIgnoreWs,
-      environmentInstance: nodeInstance,
+      environmentInstanceOne: nodeInstance,
+      environmentInstanceTwo: nodeInstance,
     });
 
     expect(data).toMatchObject(response?.data);
     expect(topicName).toBe(response?.topicName);
+    expect(0).toBe(response?.identifiers.length);
+    expect(0).toBe(response?.presences.length);
+  });
+
+  test("NODE:Tunnel:Standard pub/sub WITH Identifiers and NO presences set", async ({
+    page,
+  }) => {
+    // const payload: IDeviceModel = {
+    //   name: nodeInstance.deviceName,
+    //   accessPermission: EAccessPermission.PubSub,
+    //   staticTopics: [],
+    //   lockTopics: false,
+    //   expireIn: 0,
+    // };
+    //
+    // const resetResponse = await example_api_tunnel_device_update({
+    //   payload,
+    //   yourProjectApiKey,
+    //   noLagDeveloperTestConfigIgnore,
+    //   tunnelId,
+    //   deviceId: nodeInstance.device.deviceTokenId ?? "",
+    // });
+
+    // if (resetResponse) {
+    //   nodeInstance.setDevice(resetResponse);
+    // }
+
+    const response = await TUNNEL_standardPubSubWithIdentifiers({
+      noLagDeveloperTestConfigIgnoreWs,
+      environmentInstanceOne: nodeInstance,
+      environmentInstanceTwo: nodeInstance,
+    });
+
+    const topicName = nodeInstance?.topic.name ?? "";
+    const identifiers = ["identifier1", "identifier2"];
+    const data = {
+      prop1: "data1",
+    };
+
+    expect(data).toMatchObject(response?.data);
+    expect(topicName).toBe(response?.topicName);
+    expect(identifiers).toMatchObject(response?.identifiers);
     expect(0).toBe(response?.identifiers.length);
     expect(0).toBe(response?.presences.length);
   });

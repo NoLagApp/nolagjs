@@ -96,7 +96,6 @@ export class Topic implements ITopic {
     this.setConnection(connection);
     this.topicName = topicName;
     this.saveIdentifiers(identifiers?.OR ?? []);
-    this.subscribe();
   }
 
   private saveIdentifiers(identifiers: string[]): void {
@@ -154,7 +153,7 @@ export class Topic implements ITopic {
 
     const transport = NqlTransport.encode(commands);
 
-    this.send(ESendAction.Subscribe, transport);
+    this.send(ESendAction.TopicSubscribe, transport);
 
     await this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
@@ -201,7 +200,7 @@ export class Topic implements ITopic {
     callbackFn?: (error: Error | null, data: ITransport | null) => void,
   ): Promise<ITopic> {
     if (!identifiersList?.OR?.length || identifiersList?.OR?.length === 0) {
-      const error = new Error("Topic name and identifiers are required");
+      const error = new Error("Identifiers are required.");
       if (callbackFn) {
         callbackFn(error, null);
       } else {
@@ -224,7 +223,7 @@ export class Topic implements ITopic {
 
     const transport = NqlTransport.encode(commands);
 
-    this.send(ESendAction.AddIdentifier, transport);
+    this.send(ESendAction.TopicAddIdentifier, transport);
 
     await this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
@@ -242,7 +241,7 @@ export class Topic implements ITopic {
     callbackFn?: (error: Error | null, data: ITransport | null) => void,
   ): Promise<ITopic> {
     if (!identifiers?.length || identifiers?.length === 0) {
-      const error = new Error("Topic name and identifiers are required");
+      const error = new Error("Identifiers are required.");
       if (callbackFn) {
         callbackFn(error, null);
       } else {
@@ -263,7 +262,7 @@ export class Topic implements ITopic {
 
     const transport = NqlTransport.encode(commands);
 
-    this.send(ESendAction.RemoveIdentifier, transport);
+    this.send(ESendAction.TopicRemoveIdentifier, transport);
 
     await this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
@@ -285,7 +284,7 @@ export class Topic implements ITopic {
 
     const transport = NqlTransport.encode(commands);
 
-    this.send(ESendAction.Unsubscribe, transport);
+    this.send(ESendAction.TopicUnsubscribe, transport);
 
     await this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
@@ -312,14 +311,14 @@ export class Topic implements ITopic {
 
     const transport = NqlTransport.encode(commands, data);
 
-    this.send(ESendAction.Publish, transport);
+    this.send(ESendAction.TopicPublish, transport);
 
     return this;
   }
 
   private send(sendAction: ESendAction, transport: ArrayBuffer) {
     if (this.connection) {
-      this.connection.send(transport);
+      this.connection.send(sendAction, transport);
     }
   }
 }

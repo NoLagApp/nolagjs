@@ -27,7 +27,6 @@ export class AcknowledgeQueueIdentifier {
     identifiers?: string[],
   ): string | undefined {
     if (!identifiers || !identifiers?.length) return undefined;
-    console.log(identifiers);
     return identifiers.sort().join("_");
   }
 

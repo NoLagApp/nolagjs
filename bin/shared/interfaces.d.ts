@@ -6,6 +6,7 @@ import { dataType } from "./types";
 export interface ITunnelOptions {
     disconnectOnNoVisibility?: boolean;
     bufferOnDisconnect?: boolean;
+    debug?: boolean;
 }
 /**
  * NOT FOR NORMAL USE
@@ -23,6 +24,7 @@ export interface IConnectOptions {
     checkConnectionTimeout?: number;
     apiKey?: string;
     bufferOnDisconnect?: boolean;
+    debug?: boolean;
 }
 export interface IBaseModel {
     createdAt?: number;

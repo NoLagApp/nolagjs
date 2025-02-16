@@ -1,5 +1,5 @@
 import { CONSTANT, FConnection, FOnReceive } from "../shared/constants";
-import { EConnectionStatus } from "../shared/enum";
+import { EConnectionStatus, ESendAction } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import {
   IConnectOptions,
@@ -34,6 +34,7 @@ export class NoLagClient implements INoLagClient {
   private checkConnectionInterval: number;
   private checkConnectionTimeout: number;
   private reConnect = false;
+  private debug = false;
 
   // callback function used to return the connection result
   private callbackOnOpen: FConnection = () => {
@@ -77,20 +78,30 @@ export class NoLagClient implements INoLagClient {
       this.defaultCheckConnectionTimeout;
     this.bufferOnDisconnect =
       connectOptions?.bufferOnDisconnect ?? this.bufferOnDisconnect;
+    this.debug = connectOptions?.debug ?? this.debug;
+
     this.unifiedWebsocket = unifiedWebsocket;
     this.startSender();
   }
 
   startSender() {
     this.senderInterval = setInterval(() => {
-      if (!this.bufferOnDisconnect && this.connectionStatus === EConnectionStatus.Disconnected) return;
+      if (
+        !this.bufferOnDisconnect &&
+        this.connectionStatus === EConnectionStatus.Disconnected
+      )
+        return;
       // get the first message in the buffer
       const sendTransport = this.buffer.shift();
       if (!sendTransport) return;
       if (!this.wsInstance) return;
       // send the first message in the buffer
-      console.log(NqlTransport.decode(sendTransport));
       this.wsInstance.send ? this.wsInstance.send(sendTransport) : undefined;
+      this.acknowledgeQueueManager.addToSentQueue_____(
+        new AcknowledgeQueueIdentifier({
+          authentication: EConnectionStatus.Authentication,
+        }),
+      );
     }, this.backpressureSendInterval);
   }
 
@@ -198,7 +209,7 @@ export class NoLagClient implements INoLagClient {
       commands.setCommand(ETransportCommand.Reconnect);
     }
 
-    this.send(NqlTransport.encode(commands));
+    this.send(ESendAction.TunnelAuthenticate, NqlTransport.encode(commands));
 
     await this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
@@ -223,11 +234,6 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnError = callback;
   }
 
-  private _onOpen(event: any) {
-    this.connectionStatus === EConnectionStatus.Idle;
-    this.callbackOnOpen(undefined, event);
-  }
-
   private ackCommand(decoded: IDecode): boolean {
     if (
       // we receive a command saying we have successfully connected to the message broker
@@ -242,6 +248,9 @@ export class NoLagClient implements INoLagClient {
         null,
         {} as ITransport,
       );
+      if (this.debug) {
+        console.log(`${ESendAction.AcknowledgeConnected}:`, decoded);
+      }
       return true;
     } else if (
       // response to authentication request
@@ -260,7 +269,6 @@ export class NoLagClient implements INoLagClient {
         error = new Error(
           decoded.getCommand(ETransportCommand.Error) as string,
         );
-        console.log("--error--", error);
       }
 
       this.acknowledgeQueueManager.addToReceivedQueue(
@@ -270,36 +278,55 @@ export class NoLagClient implements INoLagClient {
         error,
         {} as ITransport,
       );
+      if (this.debug) {
+        console.log(`${ESendAction.AcknowledgeAuthenticated}:`, decoded);
+      }
       return true;
     } else if (decoded.getCommand(ETransportCommand.Acknowledge)) {
+      const ackIdentifier = new AcknowledgeQueueIdentifier({
+        topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+        identifiers: decoded.getCommand(
+          ETransportCommand.Identifier,
+        ) as string[],
+        presence: decoded.getCommand(ETransportCommand.Presence) as string[],
+      })
       this.acknowledgeQueueManager.addToReceivedQueue(
-        new AcknowledgeQueueIdentifier({
-          topicName: decoded.getCommand(ETransportCommand.Topic) as string,
-          identifiers: decoded.getCommand(
-            ETransportCommand.Identifier,
-          ) as string[],
-          presence: decoded.getCommand(ETransportCommand.Presence) as string[],
-        }),
+        ackIdentifier,
         null,
         {} as ITransport,
       );
+      if (this.debug) {
+        console.log(`${ESendAction.GeneralAcknowledge}:`, ackIdentifier);
+        console.log(`${ESendAction.GeneralAcknowledge} generated KEY:`, ackIdentifier.generateKey());
+      }
       return true;
     } else if (decoded.getCommand(ETransportCommand.Error)) {
-      this.acknowledgeQueueManager.addToReceivedQueue(
-        new AcknowledgeQueueIdentifier({
-          topicName: decoded.getCommand(ETransportCommand.Topic) as string,
-          identifiers: decoded.getCommand(
-            ETransportCommand.Identifier,
-          ) as string[],
-          presence: decoded.getCommand(ETransportCommand.Presence) as string[],
-        }),
+      const ackErrorIdentifier = new AcknowledgeQueueIdentifier({
+        topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+        identifiers: decoded.getCommand(
+          ETransportCommand.Identifier,
+        ) as string[],
+        presence: decoded.getCommand(ETransportCommand.Presence) as string[],
+      })
+      this.acknowledgeQueueManager.addToReceivedQueue(ackErrorIdentifier,
         null,
         {} as ITransport,
       );
+      if (this.debug) {
+        console.log(`${ESendAction.ErrorAcknowledge}:`, ackErrorIdentifier);
+      }
       return true;
     }
 
     return false;
+  }
+
+  private _onOpen(event: any) {
+    this.connectionStatus === EConnectionStatus.Idle;
+    this.callbackOnOpen(undefined, event);
+    if (this.debug) {
+      console.log(`${ESendAction.OnOpen}:`, event);
+    }
   }
 
   private _onReceive(event: any) {
@@ -308,86 +335,51 @@ export class NoLagClient implements INoLagClient {
     if (data.byteLength === 0) {
       return;
     }
-    console.log("onReceive", decoded);
 
     // check to see if there were any ACK or ERROR messages received
     if (this.ackCommand(decoded)) return;
 
-    // if (
-    //   decoded.getCommand(ETransportCommand.InitConnection) &&
-    //   this.connectionStatus === EConnectionStatus.Idle
-    // ) {
-    //   this.authenticate();
-    //   return;
-    // }
-
-    // if (
-    //   decoded.getCommand(ETransportCommand.Acknowledge) &&
-    //   this.connectionStatus === EConnectionStatus.Connecting
-    // ) {
-    //   this.connectionStatus = EConnectionStatus.Connected;
-    //   this.deviceTokenId = decoded.getCommand(
-    //     ETransportCommand.Acknowledge,
-    //   ) as string;
-    //   return;
-    // }
-
-    // if (
-    //   decoded.getCommand(ETransportCommand.Acknowledge) &&
-    //   decoded.getCommand(ETransportCommand.AddAction)
-    // ) {
-    //   this.connectionStatus = EConnectionStatus.Connected;
-    //   this.deviceTokenId = decoded.getCommand(
-    //     ETransportCommand.Acknowledge,
-    //   ) as string;
-    //   return;
-    // }
-
-    // if (decoded.getCommand(ETransportCommand.Error)) {
-    //   this.connectionStatus = EConnectionStatus.Disconnected;
-    //   this.callbackOnError(
-    //     decoded.getCommand(ETransportCommand.Alert),
-    //     undefined,
-    //   );
-    //   return;
-    // }
-
     const identifier = decoded.getCommand(ETransportCommand.Identifier);
     const presences = decoded.getCommand(ETransportCommand.Presence);
-    // const acknowledge = decoded.getCommand(ETransportCommand.Acknowledge);
-    // const action: ETransportCommandAction =
-    //   (decoded.getCommand(
-    //     ETransportCommand.AddAction,
-    //   ) as unknown as ETransportCommandAction) ??
-    //   (decoded.getCommand(
-    //     ETransportCommand.DeleteAction,
-    //   ) as unknown as ETransportCommandAction);
 
-    this.callbackOnReceive(undefined, {
+    const transportResponse = {
       topicName: decoded.getCommand(ETransportCommand.Topic) as string,
       presences: presences === true ? [] : (presences as string[]),
       identifiers: identifier === true ? [] : (identifier as string[]),
       data: decoded.payload,
-    });
+    };
+    this.callbackOnReceive(undefined, transportResponse);
+    if (this.debug) {
+      console.log(`${ESendAction.OnReceive}:`, transportResponse);
+    }
   }
 
   private _onClose(event: any) {
     this.connectionStatus = EConnectionStatus.Disconnected;
     this.callbackOnClose(event, undefined);
+    if (this.debug) {
+      console.log(`${ESendAction.OnClose}:`, event);
+    }
   }
 
   private _onError(event: any) {
     this.connectionStatus = EConnectionStatus.Disconnected;
     this.callbackOnError(event, undefined);
+    if (this.debug) {
+      console.log(`${ESendAction.OnError}:`, event);
+    }
   }
 
-  public send(transport: ArrayBuffer) {
+  public send(sendAction: ESendAction, transport: ArrayBuffer) {
     this.addToBuffer(transport);
+    if (this.debug) {
+      console.log(`${sendAction}:`, NqlTransport.decode(transport));
+    }
   }
 
   public heartbeat() {
     if (this.wsInstance) {
-      this.send(new ArrayBuffer(0));
+      this.send(ESendAction.TunnelHeartbeat, new ArrayBuffer(0));
     }
   }
 }

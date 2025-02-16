@@ -18,7 +18,8 @@ import { delay } from "../../constants/util/delay";
 import { example_client_tunnel_disconnect } from "../../SDK/Client/tunnel_instance/example_client_tunnel_disconnect";
 
 export interface IClientPubSub {
-  environmentInstance?: IGlobalVars;
+  environmentInstanceOne?: IGlobalVars;
+  environmentInstanceTwo?: IGlobalVars;
   topicName?: string;
   tunnelName?: string;
   tunnelInstance?: ITunnel;
@@ -36,80 +37,81 @@ export interface IPresenceReceive {
 
 export const identifiers: string[] = ["identifier1", "identifier2"];
 
-export const clientTunnelConnect = ({
-  noLagDeveloperTestConfigIgnoreWs,
-  deviceAccessToken,
-}: IClientPubSub) => {
-  return example_client_tunnel_connect({
-    noLagDeveloperTestConfigIgnoreWs:
-      noLagDeveloperTestConfigIgnoreWs ?? ({} as any),
-    deviceToken: deviceAccessToken ?? "",
-  });
-};
-
-export const clientTunnelSubscribe = ({
-  tunnelInstance,
-  topicName,
-  identifiers,
-  callbackFn,
-}: IClientPubSub) => {
-  return example_client_tunnel_subscribe(
-    {
-      tunnelInstance: tunnelInstance ?? ({} as any),
-      topicName: topicName ?? "",
-      identifiers,
-    },
-    callbackFn,
-  );
-};
-
-export const clientTunnelPublish = ({
-  tunnelInstance,
-  topicName,
-  identifiers,
-  data,
-}: IClientPubSub) => {
-  return example_client_tunnel_publish({
-    tunnelInstance: tunnelInstance ?? ({} as any),
-    topicName: topicName ?? "",
-    identifiers,
-    data: data ?? {},
-  });
-};
-
-export const clientTunnelOnReceive = (
-  { tunnelInstance }: IClientPubSub,
-  callback?: (data: IExampleApiTunnelCallbackOnReceiveResponse) => void,
-) => {
-  return example_client_tunnel_callback_on_receive(
-    {
-      tunnelInstance: tunnelInstance ?? ({} as any),
-    },
-    callback,
-  );
-};
-
-export const clientTunnelUnsubscribe = ({
-  tunnelInstance,
-  topicName,
-}: IClientPubSub) => {
-  return example_client_tunnel_unsubscribe({
-    tunnelInstance: tunnelInstance ?? ({} as any),
-    topicName: topicName ?? "",
-  });
-};
-
-export const clientTunnelDisconnect = ({ tunnelInstance }: IClientPubSub) => {
-  return example_client_tunnel_disconnect({
-    tunnelInstance: tunnelInstance ?? ({} as any),
-  });
-};
+// export const clientTunnelConnect = ({
+//   noLagDeveloperTestConfigIgnoreWs,
+//   deviceAccessToken,
+// }: IClientPubSub) => {
+//   return example_client_tunnel_connect({
+//     noLagDeveloperTestConfigIgnoreWs:
+//       noLagDeveloperTestConfigIgnoreWs ?? ({} as any),
+//     deviceToken: deviceAccessToken ?? "",
+//   });
+// };
+//
+// export const clientTunnelSubscribe = ({
+//   tunnelInstance,
+//   topicName,
+//   identifiers,
+//   callbackFn,
+// }: IClientPubSub) => {
+//   return example_client_tunnel_subscribe(
+//     {
+//       tunnelInstance: tunnelInstance ?? ({} as any),
+//       topicName: topicName ?? "",
+//       identifiers,
+//     },
+//     callbackFn,
+//   );
+// };
+//
+// export const clientTunnelPublish = ({
+//   tunnelInstance,
+//   topicName,
+//   identifiers,
+//   data,
+// }: IClientPubSub) => {
+//   return example_client_tunnel_publish({
+//     tunnelInstance: tunnelInstance ?? ({} as any),
+//     topicName: topicName ?? "",
+//     identifiers,
+//     data: data ?? {},
+//   });
+// };
+//
+// export const clientTunnelOnReceive = (
+//   { tunnelInstance }: IClientPubSub,
+//   callback?: (data: IExampleApiTunnelCallbackOnReceiveResponse) => void,
+// ) => {
+//   return example_client_tunnel_callback_on_receive(
+//     {
+//       tunnelInstance: tunnelInstance ?? ({} as any),
+//     },
+//     callback,
+//   );
+// };
+//
+// export const clientTunnelUnsubscribe = ({
+//   tunnelInstance,
+//   topicName,
+// }: IClientPubSub) => {
+//   return example_client_tunnel_unsubscribe({
+//     tunnelInstance: tunnelInstance ?? ({} as any),
+//     topicName: topicName ?? "",
+//   });
+// };
+//
+// export const clientTunnelDisconnect = ({ tunnelInstance }: IClientPubSub) => {
+//   return example_client_tunnel_disconnect({
+//     tunnelInstance: tunnelInstance ?? ({} as any),
+//   });
+// };
 
 export const TUNNEL_standardPubSub = async ({
   noLagDeveloperTestConfigIgnoreWs,
-  environmentInstance,
+  environmentInstanceOne,
+  environmentInstanceTwo,
 }: IClientPubSub) => {
-  const topicName = environmentInstance?.topic?.name ?? "";
+  const topicName = environmentInstanceOne?.topic?.name ?? "";
 
   const data = {
     prop1: "data1",
@@ -119,45 +121,25 @@ export const TUNNEL_standardPubSub = async ({
 
   const ONE_TunnelInstance = await example_client_tunnel_connect({
     noLagDeveloperTestConfigIgnoreWs,
-    deviceToken: environmentInstance?.device?.deviceAccessToken ?? "",
+    deviceToken: environmentInstanceOne?.device?.deviceAccessToken ?? "",
+    options: {
+      debug: true,
+    },
   });
-
-  console.log("----connect----");
 
   const TWO_TunnelInstance = await example_client_tunnel_connect({
     noLagDeveloperTestConfigIgnoreWs,
-    deviceToken: environmentInstance?.device?.deviceAccessToken ?? "",
+    deviceToken: environmentInstanceTwo?.device?.deviceAccessToken ?? "",
+    options: {
+      debug: true,
+    },
   });
 
-  await example_client_tunnel_subscribe(
-    {
-      tunnelInstance: ONE_TunnelInstance ?? {},
-      topicName,
-      identifiers,
-    },
-    (error, data) => {
-      console.log("error", error);
-      console.log("data", data);
-    },
-  );
-
-  await example_client_tunnel_subscribe(
-    {
-      tunnelInstance: ONE_TunnelInstance ?? {},
-      topicName,
-      identifiers,
-    },
-    (error, data) => {
-      console.log("error", error);
-      console.log("data", data);
-    },
-  );
-  
-  console.log("----subscribe----");
-
-  // the issue is the message broker is sending back the topic ID and not the TopicName
-
-  // await delay(1000);
+  await example_client_tunnel_subscribe({
+    tunnelInstance: ONE_TunnelInstance ?? {},
+    topicName,
+    identifiers,
+  });
 
   await example_client_tunnel_publish({
     tunnelInstance: TWO_TunnelInstance,
@@ -181,49 +163,62 @@ export const TUNNEL_standardPubSub = async ({
   return response;
 };
 
-// export const TUNNEL_standardPubSubWithIdentifiers = async ({
-//   topicName,
-//   noLagDeveloperTestConfigIgnoreWs,
-//   browserInstance,
-//   nodeInstance,
-// }: IClientPubSub) => {
-//   const data = {
-//     prop1: "data1",
-//   };
-//
-//   const ONE_TunnelInstance = await example_client_tunnel_connect({
-//     noLagDeveloperTestConfigIgnoreWs,
-//     deviceToken: browserInstance?.device?.deviceAccessToken ?? "",
-//   });
-//
-//   const TWO_TunnelInstance = await example_client_tunnel_connect({
-//     noLagDeveloperTestConfigIgnoreWs,
-//     deviceToken: nodeInstance?.device?.deviceAccessToken ?? "",
-//   });
-//
-//   await example_client_tunnel_subscribe({
-//     tunnelInstance: ONE_TunnelInstance,
-//     topicName,
-//     identifiers,
-//   });
-//
-//   await example_client_tunnel_publish({
-//     tunnelInstance: TWO_TunnelInstance,
-//     topicName,
-//     identifiers,
-//     data,
-//   });
-//
-//   const response = await example_client_tunnel_callback_on_receive({
-//     tunnelInstance: ONE_TunnelInstance,
-//   });
-//
-//   ONE_TunnelInstance.disconnect();
-//   TWO_TunnelInstance.disconnect();
-//
-//   return response;
-// };
-//
+export const TUNNEL_standardPubSubWithIdentifiers = async ({
+  noLagDeveloperTestConfigIgnoreWs,
+  environmentInstanceOne,
+  environmentInstanceTwo,
+}: IClientPubSub) => {
+  const topicName = environmentInstanceOne?.topic?.name ?? "";
+  // const identifiers = ["identifier1", "identifier2"];
+  const data = {
+    prop1: "data1",
+  };
+
+  const ONE_TunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: environmentInstanceOne?.device?.deviceAccessToken ?? "",
+    options: {
+      debug: true,
+    },
+  });
+
+  // const TWO_TunnelInstance = await example_client_tunnel_connect({
+  //   noLagDeveloperTestConfigIgnoreWs,
+  //   deviceToken: environmentInstanceTwo?.device?.deviceAccessToken ?? "",
+  //   options: {
+  //     debug: true,
+  //   },
+  // });
+
+  const subscribed = await example_client_tunnel_subscribe({
+    tunnelInstance: ONE_TunnelInstance,
+    topicName,
+    identifiers,
+  });
+  console.log("subscribed", subscribed);
+
+  await example_client_tunnel_publish({
+    tunnelInstance: ONE_TunnelInstance,
+    topicName,
+    identifiers,
+    data,
+  });
+
+  const response = await example_client_tunnel_callback_on_receive({
+    tunnelInstance: ONE_TunnelInstance,
+  });
+
+  await example_client_tunnel_disconnect({
+    tunnelInstance: ONE_TunnelInstance ?? ({} as any),
+  });
+
+  // await example_client_tunnel_disconnect({
+  //   tunnelInstance: TWO_TunnelInstance ?? ({} as any),
+  // });
+
+  return response;
+};
+
 // export const TUNNEL_standardPubSubAddIdentifiers = async ({
 //   topicName,
 //   noLagDeveloperTestConfigIgnoreWs,

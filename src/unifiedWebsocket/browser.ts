@@ -3,7 +3,6 @@ import { EEncoding } from "../shared/enum";
 
 export const unifiedWebsocket = (url: string) => {
   const ws = new WebSocket(url);
-  console.log("BROWSER!!!!");
   ws.binaryType = EEncoding.Arraybuffer;
 
   const wsInstance: IUnifiedWebsocket = {

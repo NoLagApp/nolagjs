@@ -10,7 +10,7 @@ import {
 
 import { ITopic, Topic } from "../shared/models/Topic";
 
-import { EVisibilityState } from "../shared/enum";
+import { ESendAction, EVisibilityState } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
 import { transportCommands } from "../shared/utils/TransportCommands";
 import { NqlTransport } from "../shared/utils";
@@ -170,9 +170,7 @@ export class Tunnel implements ITunnel {
   // connect to NoLag with Tunnel credentials
   public async initiate(reconnect?: boolean) {
     this.noLagClient.setReConnect(reconnect);
-    console.log("initiate");
     await this.noLagClient.connect();
-    console.log("connect");
     this.noLagClient.setReConnect(false);
     this.startHeartbeat();
     return this;
@@ -199,7 +197,6 @@ export class Tunnel implements ITunnel {
     const tunnelInstance: Tunnel = this;
     this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
       const { topicName, identifiers } = data;
-      console.log("onReceiveMessage", data);
       if (this.noLagClient && !this.topics[topicName]) {
         this.topics[topicName] = new Topic(
           tunnelInstance,
@@ -323,7 +320,7 @@ export class Tunnel implements ITunnel {
     callbackFn?: (error: Error | null, topic: ITransport | null) => void,
   ): Promise<ITopic> {
     if (!this.noLagClient) {
-      throw new Error("Can not subscribe to a Topic ");
+      throw new Error("NoLag client is not set. Please connect to NoLag before attempting to subscribe.");
     }
     if (this.topics[topicName]) {
       const topic = this.topics[topicName];
@@ -349,6 +346,7 @@ export class Tunnel implements ITunnel {
     data: ArrayBuffer,
     identifiers: string[] = [],
   ): void {
+    console.log("publish");
     if (this.noLagClient && this.noLagClient.send) {
       this.stopHeartbeat();
       const commands = transportCommands().setCommand(
@@ -360,8 +358,7 @@ export class Tunnel implements ITunnel {
         commands.setCommand(ETransportCommand.Identifier, identifiers);
 
       const encodedBuffer = NqlTransport.encode(commands, data);
-      console.log("publish global", encodedBuffer);
-      this.noLagClient.send(encodedBuffer);
+      this.noLagClient.send(ESendAction.TunnelPublish, encodedBuffer);
       this.startHeartbeat();
     }
   }
