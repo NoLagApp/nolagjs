@@ -28,9 +28,13 @@ export interface ITunnel {
   /**
    * Delete instantiated topic
    * @param topicName Topic name regisrered in NoLag Portal
+   * @param callbackFn
    * @return boolean
    */
-  unsubscribe(topicName: string): boolean;
+  unsubscribe(
+    topicName: string,
+    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+  ): Promise<boolean>;
 
   /**
    * Set a new topic that is attached to tunnel
@@ -132,7 +136,7 @@ export class Tunnel implements ITunnel {
     this.checkConnectionInterval =
       connectOptions?.checkConnectionInterval ??
       this.defaultCheckConnectionInterval;
-    this.connectOptions = {...connectOptions,...options};
+    this.connectOptions = { ...connectOptions, ...options };
     this.authToken = authToken;
 
     // initiate NoLag client connection
@@ -306,9 +310,12 @@ export class Tunnel implements ITunnel {
     return this.topics[topicName];
   }
 
-  public unsubscribe(topicName: string): boolean {
+  public async unsubscribe(
+    topicName: string,
+    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+  ): Promise<boolean> {
     if (this.topics[topicName]) {
-      this.topics[topicName]?.unsubscribe();
+      this.topics[topicName]?.unsubscribe(callbackFn);
       return true;
     }
     return false;
@@ -320,11 +327,14 @@ export class Tunnel implements ITunnel {
     callbackFn?: (error: Error | null, topic: ITransport | null) => void,
   ): Promise<ITopic> {
     if (!this.noLagClient) {
-      throw new Error("NoLag client is not set. Please connect to NoLag before attempting to subscribe.");
+      throw new Error(
+        "NoLag client is not set. Please connect to NoLag before attempting to subscribe.",
+      );
     }
     if (this.topics[topicName]) {
       const topic = this.topics[topicName];
-      if(identifiers?.OR?.length && identifiers?.OR?.length !== 0) await topic.addIdentifiers(identifiers);
+      if (identifiers?.OR?.length && identifiers?.OR?.length !== 0)
+        await topic.addIdentifiers(identifiers);
       return topic;
     } else {
       const topic = (this.topics[topicName] = new Topic(
@@ -346,7 +356,6 @@ export class Tunnel implements ITunnel {
     data: ArrayBuffer,
     identifiers: string[] = [],
   ): void {
-    console.log("publish");
     if (this.noLagClient && this.noLagClient.send) {
       this.stopHeartbeat();
       const commands = transportCommands().setCommand(

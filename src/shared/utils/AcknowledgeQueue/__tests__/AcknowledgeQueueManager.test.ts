@@ -15,16 +15,23 @@ describe("FunctionQueueManager", () => {
         (identifier) => `${identifier}${key}`,
       );
 
-      const identifier = new AcknowledgeQueueIdentifier({
+      const identifierSent = new AcknowledgeQueueIdentifier({
         topicName,
         identifiers,
       });
 
-      queueManager.addToSentQueue(identifier, () => {
+      queueManager.addToSentQueue(identifierSent, () => {
         return `function_${key}`;
       });
 
-      queueManager.addToReceivedQueue(identifier, null, {
+
+
+      const identifierReceive = new AcknowledgeQueueIdentifier({
+        topicName,
+        identifiers: identifiers.reverse(),
+      });
+
+      queueManager.addToReceivedQueue(identifierReceive, null, {
         topicName,
         identifiers,
       } as ITransport);

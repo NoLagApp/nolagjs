@@ -97,11 +97,6 @@ export class NoLagClient implements INoLagClient {
       if (!this.wsInstance) return;
       // send the first message in the buffer
       this.wsInstance.send ? this.wsInstance.send(sendTransport) : undefined;
-      this.acknowledgeQueueManager.addToSentQueue_____(
-        new AcknowledgeQueueIdentifier({
-          authentication: EConnectionStatus.Authentication,
-        }),
-      );
     }, this.backpressureSendInterval);
   }
 

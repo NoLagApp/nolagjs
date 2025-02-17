@@ -25,7 +25,7 @@ import {
 import {
   identifiers,
   TUNNEL_standardPubSub,
-  TUNNEL_standardPubSubWithIdentifiers,
+  TUNNEL_standardPubSubWithIdentifiers, TUNNEL_StandardUnsubscribe,
 } from "../procedures/012_client_pub_sub";
 import { delay } from "../../constants/util/delay";
 
@@ -175,106 +175,46 @@ test.describe("Playwright client pub/sub", () => {
     expect(data).toMatchObject(response?.data);
     expect(topicName).toBe(response?.topicName);
     expect(identifiers).toMatchObject(response?.identifiers);
-    expect(0).toBe(response?.identifiers.length);
+    expect(2).toBe(response?.identifiers.length);
     expect(0).toBe(response?.presences.length);
   });
 
-  // test("Tunnel: unsubscribe", async ({ page }) => {
-  //   const topicName = browserInstance.topic?.name ?? "";
-  //   const identifiers = undefined;
-  //
-  //   const data = {
-  //     prop1: "data1",
-  //   };
-  //
-  //   const { deviceAccessToken: browserDeviceAccessToken } =
-  //     browserInstance.device;
-  //   const { deviceAccessToken: nodeDeviceAccessToken } = nodeInstance.device;
-  //
-  //   const nodeTunnelInstance = await clientTunnelConnect({
-  //     noLagDeveloperTestConfigIgnoreWs,
-  //     deviceAccessToken: nodeDeviceAccessToken,
-  //   });
-  //
-  //   await clientTunnelSubscribe({
-  //     tunnelInstance: nodeTunnelInstance,
-  //     topicName,
-  //     identifiers,
-  //   });
-  //
-  //   await clientTunnelPublish({
-  //     tunnelInstance: nodeTunnelInstance,
-  //     topicName,
-  //     identifiers,
-  //     data,
-  //   });
-  //
-  //   await clientTunnelOnReceive({
-  //     tunnelInstance: nodeTunnelInstance,
-  //   });
-  //
-  //
-  //   let receivedResponse = false;
-  //
-  //   clientTunnelOnReceive(
-  //     {
-  //       tunnelInstance: nodeTunnelInstance,
-  //     },
-  //     () => {
-  //       receivedResponse = true;
-  //     },
-  //   );
-  //
-  //   await page.goto(browserInstance.viteHostUrl);
-  //
-  //   await page.evaluate(
-  //     async ({
-  //       data,
-  //       noLagDeveloperTestConfigIgnoreWs,
-  //       browserDeviceAccessToken,
-  //       identifiers,
-  //       topicName,
-  //     }) => {
-  //       const browserTunnelInstance = await clientTunnelConnect({
-  //         noLagDeveloperTestConfigIgnoreWs,
-  //         deviceAccessToken: browserDeviceAccessToken,
-  //       });
-  //
-  //       await clientTunnelPublish({
-  //         tunnelInstance: browserTunnelInstance,
-  //         topicName,
-  //         identifiers,
-  //         data,
-  //       });
-  //
-  //       return delay(1000, async () => {
-  //         await clientTunnelDisconnect({
-  //           tunnelInstance: browserTunnelInstance,
-  //         });
-  //       });
-  //     },
-  //     {
-  //       data,
-  //       noLagDeveloperTestConfigIgnoreWs,
-  //       browserDeviceAccessToken,
-  //       identifiers,
-  //       topicName,
-  //     },
-  //   );
-  //
-  //   const unsubscribeResponse: boolean = await delay(1000, async () => {
-  //     return receivedResponse;
-  //   });
-  //
-  //   await delay(1000, async () => {
-  //     await clientTunnelDisconnect({
-  //       tunnelInstance: nodeTunnelInstance,
-  //     });
-  //   });
-  //
-  //   expect(unsubscribeResponse).toBeFalsy();
-  // });
-  //
+  test("NODE:Tunnel:Standard Unsubscribe", async ({ page }) => {
+    // const payload: IDeviceModel = {
+    //   name: nodeInstance.deviceName,
+    //   accessPermission: EAccessPermission.PubSub,
+    //   staticTopics: [],
+    //   lockTopics: false,
+    //   expireIn: 0,
+    // };
+    //
+    // const resetResponse = await example_api_tunnel_device_update({
+    //   payload,
+    //   yourProjectApiKey,
+    //   noLagDeveloperTestConfigIgnore,
+    //   tunnelId,
+    //   deviceId: nodeInstance.device.deviceTokenId ?? "",
+    // });
+
+    // if (resetResponse) {
+    //   nodeInstance.setDevice(resetResponse);
+    // }
+
+    const response = await TUNNEL_StandardUnsubscribe({
+      noLagDeveloperTestConfigIgnoreWs,
+      environmentInstanceOne: nodeInstance,
+      environmentInstanceTwo: nodeInstance,
+    });
+
+    const topicName = nodeInstance?.topic.name ?? "";
+    const identifiers = ["identifier1", "identifier2"];
+    const data = {
+      prop1: "data1",
+    };
+
+    expect(response).toBeTruthy();
+  });
+
   // test("Tunnel: standard pub/sub with Identifiers set and NO presences set", async ({
   //   page,
   // }) => {

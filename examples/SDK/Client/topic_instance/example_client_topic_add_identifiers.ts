@@ -16,7 +16,7 @@ export const example_client_topic_add_identifiers = async ({
 }: IExampleApiTopicAddIdentifiers) => {
   /***** COPY EXAMPLE CODE START *****/
 
-  const updatedTopicInstance = topicInstance.addIdentifiers({
+  const updatedTopicInstance = await topicInstance.addIdentifiers({
     OR: identifiers,
   });
 
