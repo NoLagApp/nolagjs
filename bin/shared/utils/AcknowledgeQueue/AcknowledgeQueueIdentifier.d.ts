@@ -4,7 +4,7 @@ export interface IFunctionQueueIdentifier {
     initiate?: EConnectionStatus.Initiate;
     authentication?: EConnectionStatus.Authentication;
     identifiers?: string[];
-    presence?: string[];
+    presence?: string;
 }
 export declare class AcknowledgeQueueIdentifier {
     private topicName?;

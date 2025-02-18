@@ -38,8 +38,8 @@ export declare enum ELoadBalanceType {
 export declare enum ESendAction {
     AcknowledgeConnected = "acknowledgeConnected",
     AcknowledgeAuthenticated = "acknowledgeAuthenticated",
-    GeneralAcknowledge = "generalAcknowledge",
-    ErrorAcknowledge = "errorAcknowledge",
+    AcknowledgeGeneral = "acknowledgeGeneral",
+    AcknowledgeError = "acknowledgeError",
     OnReceive = "onReceive",
     OnError = "onError",
     OnClose = "onClose",
@@ -51,6 +51,7 @@ export declare enum ESendAction {
     TopicUnsubscribe = "topicUnsubscribe",
     TopicPublish = "topicPublish",
     TopicAddIdentifier = "topicAddIdentifier",
-    TopicRemoveIdentifier = "topicRemoveIdentifier"
+    TopicRemoveIdentifier = "topicRemoveIdentifier",
+    TopicPresence = "topicPresence"
 }
 //# sourceMappingURL=enum.d.ts.map

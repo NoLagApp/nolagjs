@@ -65,6 +65,7 @@ export declare class Topic implements ITopic {
     constructor(tunnel: Tunnel, connection: NoLagClient, topicName: string, identifiers: INqlIdentifiers, acknowledgeQueueManager: AcknowledgeQueueManager);
     private saveIdentifiers;
     private deleteSavedIdentifiers;
+    private _subscribeAction;
     subscribe(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<ITopic>;
     setPresence(presence: string, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<ITopic>;
     setConnection(connection: NoLagClient): Topic;
