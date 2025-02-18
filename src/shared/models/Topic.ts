@@ -1,7 +1,7 @@
 import { NoLagClient } from "../../client/NoLagClient";
 import { ETransportCommand } from "../enum/ETransportCommand";
 import { INqlIdentifiers, ITransport } from "../interfaces";
-import { transportCommands } from "../utils/TransportCommands";
+import { TransportCommands, transportCommands } from "../utils/TransportCommands";
 import { NqlTransport } from "../utils/transport";
 import { Tunnel } from "../../client";
 import { AcknowledgeQueueManager } from "../utils/AcknowledgeQueue/AcknowledgeQueueManager";
@@ -121,20 +121,57 @@ export class Topic implements ITopic {
     this.identifiers = identifierList;
   }
 
+  private async _subscribeAction(sendAction: ESendAction, commands: TransportCommands, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<void> {
+    const transport = NqlTransport.encode(commands);
+
+    this.send(sendAction, transport);
+
+    await this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        presence: this.presence ? this.presence : undefined,
+        topicName: this.topicName,
+        identifiers: this.identifiers,
+      }),
+      callbackFn,
+    );
+  }
+
   public async subscribe(
     callbackFn?: (error: Error | null, data: ITransport | null) => void,
   ): Promise<ITopic> {
     if (
-      (!this.topicName && this.identifiers?.length === 0) ||
-      !Array.isArray(this.identifiers)
+      (!this.topicName)
     ) {
-      const error = new Error("Topic name and identifiers are required");
+      const error = new Error("Topic name is required");
       if (callbackFn) {
         callbackFn(error, null);
       } else {
         throw error;
       }
     }
+
+    const commands = transportCommands().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
+
+    if (this.identifiers?.length && this.identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, this.identifiers);
+    }
+
+    commands.setCommand(ETransportCommand.AddAction);
+
+    await this._subscribeAction(ESendAction.TopicSubscribe, commands, callbackFn);
+
+    return this as unknown as ITopic;
+  }
+
+  public async setPresence(
+    presence: string,
+    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+  ): Promise<ITopic> {
+    const topicInstance = this;
+    topicInstance.presence = presence;
 
     const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
@@ -151,29 +188,8 @@ export class Topic implements ITopic {
 
     commands.setCommand(ETransportCommand.AddAction);
 
-    const transport = NqlTransport.encode(commands);
-
-    this.send(ESendAction.TopicSubscribe, transport);
-
-    await this.acknowledgeQueueManager.addToSentQueue(
-      new AcknowledgeQueueIdentifier({
-        presence: this.presence ? [this.presence] : undefined,
-        topicName: this.topicName,
-        identifiers: this.identifiers,
-      }),
-      callbackFn,
-    );
-
-    return this as unknown as ITopic;
-  }
-
-  public setPresence(
-    presence: string,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
-  ): Promise<ITopic> {
-    const topicInstance = this;
-    topicInstance.presence = presence;
-    return this.subscribe(callbackFn);
+    await this._subscribeAction(ESendAction.TopicPresence, commands, callbackFn);
+    return this;
   }
 
   public setConnection(connection: NoLagClient): Topic {

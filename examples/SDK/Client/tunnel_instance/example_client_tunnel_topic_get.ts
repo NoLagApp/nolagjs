@@ -16,7 +16,7 @@ export const example_client_tunnel_topic_get = async ({
 }: IExampleApiTunnelTopicGet) => {
   /***** COPY EXAMPLE CODE START *****/
 
-  const topicInstance = tunnelInstance.getTopic(topicName);
+  const topicInstance = await tunnelInstance.getTopic(topicName);
 
   /***** COPY EXAMPLE CODE END *****/
 

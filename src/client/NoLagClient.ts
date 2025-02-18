@@ -283,7 +283,7 @@ export class NoLagClient implements INoLagClient {
         identifiers: decoded.getCommand(
           ETransportCommand.Identifier,
         ) as string[],
-        presence: decoded.getCommand(ETransportCommand.Presence) as string[],
+        presence: decoded.getCommand(ETransportCommand.Presence) as string,
       })
       this.acknowledgeQueueManager.addToReceivedQueue(
         ackIdentifier,
@@ -291,8 +291,8 @@ export class NoLagClient implements INoLagClient {
         {} as ITransport,
       );
       if (this.debug) {
-        console.log(`${ESendAction.GeneralAcknowledge}:`, ackIdentifier);
-        console.log(`${ESendAction.GeneralAcknowledge} generated KEY:`, ackIdentifier.generateKey());
+        console.log(`${ESendAction.AcknowledgeGeneral}:`, ackIdentifier);
+        console.log(`${ESendAction.AcknowledgeGeneral} generated KEY:`, ackIdentifier.generateKey());
       }
       return true;
     } else if (decoded.getCommand(ETransportCommand.Error)) {
@@ -301,14 +301,14 @@ export class NoLagClient implements INoLagClient {
         identifiers: decoded.getCommand(
           ETransportCommand.Identifier,
         ) as string[],
-        presence: decoded.getCommand(ETransportCommand.Presence) as string[],
+        presence: decoded.getCommand(ETransportCommand.Presence) as string,
       })
       this.acknowledgeQueueManager.addToReceivedQueue(ackErrorIdentifier,
         null,
         {} as ITransport,
       );
       if (this.debug) {
-        console.log(`${ESendAction.ErrorAcknowledge}:`, ackErrorIdentifier);
+        console.log(`${ESendAction.AcknowledgeError}:`, ackErrorIdentifier);
       }
       return true;
     }

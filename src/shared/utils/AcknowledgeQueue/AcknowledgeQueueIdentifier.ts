@@ -5,7 +5,7 @@ export interface IFunctionQueueIdentifier {
   initiate?: EConnectionStatus.Initiate
   authentication?: EConnectionStatus.Authentication;
   identifiers?: string[];
-  presence?: string[];
+  presence?: string;
 }
 
 export class AcknowledgeQueueIdentifier {
@@ -13,7 +13,7 @@ export class AcknowledgeQueueIdentifier {
   private initiate?: EConnectionStatus.Initiate
   private authentication?: EConnectionStatus.Authentication;
   private identifiers?: string[];
-  private presence?: string[];
+  private presence?: string;
 
   constructor(data: IFunctionQueueIdentifier) {
     this.topicName = data.topicName;
@@ -36,7 +36,7 @@ export class AcknowledgeQueueIdentifier {
       this.authentication,
       this.topicName,
       this.identifiersToOrderedString(this.identifiers),
-      this.identifiersToOrderedString(this.presence),
+      this.presence,
     ]
       .filter((i) => i)
       .join("_");

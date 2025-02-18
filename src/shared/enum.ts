@@ -45,8 +45,8 @@ export enum ELoadBalanceType {
 export enum ESendAction {
   AcknowledgeConnected = "acknowledgeConnected",
   AcknowledgeAuthenticated = "acknowledgeAuthenticated",
-  GeneralAcknowledge = "generalAcknowledge",
-  ErrorAcknowledge = "errorAcknowledge",
+  AcknowledgeGeneral = "acknowledgeGeneral",
+  AcknowledgeError = "acknowledgeError",
   OnReceive = "onReceive",
   OnError = "onError",
   OnClose = "onClose",
@@ -59,4 +59,5 @@ export enum ESendAction {
   TopicPublish = "topicPublish",
   TopicAddIdentifier = "topicAddIdentifier",
   TopicRemoveIdentifier = "topicRemoveIdentifier",
+  TopicPresence = "topicPresence",
 }

@@ -31,12 +31,15 @@ export interface IClientPubSub {
   callbackFn?: (error: Error | null, data: ITransport | null) => void;
 }
 
-export interface IPresenceReceive {
-  nodeReceive: any[];
-  browserReceive: any[];
-}
-
 export const identifiers: string[] = ["identifier1", "identifier2"];
+
+export const data = {
+  prop1: "data1",
+};
+
+export const presence = {
+  userId: "presence1",
+};
 
 export const TUNNEL_standardPubSub = async ({
   noLagDeveloperTestConfigIgnoreWs,
@@ -237,6 +240,104 @@ export const TUNNEL_StandardUnsubscribe = async ({
   });
 
   return responseDelay();
+};
+
+export const TOPIC_SetPresence = async ({
+  noLagDeveloperTestConfigIgnoreWs,
+  environmentInstanceOne,
+  environmentInstanceTwo,
+}: IClientPubSub) => {
+  const topicName = environmentInstanceOne?.topic?.name ?? "";
+
+  const ONE_TunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: environmentInstanceOne?.device?.deviceAccessToken ?? "",
+    options: {
+      debug: true,
+    },
+  });
+
+  const TWO_TunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: environmentInstanceTwo?.device?.deviceAccessToken ?? "",
+    options: {
+      debug: true,
+    },
+  });
+
+  await example_client_tunnel_subscribe({
+    tunnelInstance: ONE_TunnelInstance,
+    topicName,
+    identifiers: undefined,
+  });
+
+  await example_client_tunnel_subscribe({
+    tunnelInstance: TWO_TunnelInstance,
+    topicName,
+    identifiers: undefined,
+  });
+
+  const topicInstanceOne = await example_client_tunnel_topic_get({
+    tunnelInstance: ONE_TunnelInstance,
+    topicName,
+  });
+
+  const topicInstanceTwo = await example_client_tunnel_topic_get({
+    tunnelInstance: TWO_TunnelInstance,
+    topicName,
+  });
+
+  // topicInstanceOne.setPresence(JSON.stringify(presence), (error, data) => {
+  //   console.log("setPresenceError", error);
+  //   console.log("setPresenceData", data);
+  // })
+
+  const presenceTWO = JSON.parse(JSON.stringify(presence));
+  presenceTWO.userId = "presence2";
+
+  await example_client_topic_set_presence({
+    topicInstance: topicInstanceTwo,
+    presenceData: presence,
+  });
+
+  example_client_topic_set_presence({
+    topicInstance: topicInstanceOne,
+    presenceData: presence,
+  });
+
+  const receivedPresenceTwo = await example_client_tunnel_callback_on_receive(
+    {
+      tunnelInstance: TWO_TunnelInstance,
+    },
+    (data) => {
+      console.log("example_client_tunnel_callback_on_receive___", data);
+    },
+  );
+
+  console.log("receivedPresenceTwo", receivedPresenceTwo);
+
+  if (
+    receivedPresenceTwo.topicName !== topicName &&
+    receivedPresenceTwo.presences.length === 0
+  ) {
+    return false;
+  }
+
+  const receivedPresenceOne = await example_client_tunnel_callback_on_receive({
+    tunnelInstance: ONE_TunnelInstance,
+  });
+
+  console.log("receivedPresenceOne", receivedPresenceOne);
+
+  await example_client_tunnel_disconnect({
+    tunnelInstance: ONE_TunnelInstance ?? ({} as any),
+  });
+
+  await example_client_tunnel_disconnect({
+    tunnelInstance: ONE_TunnelInstance ?? ({} as any),
+  });
+
+  return receivedPresenceOne;
 };
 
 export const TOPIC_standardPubSubAddIdentifiers = async ({

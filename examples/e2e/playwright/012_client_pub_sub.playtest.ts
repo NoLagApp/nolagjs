@@ -1,3 +1,17 @@
+/**
+ * E2E Test
+ * These tests focus on specific use cases of the NolagJS SDK
+ *
+ * Use cases Tunnel:
+ * - Tunnel: Standard pub/sub (Just a Topic now identifiers and presences)
+ * - Tunnel: Pub/sub with identifiers set
+ * - Tunnel: Unsubscribe from Topic
+ * Use cases Topic:
+ * - Topic: Set presence
+ * - Topic: Add identifiers
+ * - Topic: Remove identifiers
+ * - Topic: Publish
+ */
 import { test, expect } from "@playwright/test";
 import { browserInstance, nodeInstance } from "../../constants/globalVars";
 import type { IDeviceModel, ITopic } from "nolagjs";
@@ -23,7 +37,7 @@ import {
   editTunnelDeviceUsingDeviceTokenId,
 } from "../procedures/011_api_device_edit";
 import {
-  identifiers,
+  identifiers, TOPIC_SetPresence,
   TUNNEL_standardPubSub,
   TUNNEL_standardPubSubWithIdentifiers, TUNNEL_StandardUnsubscribe,
 } from "../procedures/012_client_pub_sub";
@@ -35,6 +49,13 @@ const noLagDeveloperTestConfigIgnore =
 const noLagDeveloperTestConfigIgnoreWs =
   browserInstance.noLagDeveloperTestConfigIgnoreWs;
 const tunnelId = browserInstance.tunnel?.tunnelId ?? "";
+
+browserInstance.setDevice({
+  deviceAccessToken: "19f042e5fad17cbb186eadda83f059f7",
+});
+browserInstance.setTopic({
+  name: "node:e2e_Tunnel_1738580709899_edited_edited",
+});
 
 nodeInstance.setDevice({
   deviceAccessToken: "b1c1c091904494e72a94e6e21616470e",
@@ -162,7 +183,7 @@ test.describe("Playwright client pub/sub", () => {
 
     const response = await TUNNEL_standardPubSubWithIdentifiers({
       noLagDeveloperTestConfigIgnoreWs,
-      environmentInstanceOne: nodeInstance,
+      environmentInstanceOne: browserInstance,
       environmentInstanceTwo: nodeInstance,
     });
 
@@ -211,6 +232,44 @@ test.describe("Playwright client pub/sub", () => {
     const data = {
       prop1: "data1",
     };
+
+    expect(response).toBeTruthy();
+  });
+
+  test("NODE:Topic:Set presence", async ({ page }) => {
+    // const payload: IDeviceModel = {
+    //   name: nodeInstance.deviceName,
+    //   accessPermission: EAccessPermission.PubSub,
+    //   staticTopics: [],
+    //   lockTopics: false,
+    //   expireIn: 0,
+    // };
+    //
+    // const resetResponse = await example_api_tunnel_device_update({
+    //   payload,
+    //   yourProjectApiKey,
+    //   noLagDeveloperTestConfigIgnore,
+    //   tunnelId,
+    //   deviceId: nodeInstance.device.deviceTokenId ?? "",
+    // });
+
+    // if (resetResponse) {
+    //   nodeInstance.setDevice(resetResponse);
+    // }
+
+    const response = await TOPIC_SetPresence({
+      noLagDeveloperTestConfigIgnoreWs,
+      environmentInstanceOne: browserInstance,
+      environmentInstanceTwo: nodeInstance,
+    });
+
+    const topicName = nodeInstance?.topic.name ?? "";
+    const identifiers = ["identifier1", "identifier2"];
+    const data = {
+      prop1: "data1",
+    };
+
+    console.log("response", response)
 
     expect(response).toBeTruthy();
   });

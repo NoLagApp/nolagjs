@@ -18,7 +18,7 @@ export const example_client_topic_set_presence = async ({
 
   const payload: string = JSON.stringify(presenceData);
 
-  const updatedTopicInstance = topicInstance.setPresence(payload);
+  const updatedTopicInstance = await topicInstance.setPresence(payload);
 
   /***** COPY EXAMPLE CODE END *****/
 
