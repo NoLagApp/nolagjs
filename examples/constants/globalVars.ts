@@ -63,6 +63,16 @@ export interface IGlobalVars {
   device: IDeviceModel;
 }
 
+export interface IGlobalSerialisedVars {
+  deviceName: string;
+  device: IDeviceModel;
+  topicName: string;
+  topic: ITopicModel;
+  tunnelName: string;
+  tunnel: ITunnelModel;
+  yourProjectApiKey: string;
+}
+
 class GlobalVars implements IGlobalVars {
   // local state
   private vars: Record<any, any> = {};
@@ -192,6 +202,18 @@ class GlobalVars implements IGlobalVars {
    */
   public get device(): IDeviceModel {
     return this.vars.DEVICE_MODEL ?? {};
+  }
+
+  public toJSON(): IGlobalSerialisedVars {
+    return {
+      deviceName: this.deviceName,
+      device: this.device,
+      topicName: this.topicName,
+      topic: this.topic,
+      tunnelName: this.topicName,
+      tunnel: this.tunnel,
+      yourProjectApiKey: this.yourProjectApiKey,
+    }
   }
 }
 

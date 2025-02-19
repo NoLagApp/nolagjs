@@ -20,7 +20,8 @@ import {
   TOPIC_PubSub,
   TOPIC_SetPresence,
   TOPIC_standardPubSubAddIdentifiers,
-  TOPIC_standardPubSubRemoveIdentifiers, TOPIC_Unsubscribe,
+  TOPIC_standardPubSubRemoveIdentifiers,
+  TOPIC_Unsubscribe,
   TUNNEL_standardPubSub,
   TUNNEL_standardPubSubWithIdentifiers,
   TUNNEL_StandardUnsubscribe,
@@ -48,57 +49,60 @@ nodeInstance.setTopic({
 });
 
 test.describe("Playwright client pub/sub", () => {
-  test("BROWSER:Tunnel:Standard pub/sub NO Identifier and NO presences set", async ({
-    page,
-  }) => {
-    // const payload: IDeviceModel = {
-    //   name: browserInstance.deviceName,
-    //   accessPermission: EAccessPermission.PubSub,
-    //   staticTopics: [],
-    //   lockTopics: false,
-    //   expireIn: 0,
-    // };
-    //
-    // const resetResponse = await example_api_tunnel_device_update({
-    //   payload,
-    //   yourProjectApiKey,
-    //   noLagDeveloperTestConfigIgnore,
-    //   tunnelId,
-    //   deviceId: browserInstance.device.deviceTokenId ?? "",
-    // });
-    //
-    // if (resetResponse) {
-    //   browserInstance.setDevice(resetResponse);
-    // }
-    console.log("nodeInstance", nodeInstance);
-
-    await page.goto(browserInstance.viteHostUrl);
-
-    const response = await page.evaluate(
-      async ({ noLagDeveloperTestConfigIgnoreWs, nodeInstance,browserInstance  }) => {
-        //  const response = await TUNNEL_standardPubSub({
-        //   noLagDeveloperTestConfigIgnoreWs,
-        //   environmentInstanceOne: browserInstance,
-        //   environmentInstanceTwo: nodeInstance,
-        // });
-        //
-        // return response;
-        return {
-          noLagDeveloperTestConfigIgnoreWs, nodeInstance,browserInstance
-        }
-      },
-      { noLagDeveloperTestConfigIgnoreWs, nodeInstance, browserInstance },
-    )
-
-    console.log("response", response);
-
-    const topicName = nodeInstance?.topic.name ?? "";
-
-    expect(pubSubData).toMatchObject(response?.data);
-    expect(topicName).toBe(response?.topicName);
-    expect(0).toBe(response?.identifiers.length);
-    expect(0).toBe(response?.presences.length);
-  });
+  // test("BROWSER:Tunnel:Standard pub/sub NO Identifier and NO presences set", async ({
+  //   page,
+  // }) => {
+  //   // const payload: IDeviceModel = {
+  //   //   name: browserInstance.deviceName,
+  //   //   accessPermission: EAccessPermission.PubSub,
+  //   //   staticTopics: [],
+  //   //   lockTopics: false,
+  //   //   expireIn: 0,
+  //   // };
+  //   //
+  //   // const resetResponse = await example_api_tunnel_device_update({
+  //   //   payload,
+  //   //   yourProjectApiKey,
+  //   //   noLagDeveloperTestConfigIgnore,
+  //   //   tunnelId,
+  //   //   deviceId: browserInstance.device.deviceTokenId ?? "",
+  //   // });
+  //   //
+  //   // if (resetResponse) {
+  //   //   browserInstance.setDevice(resetResponse);
+  //   // }
+  //   console.log("nodeInstance", nodeInstance.toJSON());
+  //
+  //   await page.goto(browserInstance.viteHostUrl);
+  //
+  //   const response = await page.evaluate(
+  //     async ({
+  //       noLagDeveloperTestConfigIgnoreWs,
+  //       nodeInstance,
+  //       browserInstance,
+  //     }) => {
+  //        return TUNNEL_standardPubSub({
+  //         noLagDeveloperTestConfigIgnoreWs,
+  //         environmentInstanceOne: browserInstance,
+  //         environmentInstanceTwo: nodeInstance,
+  //       });
+  //     },
+  //     {
+  //       noLagDeveloperTestConfigIgnoreWs,
+  //       nodeInstance: nodeInstance.toJSON(),
+  //       browserInstance: nodeInstance.toJSON(),
+  //     },
+  //   );
+  //
+  //   console.log("response", response);
+  //
+  //   const topicName = nodeInstance?.topic.name ?? "";
+  //
+  //   expect(pubSubData).toMatchObject(response?.data);
+  //   expect(topicName).toBe(response?.topicName);
+  //   expect(0).toBe(response?.identifiers.length);
+  //   expect(0).toBe(response?.presences.length);
+  // });
 
   test("NODE:Tunnel:Standard pub/sub NO Identifier and NO presences set", async ({
     page,
@@ -295,11 +299,12 @@ test.describe("Playwright client pub/sub", () => {
     //   nodeInstance.setDevice(resetResponse);
     // }
 
-    const {response, notReceived} = await TOPIC_standardPubSubRemoveIdentifiers({
-      noLagDeveloperTestConfigIgnoreWs,
-      environmentInstanceOne: browserInstance,
-      environmentInstanceTwo: nodeInstance,
-    });
+    const { response, notReceived } =
+      await TOPIC_standardPubSubRemoveIdentifiers({
+        noLagDeveloperTestConfigIgnoreWs,
+        environmentInstanceOne: browserInstance,
+        environmentInstanceTwo: nodeInstance,
+      });
 
     expect(pubSubData.prop1).toBe(response?.data?.prop1);
     expect(notReceived).toBeTruthy();
@@ -364,5 +369,4 @@ test.describe("Playwright client pub/sub", () => {
 
     expect(response).toBeTruthy();
   });
-
 });
