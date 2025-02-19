@@ -14,7 +14,7 @@ export const example_client_topic_unsubscribe = async ({
 }: IExampleApiTopicUnsubscribe) => {
   /***** COPY EXAMPLE CODE START *****/
 
-  const updatedTopicInstance = topicInstance.unsubscribe();
+  const updatedTopicInstance = await topicInstance.unsubscribe();
 
   /***** COPY EXAMPLE CODE END *****/
 
