@@ -9,7 +9,7 @@ import { stringToBuffer } from "nolagjs";
 export interface IExampleApiTunnelPublish {
   topicInstance: ITopic;
   identifiers: string[] | undefined;
-  data: Record<string, unknown>
+  data: Record<any, any>
 }
 
 export const example_client_topic_publish = async ({
@@ -19,9 +19,7 @@ export const example_client_topic_publish = async ({
 }: IExampleApiTunnelPublish) => {
   /***** COPY EXAMPLE CODE START *****/
 
-  const payload: ArrayBuffer = stringToBuffer(JSON.stringify(data));
-
-  topicInstance.publish(payload, identifiers);
+  topicInstance.publish(data, identifiers);
 
   /***** COPY EXAMPLE CODE END *****/
 };

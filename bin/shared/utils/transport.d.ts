@@ -1,5 +1,6 @@
 import { ETransportCommand } from "../enum/ETransportCommand";
 import { TransportCommands } from "./TransportCommands";
+import { publishData } from "../constants";
 export interface IDecode {
     commands: Record<ETransportCommand, string | string[] | boolean>;
     payload: ArrayBuffer;
@@ -10,7 +11,8 @@ export interface INqlTransport {
     decode(data: Uint8Array): IDecode;
 }
 export declare class NqlTransport {
-    static encode(TransportCommands: TransportCommands, payload?: ArrayBuffer): ArrayBuffer;
+    static parseData(data: publishData | undefined): ArrayBuffer | undefined;
+    static encode(TransportCommands: TransportCommands, data?: publishData | undefined): ArrayBuffer;
     static decode(transport: ArrayBuffer): IDecode;
     static hasSeparatorIndexes(commandAction: number[]): boolean;
     static commandActionUint8ArrayToString(commandActionArray: number[]): string;

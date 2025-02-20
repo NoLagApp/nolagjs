@@ -1,4 +1,4 @@
-import { dataType, FConnection } from "../shared/constants";
+import { dataType, FConnection, publishData } from "../shared/constants";
 import {
   IConnectOptions,
   IErrorMessage,
@@ -54,7 +54,7 @@ export interface ITunnel {
    * @param data ArrayBuffer - Data to send to the Topic
    * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
    */
-  publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
+  publish(topicName: string, data: publishData, identifiers?: string[]): void;
 
   onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
 
@@ -353,7 +353,7 @@ export class Tunnel implements ITunnel {
 
   public publish(
     topicName: string,
-    data: ArrayBuffer,
+    data: publishData,
     identifiers: string[] = [],
   ): void {
     if (this.noLagClient && this.noLagClient.send) {

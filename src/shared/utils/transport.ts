@@ -3,11 +3,16 @@ import {
   ETransportCommandSeparator,
 } from "../enum/ETransportCommand";
 import { TransportCommands } from "./TransportCommands";
+import { isPlainObject } from "./isPlainObject";
+import { stringToBuffer } from "./Encodings";
+import { publishData } from "../constants";
 
 export interface IDecode {
   commands: Record<ETransportCommand, string | string[] | boolean>;
   payload: ArrayBuffer;
-  getCommand(command: ETransportCommand): string | string[] | boolean | undefined;
+  getCommand(
+    command: ETransportCommand,
+  ): string | string[] | boolean | undefined;
 }
 export interface INqlTransport {
   encode(TransportCommands: TransportCommands, payload: Uint8Array): Uint8Array;
@@ -15,7 +20,23 @@ export interface INqlTransport {
 }
 
 export class NqlTransport {
-  static encode(TransportCommands: TransportCommands, payload?: ArrayBuffer) {
+  static parseData(
+    data: publishData | undefined,
+  ): ArrayBuffer | undefined {
+    if (data instanceof ArrayBuffer) {
+      return data;
+    } else if (typeof data === "string" || data instanceof String) {
+      return stringToBuffer(data as string);
+    } else if (isPlainObject(data)) {
+      return stringToBuffer(JSON.stringify(data));
+    }
+  }
+
+  static encode(
+    TransportCommands: TransportCommands,
+    data?: publishData | undefined,
+  ) {
+    const payload = this.parseData(data);
     const separatorArray = new Uint8Array(1);
     separatorArray[0] = ETransportCommand.Payload;
 

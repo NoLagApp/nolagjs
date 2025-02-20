@@ -7,6 +7,7 @@ import { Tunnel } from "../../client";
 import { AcknowledgeQueueManager } from "../utils/AcknowledgeQueue/AcknowledgeQueueManager";
 import { AcknowledgeQueueIdentifier } from "../utils/AcknowledgeQueue/AcknowledgeQueueIdentifier";
 import { ESendAction } from "../enum";
+import { publishData } from "../constants";
 
 export interface ITopic {
   subscribe(
@@ -49,7 +50,7 @@ export interface ITopic {
    * @param identifiers List of identifiers used to send targeted messages
    * @returns
    */
-  publish(data: ArrayBuffer, identifiers?: string[]): Topic;
+  publish(data: publishData, identifiers?: string[]): Topic;
   /**
    * PRIVATE Inject messages into the Topic instance
    * @param data
@@ -313,9 +314,7 @@ export class Topic implements ITopic {
     return true;
   }
 
-  public publish(data: ArrayBuffer, identifiers?: string[]): Topic {
-    if (data.byteLength === 0) return this;
-
+  public publish(data: publishData, identifiers?: string[]): Topic {
     const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,

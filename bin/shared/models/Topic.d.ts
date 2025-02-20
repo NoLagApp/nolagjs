@@ -2,6 +2,7 @@ import { NoLagClient } from "../../client/NoLagClient";
 import { INqlIdentifiers, ITransport } from "../interfaces";
 import { Tunnel } from "../../client";
 import { AcknowledgeQueueManager } from "../utils/AcknowledgeQueue/AcknowledgeQueueManager";
+import { publishData } from "../constants";
 export interface ITopic {
     subscribe(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<ITopic>;
     /**
@@ -33,7 +34,7 @@ export interface ITopic {
      * @param identifiers List of identifiers used to send targeted messages
      * @returns
      */
-    publish(data: ArrayBuffer, identifiers?: string[]): Topic;
+    publish(data: publishData, identifiers?: string[]): Topic;
     /**
      * PRIVATE Inject messages into the Topic instance
      * @param data
@@ -74,7 +75,7 @@ export declare class Topic implements ITopic {
     addIdentifiers(identifiersList: INqlIdentifiers, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<ITopic>;
     removeIdentifiers(identifiers: string[], callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<ITopic>;
     unsubscribe(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<boolean>;
-    publish(data: ArrayBuffer, identifiers?: string[]): Topic;
+    publish(data: publishData, identifiers?: string[]): Topic;
     private send;
 }
 //# sourceMappingURL=Topic.d.ts.map

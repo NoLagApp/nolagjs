@@ -199,4 +199,43 @@ describe("Transport", () => {
       identifierTwoString,
     ]);
   });
+
+  test("Publish ArrayBuffer", () => {
+    const commands = transportCommands();
+
+    const data = "data to encode";
+    const bufferPayload = stringToBuffer(data);
+
+    const encodedBuffer = NqlTransport.encode(commands, bufferPayload);
+    const decoded = NqlTransport.decode(encodedBuffer);
+
+    expect(decoded.payload).toEqual(bufferPayload);
+  });
+
+  test("Publish String", () => {
+    const commands = transportCommands();
+
+    const stringPayload = "data to encode";
+    const buffer = stringToBuffer(stringPayload);
+
+    const encodedBuffer = NqlTransport.encode(commands, stringPayload);
+    const decoded = NqlTransport.decode(encodedBuffer);
+
+    expect(decoded.payload).toEqual(buffer);
+  });
+
+  test("Publish Object", () => {
+    const commands = transportCommands();
+
+    const objectPayload = {
+      item: "data to encode"
+    };
+
+    const buffer = stringToBuffer(JSON.stringify(objectPayload));
+
+    const encodedBuffer = NqlTransport.encode(commands, objectPayload);
+    const decoded = NqlTransport.decode(encodedBuffer);
+
+    expect(decoded.payload).toEqual(buffer);
+  });
 });

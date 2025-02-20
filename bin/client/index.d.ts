@@ -1,4 +1,4 @@
-import { FConnection } from "../shared/constants";
+import { FConnection, publishData } from "../shared/constants";
 import { IConnectOptions, IErrorMessage, INqlIdentifiers, ITransport, ITunnelOptions, IUnifiedWebsocket } from "../shared/interfaces";
 import { ITopic } from "../shared/models/Topic";
 export interface ITunnel {
@@ -28,7 +28,7 @@ export interface ITunnel {
      * @param data ArrayBuffer - Data to send to the Topic
      * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
      */
-    publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
+    publish(topicName: string, data: publishData, identifiers?: string[]): void;
     onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
     /**
      * Disconnect from NoLag
@@ -95,7 +95,7 @@ export declare class Tunnel implements ITunnel {
     getTopic(topicName: string, callbackFn?: (error: Error | null, topic: ITopic | null) => void): Promise<ITopic>;
     unsubscribe(topicName: string, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<boolean>;
     subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): Promise<ITopic>;
-    publish(topicName: string, data: ArrayBuffer, identifiers?: string[]): void;
+    publish(topicName: string, data: publishData, identifiers?: string[]): void;
     get status(): import("../shared/enum").EConnectionStatus;
 }
 //# sourceMappingURL=index.d.ts.map

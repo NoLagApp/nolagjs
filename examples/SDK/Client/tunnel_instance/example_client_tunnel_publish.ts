@@ -4,12 +4,11 @@
  */
 
 import type { ITunnel } from "nolagjs";
-import { stringToBuffer } from "nolagjs";
 
 export interface IExampleApiTunnelPublish {
   tunnelInstance: ITunnel;
   topicName: string;
-  data: Record<string, unknown>
+  data: Record<any, any>;
   identifiers?: string[];
 }
 
@@ -17,13 +16,10 @@ export const example_client_tunnel_publish = async ({
   tunnelInstance,
   topicName,
   identifiers,
-  data
+  data,
 }: IExampleApiTunnelPublish) => {
   /***** COPY EXAMPLE CODE START *****/
-
-  const payload: ArrayBuffer = stringToBuffer(JSON.stringify(data));
-
-  tunnelInstance.publish(topicName, payload, identifiers);
+  tunnelInstance.publish(topicName, data, identifiers);
 
   /***** COPY EXAMPLE CODE END *****/
 };
