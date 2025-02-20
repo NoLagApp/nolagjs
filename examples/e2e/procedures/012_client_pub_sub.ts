@@ -93,6 +93,59 @@ export const TUNNEL_standardPubSub = async ({
   return response;
 };
 
+export const TUNNEL_standardSecurePubSub = async ({
+  noLagDeveloperTestConfigIgnoreWs,
+  environmentInstanceOne,
+  environmentInstanceTwo,
+}: IClientPubSub) => {
+  const topicName = environmentInstanceOne?.topic?.name ?? "";
+
+  const identifiers = undefined;
+
+  const ONE_TunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: environmentInstanceOne?.device?.deviceAccessToken ?? "",
+    options: {
+      debug: true,
+    },
+  });
+
+  const TWO_TunnelInstance = await example_client_tunnel_connect({
+    noLagDeveloperTestConfigIgnoreWs,
+    deviceToken: environmentInstanceTwo?.device?.deviceAccessToken ?? "",
+    options: {
+      debug: true,
+    },
+  });
+
+  await example_client_tunnel_subscribe({
+    tunnelInstance: ONE_TunnelInstance ?? {},
+    topicName,
+    identifiers,
+  });
+
+  await example_client_tunnel_publish({
+    tunnelInstance: TWO_TunnelInstance,
+    topicName,
+    identifiers,
+    data: pubSubData,
+  });
+
+  const response = await example_client_tunnel_callback_on_receive({
+    tunnelInstance: ONE_TunnelInstance,
+  });
+
+  await example_client_tunnel_disconnect({
+    tunnelInstance: ONE_TunnelInstance ?? ({} as any),
+  });
+
+  await example_client_tunnel_disconnect({
+    tunnelInstance: TWO_TunnelInstance ?? ({} as any),
+  });
+
+  return response;
+};
+
 export const TUNNEL_standardPubSubWithIdentifiers = async ({
   noLagDeveloperTestConfigIgnoreWs,
   environmentInstanceOne,
@@ -571,7 +624,7 @@ export const TOPIC_Unsubscribe = async ({
   });
 
   await example_client_topic_unsubscribe({
-    topicInstance: topicInstanceOne
+    topicInstance: topicInstanceOne,
   });
 
   const topicInstanceTwo = await example_client_tunnel_topic_get({

@@ -21,6 +21,11 @@ export const example_api_tunnel_device_update = async ({
   tunnelId,
   deviceId,
 }: IExampleApiTunnelTopicUpdate) => {
+  console.log({payload,
+    yourProjectApiKey,
+    noLagDeveloperTestConfigIgnore,
+    tunnelId,
+    deviceId});
   /***** COPY EXAMPLE CODE START *****/
 
   // setup connection to NoLag API
