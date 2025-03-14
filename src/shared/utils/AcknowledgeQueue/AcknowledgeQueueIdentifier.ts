@@ -2,7 +2,7 @@ import { EConnectionStatus } from "../../enum";
 
 export interface IFunctionQueueIdentifier {
   topicName?: string;
-  initiate?: EConnectionStatus.Initiate
+  initiate?: EConnectionStatus.Initiate;
   authentication?: EConnectionStatus.Authentication;
   identifiers?: string[];
   presence?: string;
@@ -10,7 +10,7 @@ export interface IFunctionQueueIdentifier {
 
 export class AcknowledgeQueueIdentifier {
   private topicName?: string | undefined;
-  private initiate?: EConnectionStatus.Initiate
+  private initiate?: EConnectionStatus.Initiate;
   private authentication?: EConnectionStatus.Authentication;
   private identifiers?: string[];
   private presence?: string;

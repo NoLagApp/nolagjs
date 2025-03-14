@@ -87,14 +87,17 @@ export class AcknowledgeQueueManager {
    * @param key
    * @param callbackFn
    */
-  public async addToSentQueue(key: AcknowledgeQueueIdentifier, callbackFn?: (error: Error | null, data: ITransport | null) => void) {
+  public async addToSentQueue(
+    key: AcknowledgeQueueIdentifier,
+    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+  ) {
     return new Promise((resolve, reject) => {
       const generatedKey = key.generateKey();
       this.queues.sent[generatedKey] = new AcknowledgeQueueSentItem(
         {
           key: generatedKey,
           callbackFn: (error: Error | null, data: ITransport | null) => {
-            if(callbackFn) {
+            if (callbackFn) {
               callbackFn(error, data);
             }
             if (error) {

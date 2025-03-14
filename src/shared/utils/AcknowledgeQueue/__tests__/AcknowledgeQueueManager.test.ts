@@ -24,8 +24,6 @@ describe("FunctionQueueManager", () => {
         return `function_${key}`;
       });
 
-
-
       const identifierReceive = new AcknowledgeQueueIdentifier({
         topicName,
         identifiers: identifiers.reverse(),

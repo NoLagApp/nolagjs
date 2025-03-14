@@ -7,7 +7,8 @@ test.describe("Playwright Api List Tunnels", () => {
     const args = {
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
       topicName: browserInstance.topic.name ?? "",
-      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
     };
 
@@ -19,7 +20,9 @@ test.describe("Playwright Api List Tunnels", () => {
 
     const { records, pagination } = response;
 
-    const foundTunnel = records.find((i) => i.name === browserInstance.topic.name);
+    const foundTunnel = records.find(
+      (i) => i.name === browserInstance.topic.name,
+    );
 
     expect(typeof pagination?.page === "number").toBeTruthy();
     expect(typeof pagination?.size === "number").toBeTruthy();
@@ -30,7 +33,8 @@ test.describe("Playwright Api List Tunnels", () => {
     const args = {
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
       topicName: nodeInstance.topic.name ?? "",
-      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
     };
 
@@ -49,7 +53,8 @@ test.describe("Playwright Api List Tunnels", () => {
     const args = {
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
       topicName: browserInstance.topic.name ?? "",
-      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
     };
 
@@ -73,7 +78,8 @@ test.describe("Playwright Api List Tunnels", () => {
     const args = {
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
       topicName: nodeInstance.topic.name ?? "",
-      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
     };
 

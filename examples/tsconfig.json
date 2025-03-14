@@ -26,5 +26,5 @@
     "moduleResolution": "node",
     "composite": true
   },
-  "include": ["**/*"], // which files to compile
+  "include": ["**/*"] // which files to compile
 }

@@ -76,7 +76,7 @@ export class TunnelApi implements ITunnelApi {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -84,13 +84,16 @@ export class TunnelApi implements ITunnelApi {
   }
 
   async updateTunnel(payload: ITunnelModel): Promise<ITunnelModel> {
-    const response = await fetch(`${this.requestParams.baseURL}/${this.routeNamespace}/${this.tunnelId}`, {
-      method: "PATCH",
-      headers: this.requestParams.headers,
-      body: JSON.stringify(payload),
-    })
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.routeNamespace}/${this.tunnelId}`,
+      {
+        method: "PATCH",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -106,7 +109,7 @@ export class TunnelApi implements ITunnelApi {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 

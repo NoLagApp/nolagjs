@@ -12,7 +12,7 @@ export interface IExampleApiTunnelTopicGet {
 
 export const example_client_tunnel_topic_get = async ({
   tunnelInstance,
-  topicName
+  topicName,
 }: IExampleApiTunnelTopicGet) => {
   /***** COPY EXAMPLE CODE START *****/
 

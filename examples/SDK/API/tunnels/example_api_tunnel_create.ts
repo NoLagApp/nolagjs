@@ -3,7 +3,7 @@
  * Can read more about this here: https://developer.nolag.app/#project-tunnels
  */
 
-import type { IConnectOptions, ITunnelModel } from "nolagjs";
+import type { IConnectOptions, ITunnelModel, IApiTunnel } from "nolagjs";
 import { Api } from "nolagjs";
 
 export interface IExampleApiTunnelCreate {

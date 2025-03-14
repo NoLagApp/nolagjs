@@ -17,10 +17,10 @@ export interface IExampleApiTunnelCallbackOnReceiveResponse {
   presences: string[];
 }
 
-export const example_client_tunnel_callback_on_receive = async ({
-  tunnelInstance,
-}: IExampleApiTunnelCallbackOnReceive,
-callback?:(data: IExampleApiTunnelCallbackOnReceiveResponse) => void): Promise<IExampleApiTunnelCallbackOnReceiveResponse> => {
+export const example_client_tunnel_callback_on_receive = async (
+  { tunnelInstance }: IExampleApiTunnelCallbackOnReceive,
+  callback?: (data: IExampleApiTunnelCallbackOnReceiveResponse) => void,
+): Promise<IExampleApiTunnelCallbackOnReceiveResponse> => {
   return new Promise((resolve, reject) => {
     /***** COPY EXAMPLE CODE START *****/
 
@@ -38,7 +38,7 @@ callback?:(data: IExampleApiTunnelCallbackOnReceiveResponse) => void): Promise<I
         presences,
       };
 
-      if(callback && typeof callback === 'function') {
+      if (callback && typeof callback === "function") {
         callback(parsedResponse);
       }
 

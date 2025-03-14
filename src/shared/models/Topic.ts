@@ -1,7 +1,10 @@
 import { NoLagClient } from "../../client/NoLagClient";
 import { ETransportCommand } from "../enum/ETransportCommand";
 import { INqlIdentifiers, ITransport } from "../interfaces";
-import { TransportCommands, transportCommands } from "../utils/TransportCommands";
+import {
+  TransportCommands,
+  transportCommands,
+} from "../utils/TransportCommands";
 import { NqlTransport } from "../utils/transport";
 import { Tunnel } from "../../client";
 import { AcknowledgeQueueManager } from "../utils/AcknowledgeQueue/AcknowledgeQueueManager";
@@ -122,7 +125,11 @@ export class Topic implements ITopic {
     this.identifiers = identifierList;
   }
 
-  private async _subscribeAction(sendAction: ESendAction, commands: TransportCommands, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<void> {
+  private async _subscribeAction(
+    sendAction: ESendAction,
+    commands: TransportCommands,
+    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+  ): Promise<void> {
     const transport = NqlTransport.encode(commands);
 
     this.send(sendAction, transport);
@@ -140,9 +147,7 @@ export class Topic implements ITopic {
   public async subscribe(
     callbackFn?: (error: Error | null, data: ITransport | null) => void,
   ): Promise<ITopic> {
-    if (
-      (!this.topicName)
-    ) {
+    if (!this.topicName) {
       const error = new Error("Topic name is required");
       if (callbackFn) {
         callbackFn(error, null);
@@ -162,7 +167,11 @@ export class Topic implements ITopic {
 
     commands.setCommand(ETransportCommand.AddAction);
 
-    await this._subscribeAction(ESendAction.TopicSubscribe, commands, callbackFn);
+    await this._subscribeAction(
+      ESendAction.TopicSubscribe,
+      commands,
+      callbackFn,
+    );
 
     return this as unknown as ITopic;
   }
@@ -189,7 +198,11 @@ export class Topic implements ITopic {
 
     commands.setCommand(ETransportCommand.AddAction);
 
-    await this._subscribeAction(ESendAction.TopicPresence, commands, callbackFn);
+    await this._subscribeAction(
+      ESendAction.TopicPresence,
+      commands,
+      callbackFn,
+    );
     return this;
   }
 

@@ -1,4 +1,4 @@
 export enum EEnvironments {
   NODE = "node",
-  BROWSER = "browser"
+  BROWSER = "browser",
 }

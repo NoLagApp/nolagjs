@@ -12,7 +12,7 @@ export interface IExampleApiTunnelUnsubscribe {
 
 export const example_client_tunnel_unsubscribe = async ({
   tunnelInstance,
-  topicName
+  topicName,
 }: IExampleApiTunnelUnsubscribe) => {
   /***** COPY EXAMPLE CODE START *****/
 

@@ -7,7 +7,8 @@ test.describe("Playwright Api Create Tunnel Topic", () => {
     const args = {
       topicName: browserInstance.topicName,
       tunnelName: browserInstance.tunnelName,
-      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
     };
@@ -31,7 +32,8 @@ test.describe("Playwright Api Create Tunnel Topic", () => {
     const args = {
       topicName: nodeInstance.topicName,
       tunnelName: nodeInstance.tunnelName,
-      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
     };

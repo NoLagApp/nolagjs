@@ -284,7 +284,7 @@ export class NoLagClient implements INoLagClient {
           ETransportCommand.Identifier,
         ) as string[],
         presence: decoded.getCommand(ETransportCommand.Presence) as string,
-      })
+      });
       this.acknowledgeQueueManager.addToReceivedQueue(
         ackIdentifier,
         null,
@@ -292,7 +292,10 @@ export class NoLagClient implements INoLagClient {
       );
       if (this.debug) {
         console.log(`${ESendAction.AcknowledgeGeneral}:`, ackIdentifier);
-        console.log(`${ESendAction.AcknowledgeGeneral} generated KEY:`, ackIdentifier.generateKey());
+        console.log(
+          `${ESendAction.AcknowledgeGeneral} generated KEY:`,
+          ackIdentifier.generateKey(),
+        );
       }
       return true;
     } else if (decoded.getCommand(ETransportCommand.Error)) {
@@ -302,8 +305,9 @@ export class NoLagClient implements INoLagClient {
           ETransportCommand.Identifier,
         ) as string[],
         presence: decoded.getCommand(ETransportCommand.Presence) as string,
-      })
-      this.acknowledgeQueueManager.addToReceivedQueue(ackErrorIdentifier,
+      });
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        ackErrorIdentifier,
         null,
         {} as ITransport,
       );

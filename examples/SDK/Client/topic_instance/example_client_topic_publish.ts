@@ -9,13 +9,13 @@ import { stringToBuffer } from "nolagjs";
 export interface IExampleApiTunnelPublish {
   topicInstance: ITopic;
   identifiers: string[] | undefined;
-  data: Record<any, any>
+  data: Record<any, any>;
 }
 
 export const example_client_topic_publish = async ({
-                                                      topicInstance,
+  topicInstance,
   identifiers,
-  data
+  data,
 }: IExampleApiTunnelPublish) => {
   /***** COPY EXAMPLE CODE START *****/
 

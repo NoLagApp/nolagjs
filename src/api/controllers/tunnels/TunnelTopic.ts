@@ -60,7 +60,7 @@ export class TunnelTopic implements ITunnelTopic {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -76,7 +76,7 @@ export class TunnelTopic implements ITunnelTopic {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -93,7 +93,7 @@ export class TunnelTopic implements ITunnelTopic {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -113,7 +113,7 @@ export class TunnelTopic implements ITunnelTopic {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -129,7 +129,7 @@ export class TunnelTopic implements ITunnelTopic {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 

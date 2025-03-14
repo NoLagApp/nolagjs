@@ -228,7 +228,7 @@ describe("Transport", () => {
     const commands = transportCommands();
 
     const objectPayload = {
-      item: "data to encode"
+      item: "data to encode",
     };
 
     const buffer = stringToBuffer(JSON.stringify(objectPayload));

@@ -24,7 +24,7 @@ export const example_client_tunnel_subscribe = async (
           OR: identifiers,
         }
       : undefined,
-    callbackFn
+    callbackFn,
   );
 
   /***** COPY EXAMPLE CODE END *****/

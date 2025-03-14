@@ -20,9 +20,7 @@ export interface INqlTransport {
 }
 
 export class NqlTransport {
-  static parseData(
-    data: publishData | undefined,
-  ): ArrayBuffer | undefined {
+  static parseData(data: publishData | undefined): ArrayBuffer | undefined {
     if (data instanceof ArrayBuffer) {
       return data;
     } else if (typeof data === "string" || data instanceof String) {

@@ -50,7 +50,8 @@ export const TUNNEL_standardPubSub = async ({
   const identifiers = undefined;
 
   const ONE_TunnelInstance = await example_client_tunnel_connect({
-    noLagDeveloperTestConfigIgnoreWs: environmentInstanceOne?.noLagDeveloperTestConfigIgnoreWs ?? {},
+    noLagDeveloperTestConfigIgnoreWs:
+      environmentInstanceOne?.noLagDeveloperTestConfigIgnoreWs ?? {},
     deviceToken: environmentInstanceOne?.device?.deviceAccessToken ?? "",
     options: {
       debug: true,
@@ -58,7 +59,8 @@ export const TUNNEL_standardPubSub = async ({
   });
 
   const TWO_TunnelInstance = await example_client_tunnel_connect({
-    noLagDeveloperTestConfigIgnoreWs: environmentInstanceTwo?.noLagDeveloperTestConfigIgnoreWs ?? {},
+    noLagDeveloperTestConfigIgnoreWs:
+      environmentInstanceTwo?.noLagDeveloperTestConfigIgnoreWs ?? {},
     deviceToken: environmentInstanceTwo?.device?.deviceAccessToken ?? "",
     options: {
       debug: true,

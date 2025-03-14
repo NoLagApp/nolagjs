@@ -5,7 +5,10 @@ import {
   editTunnelDeviceSetAccessPermissionsPublish,
   editTunnelDeviceSetAccessPermissionsPubSub,
   editTunnelDeviceSetAccessPermissionsSubscribe,
-  editTunnelDeviceUsingDeviceTokenId, lockDeviceTopics, setExpireInSeconds, setStaticTopics,
+  editTunnelDeviceUsingDeviceTokenId,
+  lockDeviceTopics,
+  setExpireInSeconds,
+  setStaticTopics,
 } from "../procedures/011_api_device_edit";
 import { EAccessPermission } from "nolagjs";
 
@@ -19,7 +22,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     await page.goto(browserInstance.viteHostUrl);
@@ -44,7 +47,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     const response = await editTunnelDeviceUsingDeviceTokenId(args);
@@ -67,7 +70,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     await page.goto(browserInstance.viteHostUrl);
@@ -94,7 +97,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     const response = await editTunnelDeviceSetAccessPermissionsSubscribe(args);
@@ -117,7 +120,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     await page.goto(browserInstance.viteHostUrl);
@@ -144,7 +147,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     const response = await editTunnelDeviceSetAccessPermissionsPublish(args);
@@ -167,7 +170,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     await page.goto(browserInstance.viteHostUrl);
@@ -194,7 +197,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       noLagDeveloperTestConfigIgnore:
         nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
-      identifiers: ["identifier1", "identifier2"]
+      identifiers: ["identifier1", "identifier2"],
     };
 
     const response = await editTunnelDeviceSetAccessPermissionsPubSub(args);
@@ -213,7 +216,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       deviceTokenId: browserInstance.device.deviceTokenId ?? "",
       topicName: browserInstance.topic.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      browserInstance.noLagDeveloperTestConfigIgnore,
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
       identifiers: ["identifier1", "identifier2"],
     };
@@ -229,7 +232,9 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     }
 
     expect(response?.staticTopics?.[0]?.name).toBe(browserInstance.topic?.name);
-    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(args.identifiers);
+    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(
+      args.identifiers,
+    );
     expect(response?.name).toBe(browserInstance.device?.name);
   });
 
@@ -240,7 +245,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       deviceTokenId: nodeInstance.device.deviceTokenId ?? "",
       topicName: nodeInstance.topic.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      nodeInstance.noLagDeveloperTestConfigIgnore,
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
       identifiers: ["identifier1", "identifier2"],
     };
@@ -252,7 +257,9 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     }
 
     expect(response?.staticTopics?.[0]?.name).toBe(nodeInstance.topic?.name);
-    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(args.identifiers);
+    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(
+      args.identifiers,
+    );
     expect(response?.name).toBe(nodeInstance.device?.name);
   });
 
@@ -263,7 +270,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       deviceTokenId: browserInstance.device.deviceTokenId ?? "",
       topicName: browserInstance.topic.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      browserInstance.noLagDeveloperTestConfigIgnore,
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
       identifiers: ["identifier1", "identifier2"],
     };
@@ -279,7 +286,9 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     }
 
     expect(response?.staticTopics?.[0]?.name).toBe(browserInstance.topic?.name);
-    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(args.identifiers);
+    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(
+      args.identifiers,
+    );
     expect(response?.lockTopics).toBeTruthy();
     expect(response?.name).toBe(browserInstance.device?.name);
   });
@@ -291,7 +300,7 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       deviceTokenId: nodeInstance.device.deviceTokenId ?? "",
       topicName: nodeInstance.topic.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      nodeInstance.noLagDeveloperTestConfigIgnore,
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
       identifiers: ["identifier1", "identifier2"],
     };
@@ -303,7 +312,9 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     }
 
     expect(response?.staticTopics?.[0]?.name).toBe(nodeInstance.topic?.name);
-    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(args.identifiers);
+    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(
+      args.identifiers,
+    );
     expect(response?.lockTopics).toBeTruthy();
     expect(response?.name).toBe(nodeInstance.device?.name);
   });
@@ -315,10 +326,10 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       deviceTokenId: browserInstance.device.deviceTokenId ?? "",
       topicName: browserInstance.topic.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      browserInstance.noLagDeveloperTestConfigIgnore,
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
       identifiers: ["identifier1", "identifier2"],
-      expireIn: 14400
+      expireIn: 14400,
     };
 
     await page.goto(browserInstance.viteHostUrl);
@@ -332,12 +343,15 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     }
 
     expect(response?.staticTopics?.[0]?.name).toBe(browserInstance.topic?.name);
-    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(args.identifiers);
+    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(
+      args.identifiers,
+    );
     expect(response?.lockTopics).toBeTruthy();
     expect(response?.expireIn).toBe(args.expireIn);
     expect(
       Math.abs(
-        (response?.expireDate ?? 0) - dayjs().add(args.expireIn, "seconds").unix(),
+        (response?.expireDate ?? 0) -
+          dayjs().add(args.expireIn, "seconds").unix(),
       ),
     ).toBeLessThanOrEqual(2);
     expect(response?.name).toBe(browserInstance.device?.name);
@@ -350,10 +364,10 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
       deviceTokenId: nodeInstance.device.deviceTokenId ?? "",
       topicName: nodeInstance.topic.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      nodeInstance.noLagDeveloperTestConfigIgnore,
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
       identifiers: ["identifier1", "identifier2"],
-      expireIn: 14400
+      expireIn: 14400,
     };
 
     await page.goto(nodeInstance.viteHostUrl);
@@ -367,12 +381,15 @@ test.describe("Playwright Api Edit Tunnel Device", () => {
     }
 
     expect(response?.staticTopics?.[0]?.name).toBe(nodeInstance.topic?.name);
-    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(args.identifiers);
+    expect(response?.staticTopics?.[0]?.identifiers).toMatchObject(
+      args.identifiers,
+    );
     expect(response?.lockTopics).toBeTruthy();
     expect(response?.expireIn).toBe(args.expireIn);
     expect(
       Math.abs(
-        (response?.expireDate ?? 0) - dayjs().add(args.expireIn, "seconds").unix(),
+        (response?.expireDate ?? 0) -
+          dayjs().add(args.expireIn, "seconds").unix(),
       ),
     ).toBeLessThanOrEqual(2);
     expect(response?.name).toBe(nodeInstance.device?.name);

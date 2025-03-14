@@ -168,7 +168,9 @@ declare global {
     // ) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
     // clientTunnelUnsubscribe: (arg: IClientPubSub) => Promise<boolean>;
     // clientTunnelDisconnect: (arg: IClientPubSub) => Promise<void>;
-    TUNNEL_standardPubSub: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
+    TUNNEL_standardPubSub: (
+      arg: IClientPubSub,
+    ) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
     // TUNNEL_standardPubSubAddIdentifiers: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
     // TUNNEL_standardPubSubWithIdentifiers: (arg: IClientPubSub) => Promise<IExampleApiTunnelCallbackOnReceiveResponse>;
     // TUNNEL_unsubscribe: (arg: IClientPubSub) => Promise<boolean>;

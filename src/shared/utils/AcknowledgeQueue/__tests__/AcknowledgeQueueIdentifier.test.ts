@@ -29,8 +29,6 @@ describe("FunctionQueueIdentifier", () => {
       initiate: EConnectionStatus.Initiate,
     });
 
-    expect(queueIdentifier.generateKey()).toEqual(
-      EConnectionStatus.Initiate
-    );
+    expect(queueIdentifier.generateKey()).toEqual(EConnectionStatus.Initiate);
   });
 });

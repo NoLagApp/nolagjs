@@ -5,7 +5,8 @@ import { editTunnelNameUsingTunnelId } from "../procedures/003_api_tunnel_edit";
 test.describe("Playwright Api Edit Tunnel", () => {
   test("BROWSER: Edit tunnel name using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
       tunnelName: browserInstance.tunnelName,
       tunnel: browserInstance.tunnel,
@@ -24,7 +25,8 @@ test.describe("Playwright Api Edit Tunnel", () => {
 
   test("NODE: Edit tunnel name using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
       tunnelName: nodeInstance.tunnelName,
       tunnel: nodeInstance.tunnel,

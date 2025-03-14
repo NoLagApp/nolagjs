@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { browserInstance, nodeInstance } from "../../constants/globalVars";
-import { shouldSeeAListOfDevices, shouldSeeAListOfSearchResultsForDevices } from "../procedures/010_api_device_list";
+import {
+  shouldSeeAListOfDevices,
+  shouldSeeAListOfSearchResultsForDevices,
+} from "../procedures/010_api_device_list";
 
 test.describe("Playwright Api list Devices", () => {
   test("BROWSER: Should see a list of devices", async ({ page }) => {
@@ -8,7 +11,7 @@ test.describe("Playwright Api list Devices", () => {
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
       deviceName: browserInstance.device.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      browserInstance.noLagDeveloperTestConfigIgnore,
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
     };
 
@@ -20,7 +23,9 @@ test.describe("Playwright Api list Devices", () => {
 
     const { records, pagination } = response;
 
-    const foundDevice = records.find((i) => i.name === browserInstance.device.name);
+    const foundDevice = records.find(
+      (i) => i.name === browserInstance.device.name,
+    );
 
     expect(typeof pagination?.page === "number").toBeTruthy();
     expect(typeof pagination?.size === "number").toBeTruthy();
@@ -32,7 +37,7 @@ test.describe("Playwright Api list Devices", () => {
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
       deviceName: nodeInstance.device.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      nodeInstance.noLagDeveloperTestConfigIgnore,
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
     };
 
@@ -40,20 +45,23 @@ test.describe("Playwright Api list Devices", () => {
 
     const { records, pagination } = response;
 
-    const foundDevice = records.find((i) => i.name === nodeInstance.device.name);
+    const foundDevice = records.find(
+      (i) => i.name === nodeInstance.device.name,
+    );
 
     expect(typeof pagination?.page === "number").toBeTruthy();
     expect(typeof pagination?.size === "number").toBeTruthy();
     expect(foundDevice?.name).toBe(nodeInstance.device.name);
   });
 
-  test("BROWSER: Should see a list of search results for devices", async ({ page }) => {
-
+  test("BROWSER: Should see a list of search results for devices", async ({
+    page,
+  }) => {
     const args = {
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
       deviceName: browserInstance.device.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      browserInstance.noLagDeveloperTestConfigIgnore,
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
     };
 
@@ -65,19 +73,24 @@ test.describe("Playwright Api list Devices", () => {
 
     const { records, pagination } = response;
 
-    const foundDevice = records.find((i) => i.name === browserInstance.device.name);
+    const foundDevice = records.find(
+      (i) => i.name === browserInstance.device.name,
+    );
 
     expect(foundDevice?.name).toBe(browserInstance.device.name);
-    expect(foundDevice?.deviceTokenId).toBe(browserInstance.device.deviceTokenId);
+    expect(foundDevice?.deviceTokenId).toBe(
+      browserInstance.device.deviceTokenId,
+    );
   });
 
-  test("NODE: Should see a list of search results for devices", async ({ page }) => {
-
+  test("NODE: Should see a list of search results for devices", async ({
+    page,
+  }) => {
     const args = {
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
       deviceName: nodeInstance.device.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      nodeInstance.noLagDeveloperTestConfigIgnore,
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
     };
 
@@ -89,7 +102,9 @@ test.describe("Playwright Api list Devices", () => {
 
     const { records, pagination } = response;
 
-    const foundDevice = records.find((i) => i.name === nodeInstance.device.name);
+    const foundDevice = records.find(
+      (i) => i.name === nodeInstance.device.name,
+    );
 
     expect(foundDevice?.name).toBe(nodeInstance.device.name);
     expect(foundDevice?.deviceTokenId).toBe(nodeInstance.device.deviceTokenId);

@@ -10,7 +10,7 @@ export interface IExampleApiTunnelDisconnect {
 }
 
 export const example_client_tunnel_disconnect = async ({
-  tunnelInstance
+  tunnelInstance,
 }: IExampleApiTunnelDisconnect) => {
   /***** COPY EXAMPLE CODE START *****/
 

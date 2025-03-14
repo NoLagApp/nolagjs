@@ -83,13 +83,15 @@ class GlobalVars implements IGlobalVars {
   // local state
   private vars: Record<any, any> = {};
   private envName: EEnvironments;
-  private serverWSHost = "localhost:5003"
+  private serverWSHost = "localhost:5003";
   public viteHostUrl = "http://localhost:5111";
 
-  constructor(envName:EEnvironments,envVars: IEnvVars) {
-    if (!envVars?.PROJECT_API_KEY) throw new Error("PROJECT_API_KEY is required");
+  constructor(envName: EEnvironments, envVars: IEnvVars) {
+    if (!envVars?.PROJECT_API_KEY)
+      throw new Error("PROJECT_API_KEY is required");
     this.vars.PROJECT_API_KEY = envVars.PROJECT_API_KEY;
-    this.vars.NOLAG_DEVELOPER_TESTING = envVars.NOLAG_DEVELOPER_TESTING === "true";
+    this.vars.NOLAG_DEVELOPER_TESTING =
+      envVars.NOLAG_DEVELOPER_TESTING === "true";
     this.envName = envName;
   }
 
@@ -224,17 +226,20 @@ class GlobalVars implements IGlobalVars {
       tunnelName: this.topicName,
       tunnel: this.tunnel,
       yourProjectApiKey: this.yourProjectApiKey,
-    }
+    };
   }
 }
 
 const globalVarsBrowser = () => {
-  return new GlobalVars(EEnvironments.BROWSER,process.env as unknown as IEnvVars);
-}
+  return new GlobalVars(
+    EEnvironments.BROWSER,
+    process.env as unknown as IEnvVars,
+  );
+};
 
 const globalVarsNode = () => {
-  return new GlobalVars(EEnvironments.NODE,process.env as unknown as IEnvVars);
-}
+  return new GlobalVars(EEnvironments.NODE, process.env as unknown as IEnvVars);
+};
 
 export const browserInstance = globalVarsBrowser();
 export const nodeInstance = globalVarsNode();

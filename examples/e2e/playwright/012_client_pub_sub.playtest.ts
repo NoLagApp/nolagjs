@@ -183,7 +183,7 @@ test.describe("Playwright client pub/sub", () => {
   });
 
   test("NODE:Topic:Publish", async ({ page }) => {
-   const response = await TOPIC_PubSub({
+    const response = await TOPIC_PubSub({
       noLagDeveloperTestConfigIgnoreWs,
       environmentInstanceOne: browserInstance,
       environmentInstanceTwo: nodeInstance,

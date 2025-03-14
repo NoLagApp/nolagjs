@@ -54,23 +54,21 @@ export class TunnelDevice implements ITunnelDevice {
     this.requestParams = requestParams;
   }
 
-  async createDevice(
-    payload: IDeviceModel,
-  ): Promise<IDeviceModel> {
-      const response = await fetch(
-        `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
-        {
-          method: "POST",
-          headers: this.requestParams.headers,
-          body: JSON.stringify(payload),
-        },
-      );
+  async createDevice(payload: IDeviceModel): Promise<IDeviceModel> {
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
+      {
+        method: "POST",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
-      if(response.status >= 400) {
-        throw await response.json();
-      }
+    if (response.status >= 400) {
+      throw await response.json();
+    }
 
-      return response.json();
+    return response.json();
   }
 
   async getDeviceById(deviceTokenId: string): Promise<IDeviceModel> {
@@ -82,7 +80,7 @@ export class TunnelDevice implements ITunnelDevice {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -99,7 +97,7 @@ export class TunnelDevice implements ITunnelDevice {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -119,7 +117,7 @@ export class TunnelDevice implements ITunnelDevice {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 
@@ -135,7 +133,7 @@ export class TunnelDevice implements ITunnelDevice {
       },
     );
 
-    if(response.status >= 400) {
+    if (response.status >= 400) {
       throw await response.json();
     }
 

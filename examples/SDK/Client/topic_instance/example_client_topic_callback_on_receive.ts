@@ -36,7 +36,7 @@ export const example_client_topic_callback_on_receive = async (
         presences,
       };
 
-      if(callback && typeof callback === 'function') {
+      if (callback && typeof callback === "function") {
         callback(parsedResponse);
       }
 

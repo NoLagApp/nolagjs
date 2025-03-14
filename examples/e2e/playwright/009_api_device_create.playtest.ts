@@ -74,7 +74,7 @@ test.describe("Playwright Api Create Device", () => {
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
       deviceName: nodeInstance.device.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      nodeInstance.noLagDeveloperTestConfigIgnore,
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
     };
 
@@ -91,7 +91,7 @@ test.describe("Playwright Api Create Device", () => {
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
       deviceName: browserInstance.device.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      browserInstance.noLagDeveloperTestConfigIgnore,
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
     };
 
@@ -113,7 +113,7 @@ test.describe("Playwright Api Create Device", () => {
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
       deviceName: nodeInstance.device.name ?? "",
       noLagDeveloperTestConfigIgnore:
-      nodeInstance.noLagDeveloperTestConfigIgnore,
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
     };
 

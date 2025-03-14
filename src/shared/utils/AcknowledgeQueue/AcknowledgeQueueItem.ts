@@ -39,7 +39,10 @@ export interface IAcknowledgeQueueSentItem extends IAcknowledgeQueueItem {
 export class AcknowledgeQueueSentItem extends AcknowledgeQueueItem {
   public callbackFn?: (error: Error | null, data: ITransport | null) => void;
 
-  constructor(properties: IAcknowledgeQueueSentItem, expirePeriodInMs?: number) {
+  constructor(
+    properties: IAcknowledgeQueueSentItem,
+    expirePeriodInMs?: number,
+  ) {
     super(properties, expirePeriodInMs);
     this.callbackFn = properties?.callbackFn;
   }
@@ -54,7 +57,10 @@ export class AcknowledgeQueueReceivedItem extends AcknowledgeQueueItem {
   public error: Error | null;
   public data: ITransport;
 
-  constructor(properties: IAcknowledgeQueueReceivedItem, expirePeriodInMs?: number) {
+  constructor(
+    properties: IAcknowledgeQueueReceivedItem,
+    expirePeriodInMs?: number,
+  ) {
     super(properties, expirePeriodInMs);
     this.error = properties?.error;
     this.data = properties?.data;

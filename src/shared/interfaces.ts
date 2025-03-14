@@ -115,7 +115,7 @@ export interface IHttpPublish {
 /**
  * Topic properties used to creating or updating a model
  */
-export interface ITopicModel extends IBaseModel{
+export interface ITopicModel extends IBaseModel {
   topicId?: string;
   projectId?: string;
   tunnelId?: string;
@@ -130,7 +130,7 @@ export interface ITopicModel extends IBaseModel{
  * Topic API model
  * Used to save Trigger and Hydration API's
  */
-export interface ITopicApiModel extends IBaseModel  {
+export interface ITopicApiModel extends IBaseModel {
   url: string;
   queryParams?: dataType;
   headers?: dataType;

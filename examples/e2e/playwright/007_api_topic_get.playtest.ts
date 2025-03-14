@@ -6,7 +6,8 @@ test.describe("Playwright Api Get Tunnel Topic", () => {
   test("BROWSER: Get tunnel topic using topicID", async ({ page }) => {
     const args = {
       topicId: browserInstance.topic.topicId ?? "",
-      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
       tunnelId: browserInstance.tunnel.tunnelId ?? "",
     };
@@ -27,7 +28,8 @@ test.describe("Playwright Api Get Tunnel Topic", () => {
   test("NODE: Get tunnel topic using topicID", async ({ page }) => {
     const args = {
       topicId: nodeInstance.topic.topicId ?? "",
-      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
       tunnelId: nodeInstance.tunnel.tunnelId ?? "",
     };

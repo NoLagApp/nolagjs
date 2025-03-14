@@ -5,9 +5,10 @@ import { getTunnelUsingTunnelId } from "../procedures/004_api_tunnel_get";
 test.describe("Playwright Api Get Tunnel", () => {
   test("BROWSER: Get tunnel using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore: browserInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        browserInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: browserInstance.yourProjectApiKey,
-      tunnel: browserInstance.tunnel
+      tunnel: browserInstance.tunnel,
     };
 
     await page.goto(browserInstance.viteHostUrl);
@@ -22,9 +23,10 @@ test.describe("Playwright Api Get Tunnel", () => {
 
   test("NODE: Get tunnel using tunnel ID", async ({ page }) => {
     const args = {
-      noLagDeveloperTestConfigIgnore: nodeInstance.noLagDeveloperTestConfigIgnore,
+      noLagDeveloperTestConfigIgnore:
+        nodeInstance.noLagDeveloperTestConfigIgnore,
       yourProjectApiKey: nodeInstance.yourProjectApiKey,
-      tunnel: nodeInstance.tunnel
+      tunnel: nodeInstance.tunnel,
     };
 
     const response = await getTunnelUsingTunnelId(args);

@@ -14,7 +14,7 @@ export interface IExampleApiTunnelEdit {
 }
 
 export const example_api_tunnel_edit = async ({
-                                                payload,
+  payload,
   yourProjectApiKey,
   noLagDeveloperTestConfigIgnore,
   tunnel,
