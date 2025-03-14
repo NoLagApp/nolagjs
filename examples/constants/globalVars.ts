@@ -61,6 +61,12 @@ export interface IGlobalVars {
    * Get the global device model
    */
   device: IDeviceModel;
+
+  /**
+   * Set WS hosting URL
+   * @param host
+   */
+  setWSHost(host: string): void;
 }
 
 export interface IGlobalSerialisedVars {
@@ -77,6 +83,7 @@ class GlobalVars implements IGlobalVars {
   // local state
   private vars: Record<any, any> = {};
   private envName: EEnvironments;
+  private serverWSHost = "localhost:5003"
   public viteHostUrl = "http://localhost:5111";
 
   constructor(envName:EEnvironments,envVars: IEnvVars) {
@@ -95,10 +102,14 @@ class GlobalVars implements IGlobalVars {
     };
   }
 
+  public setWSHost(host: string) {
+    this.serverWSHost = host;
+  }
+
   public get noLagDeveloperTestConfigIgnoreWs() {
     if (!this.vars.NOLAG_DEVELOPER_TESTING) return {};
     return {
-      host: "localhost:5003",
+      host: this.serverWSHost,
       protocol: "ws",
       devMode: true,
     };

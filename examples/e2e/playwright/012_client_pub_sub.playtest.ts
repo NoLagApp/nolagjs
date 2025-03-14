@@ -103,8 +103,9 @@ test.describe("Playwright client pub/sub", () => {
 
     const topicName = nodeInstance?.topic.name ?? "";
 
+    browserInstance.setWSHost("localhost:5005");
+
     const response = await TUNNEL_standardPubSub({
-      noLagDeveloperTestConfigIgnoreWs,
       environmentInstanceOne: browserInstance,
       environmentInstanceTwo: nodeInstance,
     });

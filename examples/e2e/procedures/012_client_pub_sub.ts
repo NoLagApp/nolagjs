@@ -16,6 +16,7 @@ import { example_client_topic_remove_identifiers } from "../../SDK/Client/topic_
 import { example_client_topic_publish } from "../../SDK/Client/topic_instance/example_client_topic_publish";
 import { example_client_topic_callback_on_receive } from "../../SDK/Client/topic_instance/example_client_topic_callback_on_receive";
 import { example_client_topic_unsubscribe } from "../../SDK/Client/topic_instance/example_client_topic_unsubscribe";
+import { delay } from "../../constants/util/delay";
 
 export interface IClientPubSub {
   environmentInstanceOne?: IGlobalVars;
@@ -41,7 +42,6 @@ export const presence = {
 };
 
 export const TUNNEL_standardPubSub = async ({
-  noLagDeveloperTestConfigIgnoreWs,
   environmentInstanceOne,
   environmentInstanceTwo,
 }: IClientPubSub) => {
@@ -50,7 +50,7 @@ export const TUNNEL_standardPubSub = async ({
   const identifiers = undefined;
 
   const ONE_TunnelInstance = await example_client_tunnel_connect({
-    noLagDeveloperTestConfigIgnoreWs,
+    noLagDeveloperTestConfigIgnoreWs: environmentInstanceOne?.noLagDeveloperTestConfigIgnoreWs ?? {},
     deviceToken: environmentInstanceOne?.device?.deviceAccessToken ?? "",
     options: {
       debug: true,
@@ -58,7 +58,7 @@ export const TUNNEL_standardPubSub = async ({
   });
 
   const TWO_TunnelInstance = await example_client_tunnel_connect({
-    noLagDeveloperTestConfigIgnoreWs,
+    noLagDeveloperTestConfigIgnoreWs: environmentInstanceTwo?.noLagDeveloperTestConfigIgnoreWs ?? {},
     deviceToken: environmentInstanceTwo?.device?.deviceAccessToken ?? "",
     options: {
       debug: true,
