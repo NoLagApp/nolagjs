@@ -24,7 +24,7 @@ export const example_api_tunnel_create = async ({
   // setup connection to NoLag API
   // we only need to supply the PROJECT API KEY obtained from the NoLag portal
   // https://developer.nolag.app/#api
-  const apiTunnel = Api(
+  const apiTunnel: IApiTunnel = Api(
     yourProjectApiKey,
     noLagDeveloperTestConfigIgnore, // <--- ignore this argument, it's only used by NoLag devs
   );
