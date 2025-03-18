@@ -65,6 +65,7 @@ export class NoLagClient implements INoLagClient {
     acknowledgeQueueManager: AcknowledgeQueueManager,
     connectOptions?: IConnectOptions,
   ) {
+    console.log("NoLagClient");
     this.acknowledgeQueueManager = acknowledgeQueueManager;
     this.authToken = authToken ?? "";
     this.host = connectOptions?.host ?? CONSTANT.DefaultWsHost;
@@ -91,12 +92,16 @@ export class NoLagClient implements INoLagClient {
         this.connectionStatus === EConnectionStatus.Disconnected
       )
         return;
-      // get the first message in the buffer
-      const sendTransport = this.buffer.shift();
-      if (!sendTransport) return;
+      if (this.buffer.length === 0) return;
       if (!this.wsInstance) return;
       // send the first message in the buffer
-      this.wsInstance.send ? this.wsInstance.send(sendTransport) : undefined;
+      if(this.connectionStatus === EConnectionStatus.Connected) {
+        // get the first message in the buffer
+        const sendTransport = this.buffer.shift();
+        if (!sendTransport) return;
+        // send the first message in the buffer
+        this.wsInstance.send ? this.wsInstance.send(sendTransport) : undefined;
+      }
     }, this.backpressureSendInterval);
   }
 
@@ -109,6 +114,7 @@ export class NoLagClient implements INoLagClient {
 
   addToBuffer(buffer: ArrayBuffer) {
     this.buffer.push(buffer);
+    console.log(this.buffer);
   }
 
   setReConnect(reConnect?: boolean) {
@@ -124,20 +130,6 @@ export class NoLagClient implements INoLagClient {
     this.connectionStatus = EConnectionStatus.Idle;
     await this.initWebsocketConnection();
     await this.authenticate();
-    // return new Promise((resolve, reject) => {
-    //   const checkConnection = setInterval(() => {
-    //     if (this.connectionStatus === EConnectionStatus.Connected) {
-    //       resolve(this);
-    //       clearInterval(checkConnection);
-    //     }
-    //   }, this.checkConnectionInterval);
-    //   setTimeout(() => {
-    //     if (this.connectionStatus === EConnectionStatus.Idle) {
-    //       reject(true);
-    //       clearInterval(checkConnection);
-    //     }
-    //   }, this.checkConnectionTimeout);
-    // });
   }
 
   disconnect() {
@@ -370,7 +362,11 @@ export class NoLagClient implements INoLagClient {
   }
 
   public send(sendAction: ESendAction, transport: ArrayBuffer) {
-    this.addToBuffer(transport);
+    if(sendAction === ESendAction.TunnelAuthenticate && this.wsInstance) {
+      this.wsInstance?.send ? this.wsInstance.send(transport) : undefined;
+    } else {
+      this.addToBuffer(transport);
+    }
     if (this.debug) {
       console.log(`${sendAction}:`, NqlTransport.decode(transport));
     }
