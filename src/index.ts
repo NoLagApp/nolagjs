@@ -1,3 +1,4 @@
+console.log("node");
 import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
 import { ITunnel, Tunnel } from "./client";
 import { unifiedWebsocket } from "./unifiedWebsocket/node";
@@ -10,16 +11,15 @@ export * from "./imports";
  * @param connectOptions
  * @constructor
  */
-export const WebSocketClient = async (
+export const WebSocketClient = (
   authToken: string,
   options?: ITunnelOptions,
   connectOptions?: IConnectOptions,
-): Promise<ITunnel> => {
-  const instance = new Tunnel(
+): ITunnel => {
+  return new Tunnel(
     unifiedWebsocket,
     authToken,
     options,
     connectOptions,
   );
-  return instance.initiate();
 };

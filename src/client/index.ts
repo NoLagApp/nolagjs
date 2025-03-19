@@ -19,11 +19,19 @@ import { AcknowledgeQueueManager } from "../shared/utils/AcknowledgeQueue/Acknow
 
 export interface ITunnel {
   /**
+   * Connect to NoLag
+   */
+  connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this>;
+  /**
    * Retrieve instanciated topic
    * @param topicName Topic name regisrered in NoLag Portal
+   * @param callbackFn
    * @return Topic | undefined
    */
-  getTopic(topicName: string): Promise<ITopic>;
+  getTopic(
+    topicName: string,
+    callbackFn?: (error: Error | null, topic: ITopic | null) => void,
+  ): ITopic;
 
   /**
    * Delete instantiated topic
@@ -172,12 +180,17 @@ export class Tunnel implements ITunnel {
   }
 
   // connect to NoLag with Tunnel credentials
-  public async initiate(reconnect?: boolean) {
+  public async initiate(reconnect?: boolean, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this> {
     this.noLagClient.setReConnect(reconnect);
-    await this.noLagClient.connect();
+    await this.noLagClient.connect(callbackFn);
+    console.log("boom");
     this.noLagClient.setReConnect(false);
     this.startHeartbeat();
     return this;
+  }
+
+  connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this> {
+    return this.initiate(false, callbackFn);
   }
 
   private onVisibilityChange() {
@@ -285,10 +298,10 @@ export class Tunnel implements ITunnel {
     this.callbackOnReceivedError = callback;
   }
 
-  public async getTopic(
+  public getTopic(
     topicName: string,
     callbackFn?: (error: Error | null, topic: ITopic | null) => void,
-  ): Promise<ITopic> {
+  ): ITopic {
     // check if topic is already instantiated
     // if not, subscribe
     if (!this.topics[topicName]) {
@@ -299,7 +312,7 @@ export class Tunnel implements ITunnel {
         {},
         this.acknowledgeQueueManager,
       );
-      await topic.subscribe((error, data) => {
+      topic.subscribe((error, data) => {
         if (callbackFn) {
           callbackFn(error, topic);
         }

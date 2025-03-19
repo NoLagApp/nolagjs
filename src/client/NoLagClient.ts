@@ -65,7 +65,6 @@ export class NoLagClient implements INoLagClient {
     acknowledgeQueueManager: AcknowledgeQueueManager,
     connectOptions?: IConnectOptions,
   ) {
-    console.log("NoLagClient");
     this.acknowledgeQueueManager = acknowledgeQueueManager;
     this.authToken = authToken ?? "";
     this.host = connectOptions?.host ?? CONSTANT.DefaultWsHost;
@@ -95,7 +94,7 @@ export class NoLagClient implements INoLagClient {
       if (this.buffer.length === 0) return;
       if (!this.wsInstance) return;
       // send the first message in the buffer
-      if(this.connectionStatus === EConnectionStatus.Connected) {
+      if (this.connectionStatus === EConnectionStatus.Connected) {
         // get the first message in the buffer
         const sendTransport = this.buffer.shift();
         if (!sendTransport) return;
@@ -114,7 +113,6 @@ export class NoLagClient implements INoLagClient {
 
   addToBuffer(buffer: ArrayBuffer) {
     this.buffer.push(buffer);
-    console.log(this.buffer);
   }
 
   setReConnect(reConnect?: boolean) {
@@ -122,14 +120,13 @@ export class NoLagClient implements INoLagClient {
   }
 
   /**
-   * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
-   * @param callbackMain used as a event trigger
+   * Promise - Set up the connection process, code will detect if the code is being used in the front-end or backend
    * @returns NoLagClient instance
    */
-  async connect(): Promise<void> {
+  async connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<void> {
     this.connectionStatus = EConnectionStatus.Idle;
     await this.initWebsocketConnection();
-    await this.authenticate();
+    await this.authenticate(callbackFn);
   }
 
   disconnect() {
@@ -183,7 +180,9 @@ export class NoLagClient implements INoLagClient {
     return true;
   }
 
-  async authenticate() {
+  async authenticate(
+    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+  ) {
     this.connectionStatus = EConnectionStatus.Connecting;
 
     const { authToken } = this;
@@ -202,6 +201,7 @@ export class NoLagClient implements INoLagClient {
       new AcknowledgeQueueIdentifier({
         authentication: EConnectionStatus.Authentication,
       }),
+      callbackFn,
     );
   }
 
@@ -244,7 +244,6 @@ export class NoLagClient implements INoLagClient {
       decoded.getCommand(ETransportCommand.Acknowledge) &&
       this.connectionStatus === EConnectionStatus.Connecting
     ) {
-      // TODO: message broker should s
       this.connectionStatus = EConnectionStatus.Connected;
       this.deviceTokenId = decoded.getCommand(
         ETransportCommand.Acknowledge,
@@ -313,7 +312,7 @@ export class NoLagClient implements INoLagClient {
   }
 
   private _onOpen(event: any) {
-    this.connectionStatus === EConnectionStatus.Idle;
+    this.connectionStatus = EConnectionStatus.Idle;
     this.callbackOnOpen(undefined, event);
     if (this.debug) {
       console.log(`${ESendAction.OnOpen}:`, event);
@@ -362,7 +361,7 @@ export class NoLagClient implements INoLagClient {
   }
 
   public send(sendAction: ESendAction, transport: ArrayBuffer) {
-    if(sendAction === ESendAction.TunnelAuthenticate && this.wsInstance) {
+    if (sendAction === ESendAction.TunnelAuthenticate && this.wsInstance) {
       this.wsInstance?.send ? this.wsInstance.send(transport) : undefined;
     } else {
       this.addToBuffer(transport);

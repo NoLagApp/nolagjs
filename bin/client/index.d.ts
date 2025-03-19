@@ -3,11 +3,16 @@ import { IConnectOptions, IErrorMessage, INqlIdentifiers, ITransport, ITunnelOpt
 import { ITopic } from "../shared/models/Topic";
 export interface ITunnel {
     /**
+     * Connect to NoLag
+     */
+    connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this>;
+    /**
      * Retrieve instanciated topic
      * @param topicName Topic name regisrered in NoLag Portal
+     * @param callbackFn
      * @return Topic | undefined
      */
-    getTopic(topicName: string): Promise<ITopic>;
+    getTopic(topicName: string, callbackFn?: (error: Error | null, topic: ITopic | null) => void): ITopic;
     /**
      * Delete instantiated topic
      * @param topicName Topic name regisrered in NoLag Portal
@@ -79,7 +84,8 @@ export declare class Tunnel implements ITunnel {
     get deviceTokenId(): string | null;
     private startHeartbeat;
     private stopHeartbeat;
-    initiate(reconnect?: boolean): Promise<this>;
+    initiate(reconnect?: boolean, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this>;
+    connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this>;
     private onVisibilityChange;
     private onReceiveMessage;
     private reconnect;
@@ -92,7 +98,7 @@ export declare class Tunnel implements ITunnel {
     onDisconnect(callback: FConnection): void;
     onReconnect(callback: FConnection): void;
     onErrors(callback: FConnection): void;
-    getTopic(topicName: string, callbackFn?: (error: Error | null, topic: ITopic | null) => void): Promise<ITopic>;
+    getTopic(topicName: string, callbackFn?: (error: Error | null, topic: ITopic | null) => void): ITopic;
     unsubscribe(topicName: string, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<boolean>;
     subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): Promise<ITopic>;
     publish(topicName: string, data: publishData, identifiers?: string[]): void;
