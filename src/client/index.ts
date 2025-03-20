@@ -23,8 +23,8 @@ export interface ITunnel {
    */
   connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this>;
   /**
-   * Retrieve instanciated topic
-   * @param topicName Topic name regisrered in NoLag Portal
+   * Retrieve instantiated topic
+   * @param topicName Topic name registered in NoLag Portal
    * @param callbackFn
    * @return Topic | undefined
    */
@@ -54,11 +54,11 @@ export interface ITunnel {
     topicName: string,
     identifiers?: INqlIdentifiers,
     callbackFn?: (error: Error | null, topic: ITransport | null) => void,
-  ): Promise<ITopic>;
+  ): ITopic;
 
   /**
    * Publish data before setting a Topic
-   * @param topicName string - Topic name regisrered in NoLag Portal
+   * @param topicName string - Topic name registered in NoLag Portal
    * @param data ArrayBuffer - Data to send to the Topic
    * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
    */
@@ -80,7 +80,7 @@ export interface ITunnel {
   ): void;
 
   /**
-   * Triggered when there is a reconnect attempt
+   * Triggered when there is a re-connect attempt
    * @param callbackFn
    */
   onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
@@ -334,11 +334,11 @@ export class Tunnel implements ITunnel {
     return false;
   }
 
-  public async subscribe(
+  public subscribe(
     topicName: string,
     identifiers: INqlIdentifiers = {},
     callbackFn?: (error: Error | null, topic: ITransport | null) => void,
-  ): Promise<ITopic> {
+  ): ITopic {
     if (!this.noLagClient) {
       throw new Error(
         "NoLag client is not set. Please connect to NoLag before attempting to subscribe.",
@@ -347,7 +347,7 @@ export class Tunnel implements ITunnel {
     if (this.topics[topicName]) {
       const topic = this.topics[topicName];
       if (identifiers?.OR?.length && identifiers?.OR?.length !== 0)
-        await topic.addIdentifiers(identifiers);
+        topic.addIdentifiers(identifiers);
       return topic;
     } else {
       const topic = (this.topics[topicName] = new Topic(
@@ -358,7 +358,7 @@ export class Tunnel implements ITunnel {
         this.acknowledgeQueueManager,
       ));
 
-      await topic.subscribe(callbackFn);
+      topic.subscribe(callbackFn);
 
       return this.topics[topicName];
     }

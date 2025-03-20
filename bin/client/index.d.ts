@@ -7,8 +7,8 @@ export interface ITunnel {
      */
     connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this>;
     /**
-     * Retrieve instanciated topic
-     * @param topicName Topic name regisrered in NoLag Portal
+     * Retrieve instantiated topic
+     * @param topicName Topic name registered in NoLag Portal
      * @param callbackFn
      * @return Topic | undefined
      */
@@ -26,10 +26,10 @@ export interface ITunnel {
      * @param identifiers Set if reverse query identifiers which the topic will listen two
      * @param callbackFn
      */
-    subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): Promise<ITopic>;
+    subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): ITopic;
     /**
      * Publish data before setting a Topic
-     * @param topicName string - Topic name regisrered in NoLag Portal
+     * @param topicName string - Topic name registered in NoLag Portal
      * @param data ArrayBuffer - Data to send to the Topic
      * @param identifiers string[] - Set if reverse query identifiers which the topic will listen two
      */
@@ -45,7 +45,7 @@ export interface ITunnel {
      */
     onDisconnect(callbackFn: ((errorMessage: IErrorMessage) => void) | undefined): void;
     /**
-     * Triggered when there is a reconnect attempt
+     * Triggered when there is a re-connect attempt
      * @param callbackFn
      */
     onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
@@ -100,7 +100,7 @@ export declare class Tunnel implements ITunnel {
     onErrors(callback: FConnection): void;
     getTopic(topicName: string, callbackFn?: (error: Error | null, topic: ITopic | null) => void): ITopic;
     unsubscribe(topicName: string, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<boolean>;
-    subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): Promise<ITopic>;
+    subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, topic: ITransport | null) => void): ITopic;
     publish(topicName: string, data: publishData, identifiers?: string[]): void;
     get status(): import("../shared/enum").EConnectionStatus;
 }
