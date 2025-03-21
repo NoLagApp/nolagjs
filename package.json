@@ -11,6 +11,15 @@
   "browser": "./bin/browserInstance.js",
   "module": "./bin/index.mjs",
   "types": "./bin/index.d.ts",
+  "exports": {
+    "import": {
+      "browser": "./bin/browserInstance.js",
+      "default": "./bin/index.mjs"
+    },
+    "require": {
+      "default": "./bin/index.cjs"
+    }
+  },
   "files": [
     "bin"
   ],
