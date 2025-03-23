@@ -183,7 +183,6 @@ export class Tunnel implements ITunnel {
   public async initiate(reconnect?: boolean, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this> {
     this.noLagClient.setReConnect(reconnect);
     await this.noLagClient.connect(callbackFn);
-    console.log("boom");
     this.noLagClient.setReConnect(false);
     this.startHeartbeat();
     return this;

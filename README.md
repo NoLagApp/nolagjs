@@ -10,8 +10,6 @@ For more detailed information on using NoLag please visit our [developer wiki](h
 ```typescript
 import {
   WebSocketClient,
-  stringToArrayBuffer,
-  uint8ArrayToString,
 } from "nolagjs";
 
 import type { ITopic, ITunnel, IResponse } from "nolag";
@@ -35,20 +33,17 @@ const rideShareRider: ITopic = nolagInstance.subscribe("rideShareDriver",  {
 /**
  * ----- PUBLISH some data to a topic and grouping of identifiers -----
  */
-const rideShareDriverPayload: string = JSON.stringify({
+const rideShareDriverPayload = {
     driverCurrentLocation: {
       lat: "1234",
       lng: "34564",
     },
-  });
-
-// payload as ArrayBuffer
-const payloadArrayBuffer: ArrayBuffer = stringToArrayBuffer(rideShareDriverPayload);
+  };
 
 // identifiers
 const identifiers: string[] = ["booking_id_1234"];
 
-nolagInstance.publish("rideShareDriver", payloadArrayBuffer, identifiers);
+nolagInstance.publish("rideShareDriver", rideShareDriverPayload, identifiers);
 ```
 
 #### Receive data on Topic name
@@ -73,3 +68,6 @@ rideShareRider.onReceive((received: IResponse) => {
 });
 
 ```
+
+# Examples
+You can check out the `examples\

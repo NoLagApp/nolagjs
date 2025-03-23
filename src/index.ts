@@ -1,7 +1,7 @@
-console.log("node");
 import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
 import { ITunnel, Tunnel } from "./client";
 import { unifiedWebsocket } from "./unifiedWebsocket/node";
+
 export * from "./imports";
 
 /**
@@ -16,10 +16,5 @@ export const WebSocketClient = (
   options?: ITunnelOptions,
   connectOptions?: IConnectOptions,
 ): ITunnel => {
-  return new Tunnel(
-    unifiedWebsocket,
-    authToken,
-    options,
-    connectOptions,
-  );
+  return new Tunnel(unifiedWebsocket, authToken, options, connectOptions);
 };

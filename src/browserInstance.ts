@@ -1,4 +1,3 @@
-console.log("browser");
 import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
 import { ITunnel, Tunnel } from "./client";
 import { unifiedWebsocket } from "./unifiedWebsocket/browser";

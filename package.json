@@ -8,16 +8,15 @@
   },
   "description": "NoLag websocket client for browser and Nodejs",
   "main": "./bin/index.cjs",
-  "browser": "./bin/browserInstance.js",
   "module": "./bin/index.mjs",
+  "browser": "./bin/browserInstance.js",
   "types": "./bin/index.d.ts",
   "exports": {
-    "import": {
+    ".": {
       "browser": "./bin/browserInstance.js",
+      "import": "./bin/index.mjs",
+      "require": "./bin/index.cjs",
       "default": "./bin/index.mjs"
-    },
-    "require": {
-      "default": "./bin/index.cjs"
     }
   },
   "files": [
