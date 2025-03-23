@@ -14,7 +14,7 @@ import { publishData } from "../constants";
 
 export interface ITopic {
   subscribe(
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic>;
   /**
    * Add NQL identifers to the Topic
@@ -23,7 +23,7 @@ export interface ITopic {
    */
   addIdentifiers(
     identifiers: INqlIdentifiers,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic>;
   /**
    * Remove saved NQL identifiers
@@ -32,21 +32,21 @@ export interface ITopic {
    */
   removeIdentifiers(
     identifiers: string[],
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic>;
   /**
-   * Unsubscribe from current Topic. You will not onReceive messages from this
+   * Unsubscribe from current Topic. You will not receive messages from this
    * Topic in the future
    */
   unsubscribe(
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<boolean>;
   /**
    * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
    * is onReceive
    * @param callbackFn
    */
-  onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
+  onReceive(callbackFn: ((transport: ITransport) => void) | undefined): Topic;
   /**
    * Publish topic data with optional attached identifiers
    * @param data Data being sent is an ArrayBuffer
@@ -56,9 +56,9 @@ export interface ITopic {
   publish(data: publishData, identifiers?: string[]): Topic;
   /**
    * PRIVATE Inject messages into the Topic instance
-   * @param data
+   * @param transport
    */
-  _onReceiveMessage(data: ITransport): Topic;
+  _onReceiveMessage(transport: ITransport): Topic;
   /**
    * Set presence data on this topic. Presence data could be anything that identifies this device.
    * Updated list of shared data is shared with all devices subscribed to the same Topic and Identifiers when a devices
@@ -69,20 +69,20 @@ export interface ITopic {
    */
   setPresence(
     presence: string,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic>;
 }
 
 export interface ICallbackQueue {
   topicName: string;
   identifiers: string[];
-  callbackFn: (error: Error, data: ITransport) => void;
+  callbackFn: (error: Error, transport: ITransport) => void;
 }
 
 export class Topic implements ITopic {
   private connection: NoLagClient | undefined;
   private readonly topicName: string;
-  private onReceiveCallback: ((data: ITransport) => void) | undefined;
+  private onReceiveCallback: ((transport: ITransport) => void) | undefined;
   private identifiers: string[] = [];
   private presence: string | undefined;
   private tunnel: Tunnel;
@@ -128,7 +128,7 @@ export class Topic implements ITopic {
   private async _subscribeAction(
     sendAction: ESendAction,
     commands: TransportCommands,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<void> {
     const transport = NqlTransport.encode(commands);
 
@@ -145,7 +145,7 @@ export class Topic implements ITopic {
   }
 
   public async subscribe(
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic> {
     if (!this.topicName) {
       const error = new Error("Topic name is required");
@@ -178,7 +178,7 @@ export class Topic implements ITopic {
 
   public async setPresence(
     presence: string,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic> {
     const topicInstance = this;
     topicInstance.presence = presence;
@@ -211,15 +211,15 @@ export class Topic implements ITopic {
     return this;
   }
 
-  public _onReceiveMessage(data: ITransport): Topic {
+  public _onReceiveMessage(transport: ITransport): Topic {
     if (this.onReceiveCallback) {
-      this.onReceiveCallback(data);
+      this.onReceiveCallback(transport);
     }
     return this;
   }
 
   public onReceive(
-    callbackFn: ((data: ITransport) => void) | undefined,
+    callbackFn: ((transport: ITransport) => void) | undefined,
   ): Topic {
     this.onReceiveCallback = callbackFn;
     return this;
@@ -227,7 +227,7 @@ export class Topic implements ITopic {
 
   public async addIdentifiers(
     identifiersList: INqlIdentifiers,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic> {
     if (!identifiersList?.OR?.length || identifiersList?.OR?.length === 0) {
       const error = new Error("Identifiers are required.");
@@ -268,7 +268,7 @@ export class Topic implements ITopic {
 
   public async removeIdentifiers(
     identifiers: string[],
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<ITopic> {
     if (!identifiers?.length || identifiers?.length === 0) {
       const error = new Error("Identifiers are required.");
@@ -306,7 +306,7 @@ export class Topic implements ITopic {
   }
 
   public async unsubscribe(
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<boolean> {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, this.topicName)

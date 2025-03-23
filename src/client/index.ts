@@ -21,7 +21,7 @@ export interface ITunnel {
   /**
    * Connect to NoLag
    */
-  connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this>;
+  connect(callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<this>;
   /**
    * Retrieve instantiated topic
    * @param topicName Topic name registered in NoLag Portal
@@ -30,7 +30,7 @@ export interface ITunnel {
    */
   getTopic(
     topicName: string,
-    callbackFn?: (error: Error | null, topic: ITopic | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): ITopic;
 
   /**
@@ -41,7 +41,7 @@ export interface ITunnel {
    */
   unsubscribe(
     topicName: string,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<boolean>;
 
   /**
@@ -53,7 +53,7 @@ export interface ITunnel {
   subscribe(
     topicName: string,
     identifiers?: INqlIdentifiers,
-    callbackFn?: (error: Error | null, topic: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): ITopic;
 
   /**
@@ -64,7 +64,7 @@ export interface ITunnel {
    */
   publish(topicName: string, data: publishData, identifiers?: string[]): void;
 
-  onReceive(callbackFn: ((data: ITransport) => void) | undefined): void;
+  onReceive(callbackFn: ((transport: ITransport) => void) | undefined): void;
 
   /**
    * Disconnect from NoLag
@@ -83,7 +83,7 @@ export interface ITunnel {
    * Triggered when there is a re-connect attempt
    * @param callbackFn
    */
-  onReconnect(callbackFn: ((data: ITransport) => void) | undefined): void;
+  onReconnect(callbackFn: ((transport: ITransport) => void) | undefined): void;
 
   /**
    * Triggered when any errors are sent from the Message Broker
@@ -121,7 +121,7 @@ export class Tunnel implements ITunnel {
   private heartBeatInterval = 20000;
   private visibilityState: string = EVisibilityState.Visible;
 
-  private callbackOnReceive: ((data: ITransport) => void) | undefined;
+  private callbackOnReceive: ((transport: ITransport) => void) | undefined;
   private callbackOnDisconnect: FConnection = () => {
     //
   };
@@ -180,7 +180,7 @@ export class Tunnel implements ITunnel {
   }
 
   // connect to NoLag with Tunnel credentials
-  public async initiate(reconnect?: boolean, callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this> {
+  public async initiate(reconnect?: boolean, callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<this> {
     this.noLagClient.setReConnect(reconnect);
     await this.noLagClient.connect(callbackFn);
     this.noLagClient.setReConnect(false);
@@ -188,7 +188,7 @@ export class Tunnel implements ITunnel {
     return this;
   }
 
-  connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<this> {
+  connect(callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<this> {
     return this.initiate(false, callbackFn);
   }
 
@@ -211,8 +211,8 @@ export class Tunnel implements ITunnel {
 
   private onReceiveMessage() {
     const tunnelInstance: Tunnel = this;
-    this.noLagClient?.onReceiveMessage((err: any, data: ITransport) => {
-      const { topicName, identifiers } = data;
+    this.noLagClient?.onReceiveMessage((err: any, transport: ITransport) => {
+      const { topicName, identifiers } = transport;
       if (this.noLagClient && !this.topics[topicName]) {
         this.topics[topicName] = new Topic(
           tunnelInstance,
@@ -225,10 +225,10 @@ export class Tunnel implements ITunnel {
         );
       }
       if (topicName && this.topics[topicName]) {
-        this.topics[topicName]?._onReceiveMessage(data);
+        this.topics[topicName]?._onReceiveMessage(transport);
       }
       if (typeof this.callbackOnReceive === "function") {
-        this.callbackOnReceive(data);
+        this.callbackOnReceive(transport);
       }
     });
   }
@@ -260,7 +260,7 @@ export class Tunnel implements ITunnel {
   }
 
   private onClose() {
-    this.noLagClient.onClose((err: any, data: ITransport) => {
+    this.noLagClient.onClose((err: any, transport: ITransport) => {
       this.doReconnect();
       if (typeof this.callbackOnReceivedError === "function") {
         this.callbackOnReceivedError(err);
@@ -269,14 +269,14 @@ export class Tunnel implements ITunnel {
   }
 
   private onError() {
-    this.noLagClient.onError((err: IErrorMessage, data: ITransport) => {
+    this.noLagClient.onError((err: IErrorMessage, transport: ITransport) => {
       if (typeof this.callbackOnReceivedError === "function") {
         this.callbackOnReceivedError(err);
       }
     });
   }
 
-  public onReceive(callback: (data: ITransport) => void): void {
+  public onReceive(callback: (transport: ITransport) => void): void {
     this.callbackOnReceive = callback;
   }
 
@@ -299,7 +299,7 @@ export class Tunnel implements ITunnel {
 
   public getTopic(
     topicName: string,
-    callbackFn?: (error: Error | null, topic: ITopic | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): ITopic {
     // check if topic is already instantiated
     // if not, subscribe
@@ -313,7 +313,7 @@ export class Tunnel implements ITunnel {
       );
       topic.subscribe((error, data) => {
         if (callbackFn) {
-          callbackFn(error, topic);
+          callbackFn(error, data);
         }
       });
       this.topics[topicName] = topic;
@@ -324,7 +324,7 @@ export class Tunnel implements ITunnel {
 
   public async unsubscribe(
     topicName: string,
-    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): Promise<boolean> {
     if (this.topics[topicName]) {
       this.topics[topicName]?.unsubscribe(callbackFn);
@@ -336,7 +336,7 @@ export class Tunnel implements ITunnel {
   public subscribe(
     topicName: string,
     identifiers: INqlIdentifiers = {},
-    callbackFn?: (error: Error | null, topic: ITransport | null) => void,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
   ): ITopic {
     if (!this.noLagClient) {
       throw new Error(
