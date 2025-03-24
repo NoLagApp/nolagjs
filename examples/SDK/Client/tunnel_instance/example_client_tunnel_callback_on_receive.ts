@@ -26,7 +26,7 @@ export const example_client_tunnel_callback_on_receive = async (
 
     tunnelInstance.onReceive((received) => {
       const { data, topicName, identifiers, presences } = received;
-
+    console.log("onReceive");
       const receivedData = bufferToString(data);
 
       const parseData = receivedData ? JSON.parse(receivedData) : undefined;

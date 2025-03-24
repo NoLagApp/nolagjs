@@ -15,19 +15,22 @@ export const example_client_tunnel_subscribe = async (
   { tunnelInstance, topicName, identifiers }: IExampleApiTunnelSubscribe,
   callbackFn?: (error: Error | null, data: ITransport | null) => void,
 ) => {
-  /***** COPY EXAMPLE CODE START *****/
-
-  const topicInstance = tunnelInstance.subscribe(
-    topicName,
-    identifiers
+  return new Promise((resolve, reject) => {
+    /***** COPY EXAMPLE CODE START *****/
+    tunnelInstance.subscribe(topicName, identifiers
       ? {
-          OR: identifiers,
-        }
-      : undefined,
-    callbackFn,
-  );
+        OR: identifiers,
+      }
+      : undefined, (err, data) => {
+      callbackFn && callbackFn(err, data);
 
-  /***** COPY EXAMPLE CODE END *****/
-
-  return topicInstance;
+      if(err) {
+        reject(err);
+        return;
+      }
+      
+      resolve(data);
+    });
+    /***** COPY EXAMPLE CODE END *****/
+  })
 };

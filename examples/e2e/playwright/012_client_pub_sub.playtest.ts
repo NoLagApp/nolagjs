@@ -28,7 +28,8 @@ import {
   TUNNEL_standardPubSubWithIdentifiers,
   TUNNEL_StandardUnsubscribe,
 } from "../procedures/012_client_pub_sub";
-import { EAccessPermission, IDeviceModel } from "nolagjs";
+import type { IDeviceModel } from "nolagjs";
+import { EAccessPermission } from "nolagjs";
 import { example_api_tunnel_device_update } from "../../SDK/API/tunnel_devices/example_api_tunnel_device_update";
 import { example_api_tunnel_device_create } from "../../SDK/API/tunnel_devices/example_api_tunnel_device_create";
 
@@ -38,20 +39,6 @@ const noLagDeveloperTestConfigIgnore =
 
 const noLagDeveloperTestConfigIgnoreWs =
   browserInstance.noLagDeveloperTestConfigIgnoreWs;
-
-// browserInstance.setDevice({
-//   deviceAccessToken: "19f042e5fad17cbb186eadda83f059f7",
-// });
-// browserInstance.setTopic({
-//   name: "node:e2e_Tunnel_1738580709899_edited_edited",
-// });
-//
-// nodeInstance.setDevice({
-//   deviceAccessToken: "b1c1c091904494e72a94e6e21616470e",
-// });
-// nodeInstance.setTopic({
-//   name: "node:e2e_Tunnel_1738580709899_edited_edited",
-// });
 
 test.describe("Playwright client pub/sub", () => {
   test("NODE:Tunnel:Standard pub/sub NO Identifier and NO presences set", async ({
@@ -102,8 +89,6 @@ test.describe("Playwright client pub/sub", () => {
     }
 
     const topicName = nodeInstance?.topic.name ?? "";
-
-    browserInstance.setWSHost("localhost:5005");
 
     const response = await TUNNEL_standardPubSub({
       environmentInstanceOne: browserInstance,

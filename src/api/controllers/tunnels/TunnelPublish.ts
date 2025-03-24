@@ -2,11 +2,12 @@ import { ETransportCommand } from "../../../shared/enum/ETransportCommand";
 import { IConnectOptions, IRequestParams } from "../../../shared/interfaces";
 import { transportCommands } from "../../../shared/utils/TransportCommands";
 import { NqlTransport } from "../../../shared/utils";
+import { publishData } from "../../../shared/constants";
 
 const routeNamespace = "publish";
 
 export const TunnelPublish = async (
-  data: ArrayBuffer,
+  data: publishData,
   topicName: string,
   identifiers: string[],
   tunnelId: string,

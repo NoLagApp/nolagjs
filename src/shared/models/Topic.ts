@@ -15,7 +15,7 @@ import { publishData } from "../constants";
 export interface ITopic {
   subscribe(
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic>;
+  ): ITopic;
   /**
    * Add NQL identifers to the Topic
    * @param identifiers
@@ -24,7 +24,7 @@ export interface ITopic {
   addIdentifiers(
     identifiers: INqlIdentifiers,
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic>;
+  ): ITopic;
   /**
    * Remove saved NQL identifiers
    * @param identifiers
@@ -33,14 +33,14 @@ export interface ITopic {
   removeIdentifiers(
     identifiers: string[],
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic>;
+  ): ITopic;
   /**
    * Unsubscribe from current Topic. You will not receive messages from this
    * Topic in the future
    */
   unsubscribe(
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<boolean>;
+  ): boolean;
   /**
    * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
    * is onReceive
@@ -70,7 +70,7 @@ export interface ITopic {
   setPresence(
     presence: string,
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic>;
+  ): ITopic;
 }
 
 export interface ICallbackQueue {
@@ -144,9 +144,9 @@ export class Topic implements ITopic {
     );
   }
 
-  public async subscribe(
+  public subscribe(
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic> {
+  ): ITopic {
     if (!this.topicName) {
       const error = new Error("Topic name is required");
       if (callbackFn) {
@@ -167,7 +167,7 @@ export class Topic implements ITopic {
 
     commands.setCommand(ETransportCommand.AddAction);
 
-    await this._subscribeAction(
+    this._subscribeAction(
       ESendAction.TopicSubscribe,
       commands,
       callbackFn,
@@ -176,10 +176,10 @@ export class Topic implements ITopic {
     return this as unknown as ITopic;
   }
 
-  public async setPresence(
+  public setPresence(
     presence: string,
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic> {
+  ): ITopic {
     const topicInstance = this;
     topicInstance.presence = presence;
 
@@ -198,7 +198,7 @@ export class Topic implements ITopic {
 
     commands.setCommand(ETransportCommand.AddAction);
 
-    await this._subscribeAction(
+    this._subscribeAction(
       ESendAction.TopicPresence,
       commands,
       callbackFn,
@@ -225,10 +225,10 @@ export class Topic implements ITopic {
     return this;
   }
 
-  public async addIdentifiers(
+  public addIdentifiers(
     identifiersList: INqlIdentifiers,
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic> {
+  ): ITopic {
     if (!identifiersList?.OR?.length || identifiersList?.OR?.length === 0) {
       const error = new Error("Identifiers are required.");
       if (callbackFn) {
@@ -255,7 +255,7 @@ export class Topic implements ITopic {
 
     this.send(ESendAction.TopicAddIdentifier, transport);
 
-    await this.acknowledgeQueueManager.addToSentQueue(
+    this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
         topicName: this.topicName,
         identifiers: this.identifiers,
@@ -266,10 +266,10 @@ export class Topic implements ITopic {
     return this as unknown as ITopic;
   }
 
-  public async removeIdentifiers(
+  public removeIdentifiers(
     identifiers: string[],
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<ITopic> {
+  ): ITopic {
     if (!identifiers?.length || identifiers?.length === 0) {
       const error = new Error("Identifiers are required.");
       if (callbackFn) {
@@ -294,7 +294,7 @@ export class Topic implements ITopic {
 
     this.send(ESendAction.TopicRemoveIdentifier, transport);
 
-    await this.acknowledgeQueueManager.addToSentQueue(
+    this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
         topicName: this.topicName,
         identifiers: this.identifiers,
@@ -305,9 +305,9 @@ export class Topic implements ITopic {
     return this as unknown as ITopic;
   }
 
-  public async unsubscribe(
+  public unsubscribe(
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<boolean> {
+  ): boolean {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, this.topicName)
       .setCommand(ETransportCommand.DeleteAction);
@@ -316,7 +316,7 @@ export class Topic implements ITopic {
 
     this.send(ESendAction.TopicUnsubscribe, transport);
 
-    await this.acknowledgeQueueManager.addToSentQueue(
+    this.acknowledgeQueueManager.addToSentQueue(
       new AcknowledgeQueueIdentifier({
         topicName: this.topicName,
         identifiers: this.identifiers,

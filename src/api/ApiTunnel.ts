@@ -10,12 +10,12 @@ import { CONSTANT } from "../shared/constants";
 
 export interface IApiTunnel {
   /**
-   * Retrieve list of tunnels based on tunnelQuery
+   * Retrieve a list of tunnels based on tunnelQuery
    * @param tunnelQuery
    */
   tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>>;
   /**
-   * Create new tunnel based on supplied payload
+   * Create a new tunnel based on supplied payload
    * @param payload
    */
   createTunnel(payload: ITunnelModel): Promise<ITunnelModel>;

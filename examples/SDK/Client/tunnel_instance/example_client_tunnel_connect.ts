@@ -20,13 +20,15 @@ export const example_client_tunnel_connect = async ({
   /***** COPY EXAMPLE CODE START *****/
   // connect to NoLag message broker
   // https://developer.nolag.app/#client-sdk
-  const nolagClient: ITunnel = await WebSocketClient(
+  const nolagClient: ITunnel = WebSocketClient(
     deviceToken,
     {
       debug: options?.debug,
     },
     noLagDeveloperTestConfigIgnoreWs,
   );
+
+  await nolagClient.connect();
 
   /***** COPY EXAMPLE CODE END *****/
 

@@ -12,7 +12,7 @@ export interface IExampleApiTunnelPublish {
   identifiers?: string[];
 }
 
-export const example_client_tunnel_publish = async ({
+export const example_client_tunnel_publish = ({
   tunnelInstance,
   topicName,
   identifiers,

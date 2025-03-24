@@ -14,11 +14,15 @@ export const example_client_topic_remove_identifiers = async ({
   topicInstance,
   identifiers,
 }: IExampleApiTopicRemoveIdentifiers) => {
-  /***** COPY EXAMPLE CODE START *****/
-
-  const updatedTopicInstance = topicInstance.removeIdentifiers(identifiers);
-
-  /***** COPY EXAMPLE CODE END *****/
-
-  return updatedTopicInstance;
+  return new Promise((resolve, reject) => {
+    /***** COPY EXAMPLE CODE START *****/
+    topicInstance.removeIdentifiers(identifiers, (err, data) => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      resolve(data);
+    });
+    /***** COPY EXAMPLE CODE END *****/
+  })
 };

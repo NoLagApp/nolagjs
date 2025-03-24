@@ -42,7 +42,7 @@ export interface ITunnel {
   unsubscribe(
     topicName: string,
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<boolean>;
+  ): boolean;
 
   /**
    * Set a new topic that is attached to tunnel
@@ -322,10 +322,10 @@ export class Tunnel implements ITunnel {
     return this.topics[topicName];
   }
 
-  public async unsubscribe(
+  public unsubscribe(
     topicName: string,
     callbackFn?: (error: Error | null, transport: ITransport | null) => void,
-  ): Promise<boolean> {
+  ): boolean {
     if (this.topics[topicName]) {
       this.topics[topicName]?.unsubscribe(callbackFn);
       return true;

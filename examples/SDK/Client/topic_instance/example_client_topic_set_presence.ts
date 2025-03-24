@@ -14,13 +14,16 @@ export const example_client_topic_set_presence = async ({
   topicInstance,
   presenceData,
 }: IExampleApiTopicSetPresence) => {
-  /***** COPY EXAMPLE CODE START *****/
-
   const payload: string = JSON.stringify(presenceData);
-
-  const updatedTopicInstance = await topicInstance.setPresence(payload);
-
-  /***** COPY EXAMPLE CODE END *****/
-
-  return updatedTopicInstance;
+  return new Promise((resolve, reject) => {
+    /***** COPY EXAMPLE CODE START *****/
+    topicInstance.setPresence(payload, (err, data) => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      resolve(data);
+    });
+    /***** COPY EXAMPLE CODE END *****/
+  })
 };

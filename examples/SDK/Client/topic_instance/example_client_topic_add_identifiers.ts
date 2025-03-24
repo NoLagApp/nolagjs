@@ -14,13 +14,17 @@ export const example_client_topic_add_identifiers = async ({
   topicInstance,
   identifiers,
 }: IExampleApiTopicAddIdentifiers) => {
-  /***** COPY EXAMPLE CODE START *****/
-
-  const updatedTopicInstance = await topicInstance.addIdentifiers({
-    OR: identifiers,
-  });
-
-  /***** COPY EXAMPLE CODE END *****/
-
-  return updatedTopicInstance;
+  return new Promise((resolve, reject) => {
+    /***** COPY EXAMPLE CODE START *****/
+    topicInstance.addIdentifiers({
+      OR: identifiers,
+    }, (err, data) => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      resolve(data);
+    });
+    /***** COPY EXAMPLE CODE END *****/
+  })
 };

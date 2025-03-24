@@ -3,7 +3,7 @@
  * Can read more about this here: https://developer.nolag.app/#get-topic-instance
  */
 
-import type { ITunnel } from "nolagjs";
+import type { ITopic, ITunnel } from "nolagjs";
 
 export interface IExampleApiTunnelTopicGet {
   tunnelInstance: ITunnel;
@@ -13,12 +13,11 @@ export interface IExampleApiTunnelTopicGet {
 export const example_client_tunnel_topic_get = async ({
   tunnelInstance,
   topicName,
-}: IExampleApiTunnelTopicGet) => {
-  /***** COPY EXAMPLE CODE START *****/
-
-  const topicInstance = await tunnelInstance.getTopic(topicName);
-
-  /***** COPY EXAMPLE CODE END *****/
-
-  return topicInstance;
+}: IExampleApiTunnelTopicGet): Promise<ITopic> => {
+  return new Promise((resolve, reject) => {
+    /***** COPY EXAMPLE CODE START *****/
+    const topic = tunnelInstance.getTopic(topicName);
+    resolve(topic);
+    /***** COPY EXAMPLE CODE END *****/
+  })
 };

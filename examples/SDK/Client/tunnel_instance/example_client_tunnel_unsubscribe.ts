@@ -14,11 +14,16 @@ export const example_client_tunnel_unsubscribe = async ({
   tunnelInstance,
   topicName,
 }: IExampleApiTunnelUnsubscribe) => {
-  /***** COPY EXAMPLE CODE START *****/
+  return new Promise((resolve, reject) => {
+    /***** COPY EXAMPLE CODE START *****/
+    tunnelInstance.unsubscribe(topicName, (err, data) => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      resolve(data);
+    });
 
-  const topicInstance = tunnelInstance.unsubscribe(topicName);
-
-  /***** COPY EXAMPLE CODE END *****/
-
-  return topicInstance;
+    /***** COPY EXAMPLE CODE END *****/
+  })
 };

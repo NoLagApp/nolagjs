@@ -1,5 +1,6 @@
 import { EAccessPermission, EStatus } from "./enum";
 import { dataType } from "./types";
+import { publishData } from "./constants";
 
 /**
  * Disconnect from message broker when tab is not in view
@@ -107,7 +108,7 @@ export interface IStaticTopic {
  * Sending messages to the Message Broker via HTTP call
  */
 export interface IHttpPublish {
-  data: ArrayBuffer;
+  data: publishData;
   topicName: string;
   identifiers: string[];
 }

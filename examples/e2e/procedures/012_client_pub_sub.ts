@@ -342,9 +342,13 @@ export const TOPIC_SetPresence = async ({
     presenceData: presenceTWO,
   });
 
+  console.log("11111");
+
   const receivedPresenceTwo = await example_client_tunnel_callback_on_receive({
     tunnelInstance: TWO_TunnelInstance,
   });
+
+  console.log("receivedPresenceTwo", receivedPresenceTwo);
 
   await example_client_tunnel_disconnect({
     tunnelInstance: ONE_TunnelInstance ?? ({} as any),
