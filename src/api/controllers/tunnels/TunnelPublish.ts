@@ -1,19 +1,18 @@
-import { AxiosInstance, AxiosStatic } from "axios";
-import { TData } from "../../../shared/constants";
 import { ETransportCommand } from "../../../shared/enum/ETransportCommand";
-import { IConnectOptions } from "../../../shared/interfaces";
+import { IConnectOptions, IRequestParams } from "../../../shared/interfaces";
 import { transportCommands } from "../../../shared/utils/TransportCommands";
-import { NqlTransport } from "../../../shared/utils/transport";
+import { NqlTransport } from "../../../shared/utils";
+import { publishData } from "../../../shared/constants";
 
 const routeNamespace = "publish";
 
 export const TunnelPublish = async (
-  data: ArrayBuffer,
+  data: publishData,
   topicName: string,
   identifiers: string[],
   tunnelId: string,
   parentRouteNamespace: string,
-  request: AxiosInstance,
+  requestParams: IRequestParams,
   connectOptions: IConnectOptions,
 ): Promise<boolean> => {
   const commands = transportCommands()
@@ -23,16 +22,16 @@ export const TunnelPublish = async (
 
   const encodedBuffer = NqlTransport.encode(commands, data);
 
-  await request.request({
-    baseURL: `${connectOptions?.protocol}://${connectOptions?.wsHost}`,
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": connectOptions?.apiKey
+  const baseUrl = `${connectOptions?.protocol}://${connectOptions?.wsHost}`;
+
+  await fetch(
+    `${baseUrl}/${parentRouteNamespace}/${tunnelId}/${routeNamespace}`,
+    {
+      headers: requestParams.headers,
+      method: "POST",
+      body: encodedBuffer,
     },
-    url: `/${parentRouteNamespace}/${tunnelId}/${routeNamespace}`,
-    method: "post",
-    data: encodedBuffer,
-  });
+  );
 
   return true;
 };

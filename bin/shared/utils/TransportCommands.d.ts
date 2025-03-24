@@ -32,3 +32,4 @@ export declare class TransportCommands {
     build(): Uint8Array;
 }
 export declare const transportCommands: () => TransportCommands;
+//# sourceMappingURL=TransportCommands.d.ts.map

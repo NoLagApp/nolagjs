@@ -1,11 +1,13 @@
-import { TData } from "./constants";
 import { EAccessPermission, EStatus } from "./enum";
 import { dataType } from "./types";
+import { publishData } from "./constants";
 /**
  * Disconnect from message broker when tab is not in view
  */
 export interface ITunnelOptions {
     disconnectOnNoVisibility?: boolean;
+    bufferOnDisconnect?: boolean;
+    debug?: boolean;
 }
 /**
  * NOT FOR NORMAL USE
@@ -22,6 +24,13 @@ export interface IConnectOptions {
     checkConnectionInterval?: number;
     checkConnectionTimeout?: number;
     apiKey?: string;
+    bufferOnDisconnect?: boolean;
+    debug?: boolean;
+}
+export interface IBaseModel {
+    createdAt?: number;
+    updatedAt?: number;
+    deletedAt?: number;
 }
 /**
  * Response received from Message Broker
@@ -31,6 +40,7 @@ export interface ITransport {
     presences: string[];
     identifiers: string[];
     topicName: string;
+    acknowledge?: string | boolean | string[];
 }
 /**
  * Pagination details indicating the current status of your pagination query
@@ -52,7 +62,7 @@ export interface IPaginated<T> {
 /**
  * Available query parameters to query a device list.
  */
-export interface IDeviceListQuery {
+export interface IDeviceQuery {
     deviceAccessToken?: string;
     expireFromDate?: number;
     expireToDate?: number;
@@ -62,11 +72,11 @@ export interface IDeviceListQuery {
     page?: number;
 }
 /**
- * Properties in creating or updating a Device Token
+ * Properties in creating or updating a Device. We use the attached Token as the access key
  */
-export interface IDeviceTokenModel {
-    name: string;
-    accessPermission: EAccessPermission;
+export interface IDeviceModel extends IBaseModel {
+    name?: string;
+    accessPermission?: EAccessPermission;
     deviceTokenId?: string;
     deviceAccessToken?: string;
     projectId?: string;
@@ -88,14 +98,17 @@ export interface IStaticTopic {
  * Sending messages to the Message Broker via HTTP call
  */
 export interface IHttpPublish {
-    data: TData;
+    data: publishData;
     topicName: string;
     identifiers: string[];
 }
 /**
  * Topic properties used to creating or updating a model
  */
-export interface ITopicModel {
+export interface ITopicModel extends IBaseModel {
+    topicId?: string;
+    projectId?: string;
+    tunnelId?: string;
     status?: EStatus;
     name?: string;
     triggerApi?: ITopicApiModel;
@@ -106,7 +119,7 @@ export interface ITopicModel {
  * Topic API model
  * Used to save Trigger and Hydration API's
  */
-export interface ITopicApiModel {
+export interface ITopicApiModel extends IBaseModel {
     url: string;
     queryParams?: dataType;
     headers?: dataType;
@@ -130,13 +143,13 @@ export interface ITunnelQuery {
     page?: number;
     search?: string;
 }
-export interface ITunnelModel {
-    tunnelId: string;
-    projectId: string;
-    status: EStatus;
-    name: string;
-    secure: boolean;
-    sandbox: boolean;
+export interface ITunnelModel extends IBaseModel {
+    tunnelId?: string;
+    projectId?: string;
+    status?: EStatus;
+    name?: string;
+    secure?: boolean;
+    sandbox?: boolean;
 }
 /**
  * Error model received from Message Broker or API
@@ -160,3 +173,19 @@ export interface IErrorsModel {
 export interface INqlIdentifiers {
     OR?: string[];
 }
+export interface IUnifiedWebsocket {
+    onOpen?: (onOpenCallback: (event: unknown) => void) => void | undefined;
+    onMessage?: (onMessageCallback: (event: unknown) => void) => void | undefined;
+    onClose?: (onCloseCallback: (event: unknown) => void) => void | undefined;
+    onError?: (onErrorCallback: (event: unknown) => void) => void | undefined;
+    close?: () => void;
+    send?: (message: ArrayBuffer) => void;
+}
+export interface IRequestParams {
+    baseURL: string;
+    headers: Record<string, string>;
+}
+export interface IGlobalVars {
+    PROJECT_API_KEY: string;
+}
+//# sourceMappingURL=interfaces.d.ts.map

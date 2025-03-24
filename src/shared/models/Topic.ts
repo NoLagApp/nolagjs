@@ -1,81 +1,105 @@
 import { NoLagClient } from "../../client/NoLagClient";
-import { TData } from "../constants";
 import { ETransportCommand } from "../enum/ETransportCommand";
 import { INqlIdentifiers, ITransport } from "../interfaces";
-import { transportCommands } from "../utils/TransportCommands";
+import {
+  TransportCommands,
+  transportCommands,
+} from "../utils/TransportCommands";
 import { NqlTransport } from "../utils/transport";
+import { Tunnel } from "../../client";
+import { AcknowledgeQueueManager } from "../utils/AcknowledgeQueue/AcknowledgeQueueManager";
+import { AcknowledgeQueueIdentifier } from "../utils/AcknowledgeQueue/AcknowledgeQueueIdentifier";
+import { ESendAction } from "../enum";
+import { publishData } from "../constants";
 
 export interface ITopic {
+  subscribe(
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic;
   /**
    * Add NQL identifers to the Topic
-   * @param INqlIdentifiers identifiers - List of reverse NQL query items
+   * @param identifiers
+   * @param callbackFn
    */
-  addIdentifiers(identifiers: INqlIdentifiers): Topic;
+  addIdentifiers(
+    identifiers: INqlIdentifiers,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic;
   /**
    * Remove saved NQL identifiers
-   * @param INqlIdentifiers identifiers - List of reverse NQL query items
+   * @param identifiers
+   * @param callbackFn
    */
-  removeIdentifiers(identifiers: string[]): Topic;
+  removeIdentifiers(
+    identifiers: string[],
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic;
   /**
-   * Unsubscribe from current Topic. You will not onReceive messages from this
+   * Unsubscribe from current Topic. You will not receive messages from this
    * Topic in the future
    */
-  unsubscribe(): boolean;
+  unsubscribe(
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): boolean;
   /**
    * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
    * is onReceive
-   * @param ITransport data - Received data published by another device
+   * @param callbackFn
    */
-  onReceive(callbackFn: ((data: ITransport) => void) | undefined): Topic;
+  onReceive(callbackFn: ((transport: ITransport) => void) | undefined): Topic;
   /**
    * Publish topic data with optional attached identifiers
    * @param data Data being sent is an ArrayBuffer
    * @param identifiers List of identifiers used to send targeted messages
    * @returns
    */
-  publish(data: ArrayBuffer, identifiers: string[]): Topic;
+  publish(data: publishData, identifiers?: string[]): Topic;
   /**
    * PRIVATE Inject messages into the Topic instance
-   * @param data
+   * @param transport
    */
-  _onReceiveMessage(data: ITransport): ITopic;
+  _onReceiveMessage(transport: ITransport): Topic;
   /**
    * Set presence data on this topic. Presence data could be anything that identifies this device.
    * Updated list of shared data is shared with all devices subscribed to the same Topic and Identifiers when a devices
    * connect and disconnects.
    * @param presence
+   * @param callbackFn
    * @returns
    */
-  setPresence(presence: string): Topic;
+  setPresence(
+    presence: string,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic;
+}
+
+export interface ICallbackQueue {
+  topicName: string;
+  identifiers: string[];
+  callbackFn: (error: Error, transport: ITransport) => void;
 }
 
 export class Topic implements ITopic {
   private connection: NoLagClient | undefined;
   private readonly topicName: string;
-  private onReceiveCallback: ((data: ITransport) => void) | undefined;
+  private onReceiveCallback: ((transport: ITransport) => void) | undefined;
   private identifiers: string[] = [];
   private presence: string | undefined;
+  private tunnel: Tunnel;
+  private acknowledgeQueueManager: AcknowledgeQueueManager;
+
   constructor(
+    tunnel: Tunnel,
     connection: NoLagClient,
     topicName: string,
     identifiers: INqlIdentifiers,
+    acknowledgeQueueManager: AcknowledgeQueueManager,
   ) {
+    this.tunnel = tunnel;
+    this.acknowledgeQueueManager = acknowledgeQueueManager;
     this.setConnection(connection);
     this.topicName = topicName;
     this.saveIdentifiers(identifiers?.OR ?? []);
-    this.subscribe();
-  }
-
-  private findSavedIdentifier(identifier: string) {
-    const key = Object.keys(identifier)[0] ?? "";
-    const value = Object.values(identifier)[0] ?? "";
-    return this.identifiers.find((s) => {
-      if (s) {
-        const findKey = Object.keys(s)[0] ?? "";
-        const findValue = Object.values(s)[0] ?? "";
-        return key === findKey && value === findValue;
-      }
-    });
   }
 
   private saveIdentifiers(identifiers: string[]): void {
@@ -101,12 +125,63 @@ export class Topic implements ITopic {
     this.identifiers = identifierList;
   }
 
-  private subscribe() {
-    if (
-      (!this.topicName && this.identifiers?.length === 0) ||
-      !Array.isArray(this.identifiers)
-    )
-      return this;
+  private async _subscribeAction(
+    sendAction: ESendAction,
+    commands: TransportCommands,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): Promise<void> {
+    const transport = NqlTransport.encode(commands);
+
+    this.send(sendAction, transport);
+
+    await this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        presence: this.presence ? this.presence : undefined,
+        topicName: this.topicName,
+        identifiers: this.identifiers,
+      }),
+      callbackFn,
+    );
+  }
+
+  public subscribe(
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic {
+    if (!this.topicName) {
+      const error = new Error("Topic name is required");
+      if (callbackFn) {
+        callbackFn(error, null);
+      } else {
+        throw error;
+      }
+    }
+
+    const commands = transportCommands().setCommand(
+      ETransportCommand.Topic,
+      this.topicName,
+    );
+
+    if (this.identifiers?.length && this.identifiers.length > 0) {
+      commands.setCommand(ETransportCommand.Identifier, this.identifiers);
+    }
+
+    commands.setCommand(ETransportCommand.AddAction);
+
+    this._subscribeAction(
+      ESendAction.TopicSubscribe,
+      commands,
+      callbackFn,
+    );
+
+    return this as unknown as ITopic;
+  }
+
+  public setPresence(
+    presence: string,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic {
+    const topicInstance = this;
+    topicInstance.presence = presence;
 
     const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
@@ -123,15 +198,11 @@ export class Topic implements ITopic {
 
     commands.setCommand(ETransportCommand.AddAction);
 
-    const transport = NqlTransport.encode(commands);
-
-    this.send(transport);
-  }
-
-  public setPresence(presence: string): Topic {
-    this.presence = presence;
-
-    this.subscribe();
+    this._subscribeAction(
+      ESendAction.TopicPresence,
+      commands,
+      callbackFn,
+    );
     return this;
   }
 
@@ -140,23 +211,32 @@ export class Topic implements ITopic {
     return this;
   }
 
-  public _onReceiveMessage(data: ITransport): ITopic {
+  public _onReceiveMessage(transport: ITransport): Topic {
     if (this.onReceiveCallback) {
-      this.onReceiveCallback(data);
+      this.onReceiveCallback(transport);
     }
     return this;
   }
 
   public onReceive(
-    callbackFn: ((data: ITransport) => void) | undefined,
+    callbackFn: ((transport: ITransport) => void) | undefined,
   ): Topic {
     this.onReceiveCallback = callbackFn;
     return this;
   }
 
-  public addIdentifiers(identifiersList: INqlIdentifiers): Topic {
-    if (!identifiersList?.OR?.length || identifiersList?.OR?.length === 0)
-      return this;
+  public addIdentifiers(
+    identifiersList: INqlIdentifiers,
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic {
+    if (!identifiersList?.OR?.length || identifiersList?.OR?.length === 0) {
+      const error = new Error("Identifiers are required.");
+      if (callbackFn) {
+        callbackFn(error, null);
+      } else {
+        throw error;
+      }
+    }
 
     const identifiers = identifiersList?.OR ?? [];
     this.saveIdentifiers(identifiers);
@@ -173,13 +253,31 @@ export class Topic implements ITopic {
 
     const transport = NqlTransport.encode(commands);
 
-    this.send(transport);
+    this.send(ESendAction.TopicAddIdentifier, transport);
 
-    return this;
+    this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        topicName: this.topicName,
+        identifiers: this.identifiers,
+      }),
+      callbackFn,
+    );
+
+    return this as unknown as ITopic;
   }
 
-  public removeIdentifiers(identifiers: string[]): Topic {
-    if (identifiers.length === 0) return this;
+  public removeIdentifiers(
+    identifiers: string[],
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): ITopic {
+    if (!identifiers?.length || identifiers?.length === 0) {
+      const error = new Error("Identifiers are required.");
+      if (callbackFn) {
+        callbackFn(error, null);
+      } else {
+        throw error;
+      }
+    }
 
     this.deleteSavedIdentifiers(identifiers ?? []);
 
@@ -194,44 +292,61 @@ export class Topic implements ITopic {
 
     const transport = NqlTransport.encode(commands);
 
-    this.send(transport);
+    this.send(ESendAction.TopicRemoveIdentifier, transport);
 
-    return this;
+    this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        topicName: this.topicName,
+        identifiers: this.identifiers,
+      }),
+      callbackFn,
+    );
+
+    return this as unknown as ITopic;
   }
 
-  unsubscribe(): boolean {
+  public unsubscribe(
+    callbackFn?: (error: Error | null, transport: ITransport | null) => void,
+  ): boolean {
     const commands = transportCommands()
       .setCommand(ETransportCommand.Topic, this.topicName)
       .setCommand(ETransportCommand.DeleteAction);
 
     const transport = NqlTransport.encode(commands);
 
-    this.send(transport);
+    this.send(ESendAction.TopicUnsubscribe, transport);
+
+    this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        topicName: this.topicName,
+        identifiers: this.identifiers,
+      }),
+      callbackFn,
+    );
+
     return true;
   }
 
-  public publish(data: ArrayBuffer, identifiers: string[]): Topic {
-    if (data.byteLength === 0) return this;
-
+  public publish(data: publishData, identifiers?: string[]): Topic {
     const commands = transportCommands().setCommand(
       ETransportCommand.Topic,
       this.topicName,
     );
 
-    if (identifiers?.length > 0) {
+    if (identifiers && identifiers?.length > 0) {
       commands.setCommand(ETransportCommand.Identifier, identifiers);
     }
 
     const transport = NqlTransport.encode(commands, data);
 
-    this.send(transport);
+    this.send(ESendAction.TopicPublish, transport);
 
     return this;
   }
 
-  private send(transport: ArrayBuffer) {
+  private send(sendAction: ESendAction, transport: ArrayBuffer) {
     if (this.connection) {
-      this.connection.send(transport);
+      this.connection.send(sendAction, transport);
     }
   }
 }

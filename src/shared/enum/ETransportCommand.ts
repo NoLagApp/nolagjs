@@ -12,7 +12,7 @@ export enum ETransportCommand {
   Acknowledge = 6,
   // trigger connection state hydration
   Reconnect = 22,
-  // subscribe to topic
+  // subscribe to a topic
   Topic = 26,
   // list of NQL identifiers
   Identifier = 11,
@@ -30,7 +30,7 @@ export enum ETransportCommand {
   Payload = 29,
   // set a custom data associated with this topic
   // this data will be sent to all devices subscribed to this topic/identifiers
-  Presence = 14
+  Presence = 14,
 }
 
 export enum ETransportCommandSeparator {

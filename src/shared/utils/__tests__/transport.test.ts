@@ -2,7 +2,7 @@ import {
   ETransportCommand,
   ETransportCommandSeparator,
 } from "../../../shared/enum/ETransportCommand";
-import { stringToArrayBuffer } from "../Encodings";
+import { stringToBuffer } from "../Encodings";
 import { transportCommands } from "../TransportCommands";
 import { NqlTransport } from "../transport";
 
@@ -67,7 +67,7 @@ export const unSubscribeToTopicIdentifiers = [
 ];
 
 export const payloadString = "Data to be sent";
-export const payload = stringToArrayBuffer(payloadString);
+export const payload = stringToBuffer(payloadString);
 
 export const publishPayload = [
   ETransportCommand.Topic,
@@ -198,5 +198,44 @@ describe("Transport", () => {
       identifierOneString,
       identifierTwoString,
     ]);
+  });
+
+  test("Publish ArrayBuffer", () => {
+    const commands = transportCommands();
+
+    const data = "data to encode";
+    const bufferPayload = stringToBuffer(data);
+
+    const encodedBuffer = NqlTransport.encode(commands, bufferPayload);
+    const decoded = NqlTransport.decode(encodedBuffer);
+
+    expect(decoded.payload).toEqual(bufferPayload);
+  });
+
+  test("Publish String", () => {
+    const commands = transportCommands();
+
+    const stringPayload = "data to encode";
+    const buffer = stringToBuffer(stringPayload);
+
+    const encodedBuffer = NqlTransport.encode(commands, stringPayload);
+    const decoded = NqlTransport.decode(encodedBuffer);
+
+    expect(decoded.payload).toEqual(buffer);
+  });
+
+  test("Publish Object", () => {
+    const commands = transportCommands();
+
+    const objectPayload = {
+      item: "data to encode",
+    };
+
+    const buffer = stringToBuffer(JSON.stringify(objectPayload));
+
+    const encodedBuffer = NqlTransport.encode(commands, objectPayload);
+    const decoded = NqlTransport.decode(encodedBuffer);
+
+    expect(decoded.payload).toEqual(buffer);
   });
 });

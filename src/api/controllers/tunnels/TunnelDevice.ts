@@ -1,27 +1,28 @@
-import { AxiosInstance } from "axios";
 import {
-  IDeviceListQuery,
-  IDeviceTokenModel,
+  IDeviceModel,
+  IDeviceQuery,
+  IErrorsModel,
   IPaginated,
+  IRequestParams,
 } from "../../../shared/interfaces";
-import { generateQueryString } from "../../../shared/utils/generateQueryString";
+import { generateQueryString } from "../../../shared/utils";
 
 export interface ITunnelDevice {
   /**
    * Create new Tunnel device
    * @param payload
    */
-  createDevice(payload: IDeviceTokenModel): Promise<IDeviceTokenModel>;
+  createDevice(payload: IDeviceModel): Promise<IDeviceModel>;
   /**
    * Retrieve Tunnel device using ID
-   * @param query
+   * @param deviceTokenId
    */
-  getDeviceById(deviceTokenId: string): Promise<IDeviceTokenModel>;
+  getDeviceById(deviceTokenId: string): Promise<IDeviceModel>;
   /**
    * List all Tunnel devices
    * @param query
    */
-  listDevices(query: IDeviceListQuery): Promise<IPaginated<IDeviceTokenModel>>;
+  listDevices(query?: IDeviceQuery): Promise<IPaginated<IDeviceModel>>;
   /**
    * Update a Tunnel device
    * @param deviceTokenId
@@ -29,80 +30,113 @@ export interface ITunnelDevice {
    */
   updateDevice(
     deviceTokenId: string,
-    payload: IDeviceTokenModel,
-  ): Promise<IDeviceTokenModel>;
+    payload: IDeviceModel,
+  ): Promise<IDeviceModel>;
   /**
    * Delete a Tunnel device
    * @param deviceTokenId
    */
-  deleteDevice(deviceTokenId: string): Promise<IDeviceTokenModel>;
+  deleteDevice(deviceTokenId: string): Promise<IDeviceModel>;
 }
 export class TunnelDevice implements ITunnelDevice {
   private routeNamespace = "devices";
 
   private parentRouteNamespace: string;
   private tunnelId: string;
-  private request: AxiosInstance;
+  private requestParams: IRequestParams;
   constructor(
     parentRouteNamespace: string,
     tunnelId: string,
-    request: AxiosInstance,
+    requestParams: IRequestParams,
   ) {
     this.parentRouteNamespace = parentRouteNamespace;
     this.tunnelId = tunnelId;
-    this.request = request;
+    this.requestParams = requestParams;
   }
 
-  async createDevice(payload: IDeviceTokenModel): Promise<IDeviceTokenModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
-      method: "post",
-      data: payload,
-    });
+  async createDevice(payload: IDeviceModel): Promise<IDeviceModel> {
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
+      {
+        method: "POST",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
-  async getDeviceById(deviceTokenId: string): Promise<IDeviceTokenModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
-      method: "get",
-    });
+  async getDeviceById(deviceTokenId: string): Promise<IDeviceModel> {
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
+      {
+        method: "GET",
+        headers: this.requestParams.headers,
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
-  async listDevices(
-    query: IDeviceListQuery,
-  ): Promise<IPaginated<IDeviceTokenModel>> {
+  async listDevices(query?: IDeviceQuery): Promise<IPaginated<IDeviceModel>> {
     const queryString = generateQueryString(query);
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
-      method: "get",
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
+      {
+        method: "GET",
+        headers: this.requestParams.headers,
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
   async updateDevice(
     deviceTokenId: string,
-    payload: IDeviceTokenModel,
-  ): Promise<IDeviceTokenModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
-      method: "patch",
-      data: payload,
-    });
+    payload: IDeviceModel,
+  ): Promise<IDeviceModel> {
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
+      {
+        method: "PATCH",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
-  async deleteDevice(deviceTokenId: string): Promise<IDeviceTokenModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
-      method: "delete",
-    });
+  async deleteDevice(deviceTokenId: string): Promise<IDeviceModel> {
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${deviceTokenId}`,
+      {
+        method: "DELETE",
+        headers: this.requestParams.headers,
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 }

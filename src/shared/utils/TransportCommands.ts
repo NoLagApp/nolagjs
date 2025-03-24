@@ -2,7 +2,7 @@ import {
   ETransportCommand,
   ETransportCommandSeparator,
 } from "../enum/ETransportCommand";
-import { stringToArrayBuffer } from "./Encodings";
+import { stringToBuffer } from "./Encodings";
 
 export interface ITransportCommands {
   /**
@@ -48,7 +48,7 @@ export class TransportCommands {
   }
 
   convertStringNumberArray(commandAction: string) {
-    const commandActionBuffer = stringToArrayBuffer(commandAction);
+    const commandActionBuffer = stringToBuffer(commandAction);
     return Array.from(new Uint8Array(commandActionBuffer));
   }
 

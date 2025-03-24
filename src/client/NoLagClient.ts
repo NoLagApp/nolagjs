@@ -1,12 +1,18 @@
 import { CONSTANT, FConnection, FOnReceive } from "../shared/constants";
-import { EConnectionStatus, EEncoding, EEnvironment } from "../shared/enum";
+import { EConnectionStatus, ESendAction } from "../shared/enum";
 import { ETransportCommand } from "../shared/enum/ETransportCommand";
-import { IConnectOptions } from "../shared/interfaces";
+import {
+  IConnectOptions,
+  ITransport,
+  IUnifiedWebsocket,
+} from "../shared/interfaces";
 import { transportCommands } from "../shared/utils/TransportCommands";
-import { NqlTransport } from "../shared/utils/transport";
+import { IDecode, NqlTransport } from "../shared/utils";
+import { AcknowledgeQueueManager } from "../shared/utils/AcknowledgeQueue/AcknowledgeQueueManager";
+import { AcknowledgeQueueIdentifier } from "../shared/utils/AcknowledgeQueue/AcknowledgeQueueIdentifier";
 
 interface INoLagClient {
-  connect(): Promise<NoLagClient>;
+  connect(): Promise<void>;
   setReConnect(): void;
   onOpen(callback: FConnection): void;
   onReceiveMessage(callback: FConnection): void;
@@ -17,32 +23,49 @@ interface INoLagClient {
 export class NoLagClient implements INoLagClient {
   private host: string;
   private authToken: string;
-  public wsInstance: any | null = null;
+  public wsInstance: IUnifiedWebsocket | undefined;
   private protocol: string;
   private url: string;
   private deviceConnectionId: string | undefined = undefined;
-  private environment: EEnvironment | undefined;
   public deviceTokenId: string | null = null;
   //  check connection
   private defaultCheckConnectionInterval = 100;
   private defaultCheckConnectionTimeout = 10000;
   private checkConnectionInterval: number;
   private checkConnectionTimeout: number;
-  private reConnect: boolean = false;
+  private reConnect = false;
+  private debug = false;
 
   // callback function used to return the connection result
-  private callbackOnOpen: FConnection = () => {};
-  private callbackOnReceive: FOnReceive = () => {};
-  private callbackOnClose: FConnection = () => {};
-  private callbackOnError: FConnection = () => {};
+  private callbackOnOpen: FConnection = () => {
+    //
+  };
+  private callbackOnReceive: FOnReceive = () => {
+    //
+  };
+  private callbackOnClose: FConnection = () => {
+    //
+  };
+  private callbackOnError: FConnection = () => {
+    //
+  };
 
   // status of current socket connection
   public connectionStatus: EConnectionStatus = EConnectionStatus.Idle;
   private buffer: ArrayBuffer[] = [];
   private backpressureSendInterval = 0;
   private senderInterval: any = 0;
+  private unifiedWebsocket: (url: string) => IUnifiedWebsocket;
+  private acknowledgeQueueManager: AcknowledgeQueueManager;
+  private bufferOnDisconnect = false;
 
-  constructor(authToken: string, connectOptions?: IConnectOptions) {
+  constructor(
+    unifiedWebsocket: (url: string) => IUnifiedWebsocket,
+    authToken: string,
+    acknowledgeQueueManager: AcknowledgeQueueManager,
+    connectOptions?: IConnectOptions,
+  ) {
+    this.acknowledgeQueueManager = acknowledgeQueueManager;
     this.authToken = authToken ?? "";
     this.host = connectOptions?.host ?? CONSTANT.DefaultWsHost;
     this.protocol = connectOptions?.protocol ?? CONSTANT.DefaultWsProtocol;
@@ -53,21 +76,35 @@ export class NoLagClient implements INoLagClient {
     this.checkConnectionTimeout =
       connectOptions?.checkConnectionTimeout ??
       this.defaultCheckConnectionTimeout;
+    this.bufferOnDisconnect =
+      connectOptions?.bufferOnDisconnect ?? this.bufferOnDisconnect;
+    this.debug = connectOptions?.debug ?? this.debug;
+
+    this.unifiedWebsocket = unifiedWebsocket;
     this.startSender();
   }
 
   startSender() {
     this.senderInterval = setInterval(() => {
-      // get the first message in the buffer
-      const sendTransport = this.buffer.shift();
-      if (!sendTransport) return;
+      if (
+        !this.bufferOnDisconnect &&
+        this.connectionStatus === EConnectionStatus.Disconnected
+      )
+        return;
+      if (this.buffer.length === 0) return;
       if (!this.wsInstance) return;
       // send the first message in the buffer
-      this.wsInstance.send(sendTransport);
+      if (this.connectionStatus === EConnectionStatus.Connected) {
+        // get the first message in the buffer
+        const sendTransport = this.buffer.shift();
+        if (!sendTransport) return;
+        // send the first message in the buffer
+        this.wsInstance.send ? this.wsInstance.send(sendTransport) : undefined;
+      }
     }, this.backpressureSendInterval);
   }
 
-  // to elevate the backpressure we increase the send interval
+  // to alleviate the backpressure, we increase the send interval
   slowDownSender(backpressureInterval: number) {
     clearInterval(this.senderInterval);
     this.backpressureSendInterval = backpressureInterval;
@@ -82,47 +119,20 @@ export class NoLagClient implements INoLagClient {
     if (reConnect) this.reConnect = reConnect;
   }
 
-  // Check so see if we are in a browser or backend environment
-  isBrowser() {
-    let isNode = true;
-    if (typeof process === "object") {
-      if (typeof process.versions === "object") {
-        if (typeof process.versions.node !== "undefined") {
-          isNode = false;
-        }
-      }
-    }
-    return isNode;
-  }
-
   /**
-   * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
-   * @param callbackMain used as a event trigger
+   * Promise - Set up the connection process, code will detect if the code is being used in the front-end or backend
    * @returns NoLagClient instance
    */
-  connect(): Promise<NoLagClient> {
+  async connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<void> {
     this.connectionStatus = EConnectionStatus.Idle;
-    this.isBrowser() ? this.browserInstance() : this.nodeInstance();
-    return new Promise((resolve, reject) => {
-      const checkConnection = setInterval(() => {
-        if (this.connectionStatus === EConnectionStatus.Connected) {
-          resolve(this);
-          clearInterval(checkConnection);
-        }
-      }, this.checkConnectionInterval);
-      setTimeout(() => {
-        if (this.connectionStatus === EConnectionStatus.Idle) {
-          reject(true);
-          clearInterval(checkConnection);
-        }
-      }, this.checkConnectionTimeout);
-    });
+    await this.initWebsocketConnection();
+    await this.authenticate(callbackFn);
   }
 
   disconnect() {
     if (this.wsInstance && this.wsInstance.close) {
       this.wsInstance.close();
-      this.wsInstance = null;
+      this.wsInstance = undefined;
     }
   }
 
@@ -130,73 +140,49 @@ export class NoLagClient implements INoLagClient {
    * Initiate browser WebSocket instance and set it to
    * wsInstance
    */
-  browserInstance() {
-    this.environment = EEnvironment.Browser;
-
+  async initWebsocketConnection(): Promise<boolean> {
     // prevent the re-initiation of a socket connection when the
     // reconnect function calls this method again
     if (this.connectionStatus === EConnectionStatus.Connected) {
-      return;
+      return true;
     }
 
-    this.wsInstance = null;
-    // connect to server via ws
-    this.wsInstance = new WebSocket(
+    this.wsInstance = this.unifiedWebsocket(
       `${this.protocol}://${this.host}${this.url}`,
     );
-    this.wsInstance.binaryType = EEncoding.Arraybuffer;
 
-    // set of events
-    // when a successful connection is made with he server
-    this.wsInstance.onopen = (event: any) => {
+    if (!this.wsInstance) {
+      return true;
+    }
+
+    this.wsInstance.onOpen = (event: any) => {
       this._onOpen(event);
     };
 
-    this.wsInstance.onclose = (event: any) => {
+    this.wsInstance.onMessage = (event: any) => {
+      this._onReceive(event);
+    };
+
+    this.wsInstance.onClose = (event: any) => {
       this._onClose(event);
     };
 
-    this.wsInstance.onerror = (event: any) => {
+    this.wsInstance.onError = (event: any) => {
       this._onError(event);
     };
 
-    this.wsInstance.onmessage = (event: any) => {
-      this._onReceive(event);
-    };
+    await this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        initiate: EConnectionStatus.Initiate,
+      }),
+    );
+
+    return true;
   }
 
-  /**
-   * Node WebSocket connection with package "ws"
-   */
-  nodeInstance() {
-    import("ws").then((loadedWebSocketNode) => {
-      const WebSocketNode = loadedWebSocketNode.default;
-
-      this.environment = EEnvironment.Nodejs;
-
-      // prevent the re-initiation of a socket connection when the
-      // reconnect function calls this method again
-      if (this.connectionStatus === EConnectionStatus.Connected) {
-        return;
-      }
-
-      this.wsInstance = new WebSocketNode(
-        `${this.protocol}://${this.host}${this.url}`,
-      );
-
-      this.wsInstance.on("open", (event: any) => {
-        this._onOpen(event);
-      });
-      this.wsInstance.on("message", (event: any) => {
-        this._onReceive(event);
-      });
-      this.wsInstance.on("close", (event: any) => {
-        this._onError(event);
-      });
-    });
-  }
-
-  authenticate() {
+  async authenticate(
+    callbackFn?: (error: Error | null, data: ITransport | null) => void,
+  ) {
     this.connectionStatus = EConnectionStatus.Connecting;
 
     const { authToken } = this;
@@ -209,7 +195,14 @@ export class NoLagClient implements INoLagClient {
       commands.setCommand(ETransportCommand.Reconnect);
     }
 
-    this.send(NqlTransport.encode(commands));
+    this.send(ESendAction.TunnelAuthenticate, NqlTransport.encode(commands));
+
+    await this.acknowledgeQueueManager.addToSentQueue(
+      new AcknowledgeQueueIdentifier({
+        authentication: EConnectionStatus.Authentication,
+      }),
+      callbackFn,
+    );
   }
 
   public onOpen(callback: FConnection) {
@@ -228,38 +221,26 @@ export class NoLagClient implements INoLagClient {
     this.callbackOnError = callback;
   }
 
-  private _onOpen(event: any) {
-    this.connectionStatus === EConnectionStatus.Idle;
-    this.callbackOnOpen(undefined, event);
-  }
-
-  private async _onReceive(event: any) {
-    let data: ArrayBuffer = new ArrayBuffer(0);
-    switch (this.environment) {
-      case EEnvironment.Browser:
-        const arrayBuffer = await event.data;
-        data = arrayBuffer;
-        break;
-
-      case EEnvironment.Nodejs:
-        data = event;
-        break;
-    }
-
-    const decoded = NqlTransport.decode(data);
-    if (data.byteLength === 0) {
-      return;
-    }
-
+  private ackCommand(decoded: IDecode): boolean {
     if (
+      // we receive a command saying we have successfully connected to the message broker
+      // we can now send the authentication request
       decoded.getCommand(ETransportCommand.InitConnection) &&
       this.connectionStatus === EConnectionStatus.Idle
     ) {
-      this.authenticate();
-      return;
-    }
-
-    if (
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        new AcknowledgeQueueIdentifier({
+          initiate: EConnectionStatus.Initiate,
+        }),
+        null,
+        {} as ITransport,
+      );
+      if (this.debug) {
+        console.log(`${ESendAction.AcknowledgeConnected}:`, decoded);
+      }
+      return true;
+    } else if (
+      // response to authentication request
       decoded.getCommand(ETransportCommand.Acknowledge) &&
       this.connectionStatus === EConnectionStatus.Connecting
     ) {
@@ -267,45 +248,132 @@ export class NoLagClient implements INoLagClient {
       this.deviceTokenId = decoded.getCommand(
         ETransportCommand.Acknowledge,
       ) as string;
-      return;
-    }
 
-    if (decoded.getCommand(ETransportCommand.Error)) {
-      this.connectionStatus = EConnectionStatus.Disconnected;
-      this.callbackOnError(
-        decoded.getCommand(ETransportCommand.Alert),
-        undefined,
+      let error: Error | null = null;
+
+      if (decoded.getCommand(ETransportCommand.Error)) {
+        error = new Error(
+          decoded.getCommand(ETransportCommand.Error) as string,
+        );
+      }
+
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        new AcknowledgeQueueIdentifier({
+          authentication: EConnectionStatus.Authentication,
+        }),
+        error,
+        {} as ITransport,
       );
+      if (this.debug) {
+        console.log(`${ESendAction.AcknowledgeAuthenticated}:`, decoded);
+      }
+      return true;
+    } else if (decoded.getCommand(ETransportCommand.Acknowledge)) {
+      const ackIdentifier = new AcknowledgeQueueIdentifier({
+        topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+        identifiers: decoded.getCommand(
+          ETransportCommand.Identifier,
+        ) as string[],
+        presence: decoded.getCommand(ETransportCommand.Presence) as string,
+      });
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        ackIdentifier,
+        null,
+        {} as ITransport,
+      );
+      if (this.debug) {
+        console.log(`${ESendAction.AcknowledgeGeneral}:`, ackIdentifier);
+        console.log(
+          `${ESendAction.AcknowledgeGeneral} generated KEY:`,
+          ackIdentifier.generateKey(),
+        );
+      }
+      return true;
+    } else if (decoded.getCommand(ETransportCommand.Error)) {
+      const ackErrorIdentifier = new AcknowledgeQueueIdentifier({
+        topicName: decoded.getCommand(ETransportCommand.Topic) as string,
+        identifiers: decoded.getCommand(
+          ETransportCommand.Identifier,
+        ) as string[],
+        presence: decoded.getCommand(ETransportCommand.Presence) as string,
+      });
+      this.acknowledgeQueueManager.addToReceivedQueue(
+        ackErrorIdentifier,
+        null,
+        {} as ITransport,
+      );
+      if (this.debug) {
+        console.log(`${ESendAction.AcknowledgeError}:`, ackErrorIdentifier);
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  private _onOpen(event: any) {
+    this.connectionStatus = EConnectionStatus.Idle;
+    this.callbackOnOpen(undefined, event);
+    if (this.debug) {
+      console.log(`${ESendAction.OnOpen}:`, event);
+    }
+  }
+
+  private _onReceive(event: any) {
+    const data: ArrayBuffer = event ?? new ArrayBuffer(0);
+    const decoded = NqlTransport.decode(data);
+    if (data.byteLength === 0) {
       return;
     }
 
-    this.callbackOnReceive(undefined, {
+    // check to see if there were any ACK or ERROR messages received
+    if (this.ackCommand(decoded)) return;
+
+    const identifier = decoded.getCommand(ETransportCommand.Identifier);
+    const presences = decoded.getCommand(ETransportCommand.Presence);
+
+    const transportResponse = {
       topicName: decoded.getCommand(ETransportCommand.Topic) as string,
-      presences: decoded.getCommand(ETransportCommand.Presence) as string[],
-      identifiers: decoded.getCommand(
-        ETransportCommand.Identifier,
-      ) as string[],
+      presences: presences === true ? [] : (presences as string[]),
+      identifiers: identifier === true ? [] : (identifier as string[]),
       data: decoded.payload,
-    });
+    };
+    this.callbackOnReceive(undefined, transportResponse);
+    if (this.debug) {
+      console.log(`${ESendAction.OnReceive}:`, transportResponse);
+    }
   }
 
   private _onClose(event: any) {
     this.connectionStatus = EConnectionStatus.Disconnected;
     this.callbackOnClose(event, undefined);
+    if (this.debug) {
+      console.log(`${ESendAction.OnClose}:`, event);
+    }
   }
 
   private _onError(event: any) {
     this.connectionStatus = EConnectionStatus.Disconnected;
     this.callbackOnError(event, undefined);
+    if (this.debug) {
+      console.log(`${ESendAction.OnError}:`, event);
+    }
   }
 
-  public send(transport: ArrayBuffer) {
-    this.addToBuffer(transport);
+  public send(sendAction: ESendAction, transport: ArrayBuffer) {
+    if (sendAction === ESendAction.TunnelAuthenticate && this.wsInstance) {
+      this.wsInstance?.send ? this.wsInstance.send(transport) : undefined;
+    } else {
+      this.addToBuffer(transport);
+    }
+    if (this.debug) {
+      console.log(`${sendAction}:`, NqlTransport.decode(transport));
+    }
   }
 
   public heartbeat() {
     if (this.wsInstance) {
-      this.send(new ArrayBuffer(0));
+      this.send(ESendAction.TunnelHeartbeat, new ArrayBuffer(0));
     }
   }
 }

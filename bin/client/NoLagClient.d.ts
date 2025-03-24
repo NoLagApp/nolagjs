@@ -1,8 +1,9 @@
 import { FConnection } from "../shared/constants";
-import { EConnectionStatus } from "../shared/enum";
-import { IConnectOptions } from "../shared/interfaces";
+import { EConnectionStatus, ESendAction } from "../shared/enum";
+import { IConnectOptions, ITransport, IUnifiedWebsocket } from "../shared/interfaces";
+import { AcknowledgeQueueManager } from "../shared/utils/AcknowledgeQueue/AcknowledgeQueueManager";
 interface INoLagClient {
-    connect(): Promise<NoLagClient>;
+    connect(): Promise<void>;
     setReConnect(): void;
     onOpen(callback: FConnection): void;
     onReceiveMessage(callback: FConnection): void;
@@ -12,17 +13,17 @@ interface INoLagClient {
 export declare class NoLagClient implements INoLagClient {
     private host;
     private authToken;
-    wsInstance: any | null;
+    wsInstance: IUnifiedWebsocket | undefined;
     private protocol;
     private url;
     private deviceConnectionId;
-    private environment;
     deviceTokenId: string | null;
     private defaultCheckConnectionInterval;
     private defaultCheckConnectionTimeout;
     private checkConnectionInterval;
     private checkConnectionTimeout;
     private reConnect;
+    private debug;
     private callbackOnOpen;
     private callbackOnReceive;
     private callbackOnClose;
@@ -31,38 +32,37 @@ export declare class NoLagClient implements INoLagClient {
     private buffer;
     private backpressureSendInterval;
     private senderInterval;
-    constructor(authToken: string, connectOptions?: IConnectOptions);
+    private unifiedWebsocket;
+    private acknowledgeQueueManager;
+    private bufferOnDisconnect;
+    constructor(unifiedWebsocket: (url: string) => IUnifiedWebsocket, authToken: string, acknowledgeQueueManager: AcknowledgeQueueManager, connectOptions?: IConnectOptions);
     startSender(): void;
     slowDownSender(backpressureInterval: number): void;
     addToBuffer(buffer: ArrayBuffer): void;
     setReConnect(reConnect?: boolean): void;
-    isBrowser(): boolean;
     /**
-     * Promise - Setup the connection process, code will detect if the code is being used in the front-end or backend
-     * @param callbackMain used as a event trigger
+     * Promise - Set up the connection process, code will detect if the code is being used in the front-end or backend
      * @returns NoLagClient instance
      */
-    connect(): Promise<NoLagClient>;
+    connect(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<void>;
     disconnect(): void;
     /**
      * Initiate browser WebSocket instance and set it to
      * wsInstance
      */
-    browserInstance(): void;
-    /**
-     * Node WebSocket connection with package "ws"
-     */
-    nodeInstance(): void;
-    authenticate(): void;
+    initWebsocketConnection(): Promise<boolean>;
+    authenticate(callbackFn?: (error: Error | null, data: ITransport | null) => void): Promise<void>;
     onOpen(callback: FConnection): void;
     onReceiveMessage(callback: FConnection): void;
     onClose(callback: FConnection): void;
     onError(callback: FConnection): void;
+    private ackCommand;
     private _onOpen;
     private _onReceive;
     private _onClose;
     private _onError;
-    send(transport: ArrayBuffer): void;
+    send(sendAction: ESendAction, transport: ArrayBuffer): void;
     heartbeat(): void;
 }
 export {};
+//# sourceMappingURL=NoLagClient.d.ts.map

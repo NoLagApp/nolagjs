@@ -3,11 +3,16 @@ import {
   ETransportCommandSeparator,
 } from "../enum/ETransportCommand";
 import { TransportCommands } from "./TransportCommands";
+import { isPlainObject } from "./isPlainObject";
+import { stringToBuffer } from "./Encodings";
+import { publishData } from "../constants";
 
 export interface IDecode {
   commands: Record<ETransportCommand, string | string[] | boolean>;
   payload: ArrayBuffer;
-  getCommand(command: ETransportCommand): string | string[] | boolean;
+  getCommand(
+    command: ETransportCommand,
+  ): string | string[] | boolean | undefined;
 }
 export interface INqlTransport {
   encode(TransportCommands: TransportCommands, payload: Uint8Array): Uint8Array;
@@ -15,7 +20,21 @@ export interface INqlTransport {
 }
 
 export class NqlTransport {
-  static encode(TransportCommands: TransportCommands, payload?: ArrayBuffer) {
+  static parseData(data: publishData | undefined): ArrayBuffer | undefined {
+    if (data instanceof ArrayBuffer) {
+      return data;
+    } else if (typeof data === "string" || data instanceof String) {
+      return stringToBuffer(data as string);
+    } else if (isPlainObject(data)) {
+      return stringToBuffer(JSON.stringify(data));
+    }
+  }
+
+  static encode(
+    TransportCommands: TransportCommands,
+    data?: publishData | undefined,
+  ) {
+    const payload = this.parseData(data);
     const separatorArray = new Uint8Array(1);
     separatorArray[0] = ETransportCommand.Payload;
 
@@ -31,15 +50,13 @@ export class NqlTransport {
       payloadLength = payload.byteLength + 1;
       payloadUintArray = new Uint8Array(payload);
       payloadOffset = commandLength + 1;
-
-      payload = new Uint8Array(payload);
     }
 
     const bitLength = commandLength + payloadLength;
 
     const buf = new ArrayBuffer(bitLength);
 
-    let tmp = new Uint8Array(buf);
+    const tmp = new Uint8Array(buf);
     tmp.set(transportCommandsUintArray, 0);
 
     if (payload) {
@@ -90,11 +107,11 @@ export class NqlTransport {
   }
 
   static commandActionUint8ArrayToStringArray(commandActionArray: number[]) {
-    const groupedUint8Array:number[][]  = [];
+    const groupedUint8Array: number[][] = [];
     let tempGroup: number[] = [];
 
     commandActionArray.forEach((item) => {
-      if(item === ETransportCommandSeparator.ArraySeparator) {
+      if (item === ETransportCommandSeparator.ArraySeparator) {
         groupedUint8Array.push(tempGroup);
         tempGroup = [];
       } else {
@@ -103,18 +120,15 @@ export class NqlTransport {
     });
 
     // only if tempGroup still has data push it in
-    if(tempGroup.length > 0) {
+    if (tempGroup.length > 0) {
       groupedUint8Array.push(tempGroup);
     }
 
-
-    return groupedUint8Array.map(
-      (uint8Array: number[]) => {
-        return this.commandActionUint8ArrayToString(
-          uint8Array.map((i) => Number(i)),
-        );
-      },
-    );
+    return groupedUint8Array.map((uint8Array: number[]) => {
+      return this.commandActionUint8ArrayToString(
+        uint8Array.map((i) => Number(i)),
+      );
+    });
   }
 
   static extractCommands(

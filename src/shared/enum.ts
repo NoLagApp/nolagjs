@@ -1,21 +1,10 @@
 export enum EConnectionStatus {
   Idle = "idle",
+  Initiate = "initiate",
+  Authentication = "authentication",
   Connecting = "connecting",
   Connected = "connected",
   Disconnected = "disconnected",
-}
-
-export enum EEnvironment {
-  Nodejs = "nodejs",
-  Browser = "browser",
-}
-
-/**
- * Used as a command to indicate to the Message Broker that a device wants to add or delete a subscription to a topic, or to add and delete identifiers set on a topic.
- */
-export enum EAction {
-  Add = "a",
-  Delete = "d",
 }
 
 export enum EEncoding {
@@ -25,17 +14,6 @@ export enum EEncoding {
 export enum EVisibilityState {
   Hidden = "hidden",
   Visible = "visible",
-}
-
-export enum ESeparator {
-  Group = 29,
-  Record = 30,
-  Unit = 31,
-  Vertical = 11,
-  NegativeAck = 21,
-  BellAlert = 7,
-  // send this when we try to reconnect to Message Broker
-  SynchronousIdle = 22,
 }
 
 /**
@@ -58,4 +36,28 @@ export enum EStatus {
 export enum ETopicType {
   Standard = "standard",
   Api = "api",
+}
+
+export enum ELoadBalanceType {
+  RoundRobbin = "roundRobin",
+}
+
+export enum ESendAction {
+  AcknowledgeConnected = "acknowledgeConnected",
+  AcknowledgeAuthenticated = "acknowledgeAuthenticated",
+  AcknowledgeGeneral = "acknowledgeGeneral",
+  AcknowledgeError = "acknowledgeError",
+  OnReceive = "onReceive",
+  OnError = "onError",
+  OnClose = "onClose",
+  OnOpen = "onOpen",
+  TunnelAuthenticate = "tunnelAuthenticate",
+  TunnelHeartbeat = "tunnelHeartbeat",
+  TunnelPublish = "tunnelPublish",
+  TopicSubscribe = "topicSubscribe",
+  TopicUnsubscribe = "topicUnsubscribe",
+  TopicPublish = "topicPublish",
+  TopicAddIdentifier = "topicAddIdentifier",
+  TopicRemoveIdentifier = "topicRemoveIdentifier",
+  TopicPresence = "topicPresence",
 }

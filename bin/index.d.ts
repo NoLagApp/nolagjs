@@ -1,11 +1,12 @@
-export * from "./api/index";
-export * from "./api/controllers/tunnels/TunnelApi";
-export * from "./api/controllers/tunnels/TunnelDevice";
-export * from "./api/controllers/tunnels/TunnelPublish";
-export * from "./api/controllers/tunnels/TunnelTopic";
-export * from "./client/index";
-export * from "./shared/constants";
-export * from "./shared/enum";
-export * from "./shared/interfaces";
-export * from "./shared/models/Topic";
-export * from "./shared/utils";
+import { IConnectOptions, ITunnelOptions } from "./shared/interfaces";
+import { ITunnel } from "./client";
+export * from "./imports";
+/**
+ * Connect to NoLag message broker using websocket
+ * @param authToken
+ * @param options
+ * @param connectOptions
+ * @constructor
+ */
+export declare const WebSocketClient: (authToken: string, options?: ITunnelOptions, connectOptions?: IConnectOptions) => ITunnel;
+//# sourceMappingURL=index.d.ts.map

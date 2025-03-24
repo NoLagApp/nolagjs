@@ -1,16 +1,10 @@
-import { IConnectOptions, IPaginated, ITunnelQuery, ITunnelModel } from "../shared/interfaces";
-import { ITunnelApi } from "./controllers/tunnels/TunnelApi";
-export interface IApiTunnel {
-    tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>>;
-    tunnel(tunnelId: string): ITunnelApi;
-}
-export declare class ApiTunnel {
-    private apiKey;
-    connectOptions: IConnectOptions;
-    private request;
-    constructor(apiKey: string, connectOptions?: IConnectOptions);
-    private createRequestInstance;
-    tunnels(tunnelQuery?: ITunnelQuery): Promise<IPaginated<ITunnelModel>>;
-    tunnel(tunnelId: string): ITunnelApi;
-}
+import { IConnectOptions } from "../shared/interfaces";
+import { IApiTunnel } from "./ApiTunnel";
+/**
+ * NoLag API access
+ * @param apiKey
+ * @param connectOptions
+ * @constructor
+ */
 export declare const Api: (apiKey: string, connectOptions?: IConnectOptions) => IApiTunnel;
+//# sourceMappingURL=index.d.ts.map

@@ -1,9 +1,11 @@
 import { dataType } from "../constants";
-import { IDeviceListQuery } from "../interfaces";
+import { IDeviceQuery } from "../interfaces";
 
-export const generateQueryString = (query: IDeviceListQuery) => {
+export const generateQueryString = (query?: IDeviceQuery) => {
+  if (!query) return "";
+
   const queryArray: string[] = [];
-  const queryObject = query as unknown as dataType<IDeviceListQuery>;
+  const queryObject = query as unknown as dataType<IDeviceQuery>;
   Object.keys(queryObject).map((key) => {
     queryArray.push(`${key}=${queryObject[key]}`);
   });

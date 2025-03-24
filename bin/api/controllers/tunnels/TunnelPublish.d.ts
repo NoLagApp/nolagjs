@@ -1,3 +1,4 @@
-import { AxiosInstance } from "axios";
-import { IConnectOptions } from "../../../shared/interfaces";
-export declare const TunnelPublish: (data: ArrayBuffer, topicName: string, identifiers: string[], tunnelId: string, parentRouteNamespace: string, request: AxiosInstance, connectOptions: IConnectOptions) => Promise<boolean>;
+import { IConnectOptions, IRequestParams } from "../../../shared/interfaces";
+import { publishData } from "../../../shared/constants";
+export declare const TunnelPublish: (data: publishData, topicName: string, identifiers: string[], tunnelId: string, parentRouteNamespace: string, requestParams: IRequestParams, connectOptions: IConnectOptions) => Promise<boolean>;
+//# sourceMappingURL=TunnelPublish.d.ts.map

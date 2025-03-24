@@ -1,8 +1,8 @@
-import { AxiosInstance } from "axios";
 import {
   ITopicQuery,
   ITopicModel,
   IPaginated,
+  IRequestParams,
 } from "../../../shared/interfaces";
 import { generateQueryString } from "../../../shared/utils/generateQueryString";
 
@@ -35,69 +35,104 @@ export interface ITunnelTopic {
   deleteTopic(topicId: string): Promise<ITopicModel>;
 }
 export class TunnelTopic implements ITunnelTopic {
-  private routeNamespace = "Topics";
+  private routeNamespace = "topics";
 
   private parentRouteNamespace: string;
   private tunnelId: string;
-  private request: AxiosInstance;
+  private readonly requestParams: IRequestParams;
   constructor(
     parentRouteNamespace: string,
     tunnelId: string,
-    request: AxiosInstance,
+    requestParams: IRequestParams,
   ) {
     this.parentRouteNamespace = parentRouteNamespace;
     this.tunnelId = tunnelId;
-    this.request = request;
+    this.requestParams = requestParams;
   }
 
   async createTopic(payload: ITopicModel): Promise<ITopicModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
-      method: "post",
-      data: payload,
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}`,
+      {
+        method: "POST",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
   async getTopicById(topicId: string): Promise<ITopicModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${topicId}`,
-      method: "get",
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${topicId}`,
+      {
+        method: "GET",
+        headers: this.requestParams.headers,
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
   async listTopics(query?: ITopicQuery): Promise<IPaginated<ITopicModel>> {
     const queryString = query ? generateQueryString(query) : "";
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
-      method: "get",
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}${queryString}`,
+      {
+        method: "GET",
+        headers: this.requestParams.headers,
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
   async updateTopic(
     topicId: string,
     payload: ITopicModel,
   ): Promise<ITopicModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${topicId}`,
-      method: "patch",
-      data: payload,
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${topicId}`,
+      {
+        method: "PATCH",
+        headers: this.requestParams.headers,
+        body: JSON.stringify(payload),
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 
   async deleteTopic(topicId: string): Promise<ITopicModel> {
-    const response = await this.request.request({
-      url: `/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${topicId}`,
-      method: "delete",
-    });
+    const response = await fetch(
+      `${this.requestParams.baseURL}/${this.parentRouteNamespace}/${this.tunnelId}/${this.routeNamespace}/${topicId}`,
+      {
+        method: "DELETE",
+        headers: this.requestParams.headers,
+      },
+    );
 
-    return response.data;
+    if (response.status >= 400) {
+      throw await response.json();
+    }
+
+    return response.json();
   }
 }
