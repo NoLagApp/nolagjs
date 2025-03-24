@@ -8,24 +8,21 @@ For more detailed information on using NoLag please visit our [developer wiki](h
 
 #### Create NoLag Tunnel connection
 ```typescript
-import {
-  WebSocketClient,
-} from "nolagjs";
-
-import type { ITopic, ITunnel, IResponse } from "nolag";
+import { WebSocketClient, uint8ArrayToString } from "nolagjs";
+import type { ITunnel } from "nolagjs";
 
 const accessToken: string = "<your_device_access_token_goes_here>";
 
-const nolagInstance: ITunnel = await WebSocketClient(accessToken);
+const nolag: ITunnel = WebSocketClient(accessToken);
 ```
 
 #### SUBSCRIBE to Topic and set some identifiers to listen to
 ```typescript
-const rideShareRider: ITopic = nolagInstance.subscribe("rideShareDriver",  {
-  OR: [
-    "booking_id_1234",
-  ],
+const speedTest: ITopic = nolag.subscribe("speedTest", {
+  // only receive data from "speedTest" Topic and "identifer_<deviceTokenId>" NQL identifer
+  OR: [`identifier_${nolag.deviceTokenId}`],
 });
+
 ```
 
 #### PUBLISH some data to a topic and grouping of identifiers
@@ -33,41 +30,26 @@ const rideShareRider: ITopic = nolagInstance.subscribe("rideShareDriver",  {
 /**
  * ----- PUBLISH some data to a topic and grouping of identifiers -----
  */
-const rideShareDriverPayload = {
-    driverCurrentLocation: {
-      lat: "1234",
-      lng: "34564",
-    },
-  };
+const sentTimeStamp: string = `${Data.now()}`;
 
 // identifiers
-const identifiers: string[] = ["booking_id_1234"];
+const identifiers: string[] = [`identifier_${nolag.deviceTokenId}`];
 
-nolagInstance.publish("rideShareDriver", rideShareDriverPayload, identifiers);
+speedTest.publish(sentTimeStamp, identifiers);
 ```
 
 #### Receive data on Topic name
 ```typescript
-rideShareRider.onReceive((received: IResponse) => {
+speedTest.onReceive((received: IResponse) => {
   const { data, identifiers, topicName, presences } = received;
   const stringData: string = uint8ArrayToString(data);
   const receivedData = JSON.parse(stringData);
-  console.log(receivedData);
-  //{
-  //   driverCurrentLocation: {
-  //     lat: "1234",
-  //     lng: "34564",
-  //   },
-  // }
-  console.log(identifiers);
-  // ["booking_id_1234"]
-  console.log(topicName);
-  // rideShareDriver
-  console.log(presences);
-  // ["driver_id_6a9d03f5-bc0f-4516-9b51-c223a6cac0d2"]
 });
 
 ```
 
 # Examples
-You can check out the `examples\
+You can check out some examples in `examples/SDK`
+
+If you want to give the E2E playwright test a go. Copy and rename the `.env-example` file to `.env` 
+and update the file with your project API key.
