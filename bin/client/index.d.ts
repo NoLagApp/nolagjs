@@ -19,7 +19,7 @@ export interface ITunnel {
      * @param callbackFn
      * @return boolean
      */
-    unsubscribe(topicName: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<boolean>;
+    unsubscribe(topicName: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): boolean;
     /**
      * Set a new topic that is attached to tunnel
      * @param topicName Topic name regisrered in NoLag Portal
@@ -99,7 +99,7 @@ export declare class Tunnel implements ITunnel {
     onReconnect(callback: FConnection): void;
     onErrors(callback: FConnection): void;
     getTopic(topicName: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
-    unsubscribe(topicName: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<boolean>;
+    unsubscribe(topicName: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): boolean;
     subscribe(topicName: string, identifiers?: INqlIdentifiers, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
     publish(topicName: string, data: publishData, identifiers?: string[]): void;
     get status(): import("../shared/enum").EConnectionStatus;

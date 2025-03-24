@@ -4,24 +4,24 @@ import { Tunnel } from "../../client";
 import { AcknowledgeQueueManager } from "../utils/AcknowledgeQueue/AcknowledgeQueueManager";
 import { publishData } from "../constants";
 export interface ITopic {
-    subscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
+    subscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
     /**
      * Add NQL identifers to the Topic
      * @param identifiers
      * @param callbackFn
      */
-    addIdentifiers(identifiers: INqlIdentifiers, callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
+    addIdentifiers(identifiers: INqlIdentifiers, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
     /**
      * Remove saved NQL identifiers
      * @param identifiers
      * @param callbackFn
      */
-    removeIdentifiers(identifiers: string[], callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
+    removeIdentifiers(identifiers: string[], callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
     /**
      * Unsubscribe from current Topic. You will not receive messages from this
      * Topic in the future
      */
-    unsubscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<boolean>;
+    unsubscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): boolean;
     /**
      * Fire callback function after any data send to the Topic from the Message Broker with matching NQL identifiers
      * is onReceive
@@ -48,7 +48,7 @@ export interface ITopic {
      * @param callbackFn
      * @returns
      */
-    setPresence(presence: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
+    setPresence(presence: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
 }
 export interface ICallbackQueue {
     topicName: string;
@@ -67,14 +67,14 @@ export declare class Topic implements ITopic {
     private saveIdentifiers;
     private deleteSavedIdentifiers;
     private _subscribeAction;
-    subscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
-    setPresence(presence: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
+    subscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
+    setPresence(presence: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
     setConnection(connection: NoLagClient): Topic;
     _onReceiveMessage(transport: ITransport): Topic;
     onReceive(callbackFn: ((transport: ITransport) => void) | undefined): Topic;
-    addIdentifiers(identifiersList: INqlIdentifiers, callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
-    removeIdentifiers(identifiers: string[], callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<ITopic>;
-    unsubscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): Promise<boolean>;
+    addIdentifiers(identifiersList: INqlIdentifiers, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
+    removeIdentifiers(identifiers: string[], callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
+    unsubscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): boolean;
     publish(data: publishData, identifiers?: string[]): Topic;
     private send;
 }
