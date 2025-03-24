@@ -14,6 +14,7 @@ import type { ITunnel } from "nolagjs";
 const accessToken: string = "<your_device_access_token_goes_here>";
 
 const nolag: ITunnel = WebSocketClient(accessToken);
+nolag.connect();
 ```
 
 #### SUBSCRIBE to Topic and set some identifiers to listen to
