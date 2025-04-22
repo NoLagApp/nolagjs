@@ -13,21 +13,21 @@ export interface ISendMessage {
 export class SendMessage {
   messageText: string;
   files: FileDetails[] = [];
-  mentionMessageId?: string;
+  replyMessageId?: string;
 
   constructor(data: ISendMessage) {
     this.messageText = data.messageText;
     this.files = Array.isArray(data.files)
       ? data.files.map((file) => new FileDetails(file))
       : [];
-    this.mentionMessageId = data.mentionMessageId;
+    this.replyMessageId = data.mentionMessageId;
   }
 
   serialize() {
     return {
       messageText: this.messageText,
       files: this.files,
-      mentionMessageId: this.mentionMessageId,
+      mentionMessageId: this.replyMessageId,
     };
   }
 }

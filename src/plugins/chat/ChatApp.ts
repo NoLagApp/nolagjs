@@ -6,9 +6,6 @@ import {
   findIdentifierId,
   setIdentifierId,
 } from "../../shared/utils/identifiers";
-import { Message } from "./Message";
-import { ENotificationType } from "../../shared/enum/ENotificationType";
-import { Notification } from "./Notification";
 import { ISendMessage } from "./SendMessage";
 
 export const chatTag = "notification:chat:";
@@ -46,7 +43,7 @@ export interface IChat {
    * Can leave joined rooms
    * @param roomIds
    */
-  leaveRooms(roomIds: string[]): Chat;
+  leaveRooms(roomIds: string[]): ChatApp;
 
   /**
    * Set the current active room view,
@@ -54,7 +51,7 @@ export interface IChat {
    * but they can only send a message in one room
    * @param roomId
    */
-  setActiveRoom(roomId: string): Chat;
+  setActiveRoom(roomId: string): Room | undefined;
 
   /**
    * Get the current active room context
@@ -71,15 +68,20 @@ export interface IChat {
    * Send user interaction like keystrokes
    */
   sendKeyStroke(): void
+
+  /**
+   * List joined rooms
+   */
+  joinedRooms: Room[];
 }
 
-export class Chat implements IChat {
+export class ChatApp implements IChat {
   private chatAppName: string;
   private tunnel: ITunnel;
   private chatTopic: ITopic;
   private notificationIdentifier?: string;
   private userRooms: Room[] = [];
-  private joinedRooms: Record<string, Room | null> = {};
+  private _joinedRooms: Record<string, Room | null> = {};
   private activeRoomId?: string;
   private _activeRoom?: Room;
 
@@ -96,8 +98,8 @@ export class Chat implements IChat {
     this.chatTopic.onReceive((transport: ITransport) => {
       const { identifiers } = transport;
       const roomId = this.roomIdFromIdentifier(identifiers);
-      if (roomId && this.joinedRooms[roomId]) {
-        this.joinedRooms[roomId].transportHandler(transport);
+      if (roomId && this._joinedRooms[roomId]) {
+        this._joinedRooms[roomId].transportHandler(transport);
       }
     });
   }
@@ -141,6 +143,10 @@ export class Chat implements IChat {
     });
   }
 
+  get joinedRooms() {
+    return Object.values(this._joinedRooms).filter((i) => i) as Room[];
+  }
+
   public retrieveRooms(): Promise<Room[]> {
     // Use API call to retrieve a list of rooms
     this.userRooms = [];
@@ -158,9 +164,9 @@ export class Chat implements IChat {
       return;
     }
 
-    this.joinedRooms[roomId] = new Room(foundLocalUserRoom.serialize());
+    this._joinedRooms[roomId] = new Room(foundLocalUserRoom.serialize(), this.chatTopic, this.tunnel.deviceTokenId ?? "");
 
-    return this.joinedRooms[roomId];
+    return this._joinedRooms[roomId];
   }
 
   public joinRooms(roomIds: string[]) {
@@ -176,13 +182,13 @@ export class Chat implements IChat {
   }
 
   public leaveRoom(roomId: string): string | undefined {
-    if (!this.joinedRooms[roomId]) {
+    if (!this._joinedRooms[roomId]) {
       console.error(`User never joined room ${roomId}.`);
       return;
     }
 
-    this.joinedRooms[roomId] = null;
-    delete this.joinedRooms[roomId];
+    this._joinedRooms[roomId] = null;
+    delete this._joinedRooms[roomId];
 
     return roomId;
   }
@@ -191,7 +197,7 @@ export class Chat implements IChat {
    * Leave a list of rooms, and stop notifications for each room
    * @param roomIds
    */
-  public leaveRooms(roomIds: string[]): Chat {
+  public leaveRooms(roomIds: string[]): ChatApp {
     const filteredRoomIds = roomIds
       .map((roomId) => this.leaveRoom(roomId))
       .filter((i) => i) as string[];
@@ -203,14 +209,14 @@ export class Chat implements IChat {
     return this;
   }
 
-  setActiveRoom(roomId: string) {
+  setActiveRoom(roomId: string): Room | undefined {
     this.activeRoomId = roomId;
 
-    if (this.joinedRooms[roomId]) {
-      this._activeRoom = this.joinedRooms[roomId];
+    if (this._joinedRooms[roomId]) {
+      this._activeRoom = this._joinedRooms[roomId];
     }
 
-    return this;
+    return this._activeRoom;
   }
 
   activeRoom(): Room | undefined {
@@ -218,35 +224,10 @@ export class Chat implements IChat {
   }
 
   sendMessage(sendMessage: ISendMessage) {
-    const message = new Message({
-      userId: this.tunnel.deviceTokenId ?? "",
-      ...sendMessage,
-    });
-
-    // send a message to all users in the room
-    this.chatTopic.publish(message.serialize(), [
-      setIdentifierId(messageTag, this._activeRoom?.roomId ?? ""),
-    ]);
-
-    const notification = new Notification({
-      type: ENotificationType.NewMessage,
-      userId: this.tunnel.deviceTokenId ?? "",
-    });
-
-    // send notification that there is a new message sent in this room
-    this.chatTopic.publish(notification.serialize(), [
-      setIdentifierId(notificationTag, this._activeRoom?.roomId ?? ""),
-    ]);
+    this._activeRoom?.sendMessage(sendMessage);
   }
 
   sendKeyStroke() {
-    const notification = new Notification({
-      type: ENotificationType.KeyStroke,
-      userId: this.tunnel.deviceTokenId ?? "",
-    });
-    // send notification that there is a new message sent in this room
-    this.chatTopic.publish(notification.serialize(), [
-      setIdentifierId(notificationTag, this._activeRoom?.roomId ?? ""),
-    ]);
+    this._activeRoom?.sendKeyStroke();
   }
 }

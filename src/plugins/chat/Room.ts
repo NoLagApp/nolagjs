@@ -4,11 +4,13 @@ import { Message } from "./Message";
 import { ReadReceipt } from "./ReadReceipt";
 import { Reaction } from "./Reaction";
 import { ITransport } from "../../shared/interfaces";
-import { findIdentifierId } from "../../shared/utils/identifiers";
-import { messageTag, notificationTag } from "./Chat";
+import { findIdentifierId, setIdentifierId } from "../../shared/utils/identifiers";
+import { messageTag, notificationTag } from "./ChatApp";
 import { bufferToString, uint8ArrayToString } from "../../shared/utils";
 import { Notification } from "./Notification";
 import { ENotificationType } from "../../shared/enum/ENotificationType";
+import { ITopic } from "../../shared/models/Topic";
+import { ISendMessage } from "./SendMessage";
 
 export interface IRooms {
   /**
@@ -40,21 +42,6 @@ export interface IRooms {
    * Room avatar
    */
   avatar?: IFileDetails;
-
-  /**
-   * Rooms user KeyStroke Callback
-   * This callback will fire when any of the user in the room sends a keyStroke
-   * @param callback
-   */
-  keyStrokeCallback(callback?: (notification: Notification) => void): void;
-
-  /**
-   * Split messages and notifications received
-   * @param identifiers
-   * @param data
-   * @param presences
-   */
-  transportHandler({ identifiers, data, presences }: ITransport): void;
 }
 
 export class Room implements IRooms {
@@ -65,10 +52,14 @@ export class Room implements IRooms {
   privateRoom: boolean;
   avatar?: IFileDetails;
   messageNotificationCount = 0;
+  chatTopic: ITopic;
+  userId: string;
   _messages: Message[] = [];
   _keyStrokeCallback?: (notification: Notification) => void;
 
-  constructor(data: IRooms) {
+  constructor(data: IRooms, chatTopic: ITopic, userId: string) {
+    this.chatTopic = chatTopic;
+    this.userId = userId;
     this.roomId = data.roomId;
     this.tunnelId = data.tunnelId;
     this.projectId = data.projectId;
@@ -83,6 +74,12 @@ export class Room implements IRooms {
     );
     if (message) {
       message.setReadReceipt(readReceipt);
+    }
+  }
+
+  private sendReadReceipt(message: Message) {
+    if (message) {
+     //
     }
   }
 
@@ -125,12 +122,63 @@ export class Room implements IRooms {
     this.addMessage(message);
   }
 
+  /**
+   * Send a new message in the context of the active Room
+   * @param sendMessage
+   */
+  sendMessage(sendMessage: ISendMessage) {
+    const message = new Message({
+      userId: this.userId,
+      ...sendMessage,
+    });
+
+    // send a message to all users in the room
+    this.chatTopic.publish(message.serialize(), [
+      setIdentifierId(messageTag, this.roomId ?? ""),
+    ]);
+
+    const notification = new Notification({
+      type: ENotificationType.NewMessage,
+      userId: this.userId,
+    });
+
+    // send notification that there is a new message sent in this room
+    this.chatTopic.publish(notification.serialize(), [
+      setIdentifierId(notificationTag, this.roomId ?? ""),
+    ]);
+  }
+
+  /**
+   * Send user interaction like keystrokes
+   */
+  sendKeyStroke() {
+    const notification = new Notification({
+      type: ENotificationType.KeyStroke,
+      userId: this.userId,
+    });
+    // send notification that there is a new message sent in this room
+    this.chatTopic.publish(notification.serialize(), [
+      setIdentifierId(notificationTag, this.roomId ?? ""),
+    ]);
+  }
+
+  /**
+   * Rooms user KeyStroke Callback
+   * This callback will fire when any of the user in the room sends a keyStroke
+   * @param callback
+   */
   keyStrokeCallback(callback?: (notification: Notification) => void) {
     if(callback) {
       this._keyStrokeCallback = callback;
     }
   }
 
+  /**
+   * Split messages and notifications received
+   * @param identifiers
+   * @param data
+   * @param presences
+   */
   transportHandler({ identifiers, data, presences }: ITransport) {
     const hasNotification = !!findIdentifierId(notificationTag, identifiers[0]);
     const hasMessage = !!findIdentifierId(messageTag, identifiers[0]);
@@ -142,6 +190,13 @@ export class Room implements IRooms {
     if (hasMessage) {
       this.messageHandler(data);
     }
+  }
+
+  /**
+   * When the room comes into view, reset the message received count
+   */
+  clearMessageReceivedCount() {
+    this.messageNotificationCount = 0;
   }
 
   serialize() {
