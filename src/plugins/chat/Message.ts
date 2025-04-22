@@ -1,18 +1,20 @@
 import { FileDetails, IFileDetails } from "./FileDetails";
 import { IReadReceipt, ReadReceipt } from "./ReadReceipt";
 import { IReaction, Reaction } from "./Reaction";
+import dayjs from "dayjs";
+import { uuid } from "../../shared/utils/uuid";
 
 export interface IMessage {
-  messageId: string;
-  sentDate: string;
+  messageId?: string;
+  sentDate?: string;
   messageText: string;
-  files: IFileDetails[];
-  mentionMessageId: string;
-  originalMessageId: string;
-  chunk: number;
+  files?: IFileDetails[];
+  mentionMessageId?: string;
+  originalMessageId?: string;
+  chunk?: number;
   userId: string;
-  readReceipts: IReadReceipt[];
-  reactions: IReaction[];
+  readReceipts?: IReadReceipt[];
+  reactions?: IReaction[];
 }
 
 export class Message {
@@ -20,7 +22,7 @@ export class Message {
   sentDate: string;
   messageText: string;
   files: FileDetails[] = [];
-  mentionMessageId: string;
+  mentionMessageId?: string;
   originalMessageId: string;
   chunk: number;
   userId: string;
@@ -28,15 +30,15 @@ export class Message {
   reactions: Reaction[] = [];
 
   constructor(data: IMessage) {
-    this.messageId = data.messageId;
-    this.sentDate = data.sentDate;
+    this.messageId = data.messageId ?? uuid();
+    this.sentDate = data.sentDate ?? dayjs().toISOString();
     this.messageText = data.messageText;
     this.files = Array.isArray(data.files)
       ? data.files.map((file) => new FileDetails(file))
       : [];
     this.mentionMessageId = data.mentionMessageId;
-    this.originalMessageId = data.originalMessageId;
-    this.chunk = data.chunk;
+    this.originalMessageId = data.originalMessageId ?? this.messageId;
+    this.chunk = data.chunk ?? 1;
     this.userId = data.userId;
     this.readReceipts = Array.isArray(data.readReceipts)
       ? data.readReceipts.map((readReceipt) => new ReadReceipt(readReceipt))
@@ -52,5 +54,18 @@ export class Message {
 
   setReaction(reaction: Reaction) {
     this.reactions.push(reaction);
+  }
+
+  serialize() {
+    return {
+      messageId: this.messageId,
+      sentDate: this.sentDate,
+      messageText: this.messageText,
+      files: this.files,
+      mentionMessageId: this.mentionMessageId,
+      originalMessageId: this.originalMessageId,
+      chunk: this.chunk,
+      userId: this.userId,
+    };
   }
 }
