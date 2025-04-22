@@ -1,8 +1,8 @@
-import { UUID, regenerateUUID } from "../uuid";
+import { uuid, regenerateUuid } from "../uuid";
 
 describe("UUID Generator", () => {
   test("should generate a valid UUID v4", () => {
-    const uuid = UUID();
+    const uuid = uuid();
 
     // UUID v4 regex pattern
     const uuidV4Regex =
@@ -14,10 +14,10 @@ describe("UUID Generator", () => {
   test("should generate unique UUIDs", () => {
     const UUIDList: string[] = [];
     for (let i = 0; i < 1000; i++) {
-      UUIDList.push(UUID());
+      UUIDList.push(uuid());
     }
 
-    const regeneratedUUID = regenerateUUID(UUIDList);
+    const regeneratedUUID = regenerateUuid(UUIDList);
 
     expect(UUIDList.includes(regeneratedUUID)).toBeFalsy();
   });
