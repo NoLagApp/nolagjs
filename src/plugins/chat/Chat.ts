@@ -2,10 +2,13 @@ import { Room } from "./Room";
 import { ITunnel } from "../../client";
 import { ITopic } from "../../shared/models/Topic";
 import { ITransport } from "../../shared/interfaces";
+import { findIdentifierId } from "../../shared/utils/identifiers";
+
+export const chatTag = "notification:chat:";
+export const notificationTag = "notification:room:";
+export const messageTag = "message:room:";
 
 export class Chat {
-  private notificationTag = "notification:room:";
-  private messageTag = "message:room:";
   private chatAppName: string;
   private tunnel: ITunnel;
   private chatTopic: ITopic;
@@ -31,30 +34,15 @@ export class Chat {
     });
   }
 
-  findIdentifierId(key: string, identifiers: string[]): string | undefined {
-    if (!identifiers[0]) return;
-    if (identifiers[0].includes(key)) return;
-    return identifiers[0].replace(key, "");
-  }
-
   roomIdFromIdentifier(identifiers: string[]): string | undefined {
-    return (
-      this.notificationRoomId(identifiers) ?? this.messageRoomId(identifiers)
-    );
-  }
-
-  notificationRoomId(identifiers: string[]): string | undefined {
-    return this.findIdentifierId(this.notificationTag, identifiers);
-  }
-
-  messageRoomId(identifiers: string[]): string | undefined {
-    return this.findIdentifierId(this.messageTag, identifiers);
+    if(!identifiers?.[0]) return;
+    return findIdentifierId(notificationTag, identifiers[0]) ?? findIdentifierId(messageTag, identifiers[0]);
   }
 
   private generateRoomIdentifiers(roomIds: string[]) {
     return [
-      ...roomIds.map((roomId) => `${this.messageTag}${roomId}`),
-      ...roomIds.map((roomId) => `${this.notificationTag}${roomId}`),
+      ...roomIds.map((roomId) => `${messageTag}${roomId}`),
+      ...roomIds.map((roomId) => `${notificationTag}${roomId}`),
     ];
   }
 

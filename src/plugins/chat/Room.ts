@@ -3,6 +3,7 @@ import { ERoomType } from "../../shared/enum/ERoomType";
 import { Message } from "./Message";
 import { ReadReceipt } from "./ReadReceipt";
 import { Reaction } from "./Reaction";
+import { ITransport } from "../../shared/interfaces";
 
 export interface IRooms {
   roomId: string;
@@ -48,6 +49,10 @@ export class Room implements IRooms {
   addMessage(message: Message) {
     // TODO if when we support CHUNKS, this will need to be updated
     this._messages.push(message);
+  }
+
+  messageHandler(transport: ITransport) {
+
   }
 
 
