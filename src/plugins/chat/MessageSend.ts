@@ -10,7 +10,7 @@ export interface ISendMessage {
   mentionMessageId?: string;
 }
 
-export class SendMessage {
+export class MessageSend {
   messageText: string;
   files: FileDetails[] = [];
   replyMessageId?: string;

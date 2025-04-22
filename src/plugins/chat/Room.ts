@@ -5,12 +5,12 @@ import { ReadReceipt } from "./ReadReceipt";
 import { Reaction } from "./Reaction";
 import { ITransport } from "../../shared/interfaces";
 import { findIdentifierId, setIdentifierId } from "../../shared/utils/identifiers";
-import { messageTag, notificationTag } from "./ChatApp";
-import { bufferToString, uint8ArrayToString } from "../../shared/utils";
+import { bufferToString } from "../../shared/utils";
 import { Notification } from "./Notification";
 import { ENotificationType } from "../../shared/enum/ENotificationType";
 import { ITopic } from "../../shared/models/Topic";
-import { ISendMessage } from "./SendMessage";
+import { ISendMessage } from "./MessageSend";
+import { messageTag, notificationTag } from "./Tags";
 
 export interface IRooms {
   /**
@@ -136,6 +136,8 @@ export class Room implements IRooms {
     this.chatTopic.publish(message.serialize(), [
       setIdentifierId(messageTag, this.roomId ?? ""),
     ]);
+    // add a sent message to room messages
+    this._messages.push(message);
 
     const notification = new Notification({
       type: ENotificationType.NewMessage,

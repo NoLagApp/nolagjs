@@ -6,11 +6,8 @@ import {
   findIdentifierId,
   setIdentifierId,
 } from "../../shared/utils/identifiers";
-import { ISendMessage } from "./SendMessage";
-
-export const chatTag = "notification:chat:";
-export const notificationTag = "notification:room:";
-export const messageTag = "message:room:";
+import { ISendMessage } from "./MessageSend";
+import { chatTag, messageTag, notificationTag } from "./Tags";
 
 export interface IChat {
   /**

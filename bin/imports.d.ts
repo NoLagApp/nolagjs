@@ -10,4 +10,5 @@ export * from "./shared/enum";
 export * from "./shared/interfaces";
 export * from "./shared/models/Topic";
 export * from "./shared/utils";
+export * from "./plugins/chat";
 //# sourceMappingURL=imports.d.ts.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"Reaction.d.ts","sourceRoot":"","sources":["../../../src/plugins/chat/Reaction.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,SAAS;IACxB,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,KAAK,CAAC,EAAE,MAAM,CAAC;IACf,MAAM,EAAE,MAAM,CAAC;CAChB;AACD,qBAAa,QAAQ;IACnB,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,KAAK,CAAC,EAAE,MAAM,CAAC;IACf,MAAM,EAAE,MAAM,CAAC;gBACH,IAAI,EAAE,SAAS;CAK5B"}

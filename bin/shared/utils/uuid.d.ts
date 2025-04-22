@@ -1,3 +1,3 @@
-export declare const UUID: () => string;
-export declare const regenerateUUID: (listOfUUIDs?: string[]) => string;
+export declare const uuid: () => string;
+export declare const regenerateUuid: (listOfUUIDs?: string[]) => string;
 //# sourceMappingURL=uuid.d.ts.map
