@@ -1,29 +1,31 @@
-import { Room } from "./Room";
+import { Conversation } from "./Conversation";
 import { ITunnel } from "../../client";
 import { ISendMessage } from "./MessageSend";
+import { Message } from "./Message";
+import { Notification } from "./Notification";
 export interface IChat {
     /**
      * Retrieve a list of rooms a user has joined, or was invited to.
      * The user's access token will be used to retrieve the list
      */
-    retrieveRooms(): Promise<Room[]>;
+    retrieveRooms(): Promise<Conversation[]>;
     /**
      * Join a single chat room
      * @param roomId
      */
-    joinRoom(roomId: string): Room | undefined;
+    joinRoom(roomId: string): Conversation | undefined;
     /**
      * Leave a single chat room
      * @param roomId
      */
-    leaveRoom(roomId: string): string | undefined;
+    leaveRoom(roomId: string): ChatApp;
     /**
      * Join a list of rooms based on selected roomsIds
      * A user might have access to multiple Rooms, but they only want to join
      * some of them for messages
      * @param roomIds
      */
-    joinRooms(roomIds: string[]): void;
+    joinRooms(roomIds: string[]): ChatApp;
     /**
      * Can leave joined rooms
      * @param roomIds
@@ -35,11 +37,11 @@ export interface IChat {
      * but they can only send a message in one room
      * @param roomId
      */
-    setActiveRoom(roomId: string): Room | undefined;
+    setActiveRoom(roomId: string): Conversation | undefined;
     /**
      * Get the current active room context
      */
-    activeRoom(): Room | undefined;
+    get activeRoom(): Conversation | undefined;
     /**
      * Send a new message in the context of the active Room
      * @param sendMessage
@@ -52,7 +54,17 @@ export interface IChat {
     /**
      * List joined rooms
      */
-    joinedRooms: Room[];
+    joinedRooms: Conversation[];
+    /**
+     * Active room messages received
+     * @param callback
+     */
+    onRoomMessages(callback: (messages: Message[]) => void): void;
+    /**
+     * Active room notification received
+     * @param callback
+     */
+    onConversationNotifications(callback: (notification: Notification) => void): void;
 }
 export declare class ChatApp implements IChat {
     private chatAppName;
@@ -85,19 +97,21 @@ export declare class ChatApp implements IChat {
      * @private
      */
     private setChatAppNotificationIdentifier;
-    get joinedRooms(): Room[];
-    retrieveRooms(): Promise<Room[]>;
-    joinRoom(roomId: string): Room | undefined;
-    joinRooms(roomIds: string[]): void;
-    leaveRoom(roomId: string): string | undefined;
+    get joinedRooms(): Conversation[];
+    retrieveRooms(): Promise<Conversation[]>;
+    joinRoom(roomId: string): Conversation | undefined;
+    joinRooms(roomIds: string[]): ChatApp;
+    leaveRoom(roomId: string): ChatApp;
     /**
      * Leave a list of rooms, and stop notifications for each room
      * @param roomIds
      */
     leaveRooms(roomIds: string[]): ChatApp;
-    setActiveRoom(roomId: string): Room | undefined;
-    activeRoom(): Room | undefined;
+    setActiveRoom(roomId: string): Conversation | undefined;
+    get activeRoom(): Conversation | undefined;
     sendMessage(sendMessage: ISendMessage): void;
     sendKeyStroke(): void;
+    onRoomMessages(callback: (messages: Message[]) => void): void;
+    onConversationNotifications(callback: (notification: Notification) => void): void;
 }
 //# sourceMappingURL=ChatApp.d.ts.map

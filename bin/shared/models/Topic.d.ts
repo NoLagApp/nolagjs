@@ -49,6 +49,10 @@ export interface ITopic {
      * @returns
      */
     setPresence(presence: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
+    /**
+     * Tunnel attached to Topic
+     */
+    tunnel(): Tunnel;
 }
 export interface ICallbackQueue {
     topicName: string;
@@ -61,12 +65,13 @@ export declare class Topic implements ITopic {
     private onReceiveCallback;
     private identifiers;
     private presence;
-    private tunnel;
     private acknowledgeQueueManager;
+    private _tunnel;
     constructor(tunnel: Tunnel, connection: NoLagClient, topicName: string, identifiers: INqlIdentifiers, acknowledgeQueueManager: AcknowledgeQueueManager);
     private saveIdentifiers;
     private deleteSavedIdentifiers;
     private _subscribeAction;
+    tunnel(): Tunnel;
     subscribe(callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
     setPresence(presence: string, callbackFn?: (error: Error | null, transport: ITransport | null) => void): ITopic;
     setConnection(connection: NoLagClient): Topic;

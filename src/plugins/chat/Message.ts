@@ -11,7 +11,6 @@ export interface IMessage {
   files?: IFileDetails[];
   mentionMessageId?: string;
   originalMessageId?: string;
-  chunk?: number;
   userId: string;
   readReceipts?: IReadReceipt[];
   reactions?: IReaction[];
@@ -24,7 +23,6 @@ export class Message {
   files: FileDetails[] = [];
   mentionMessageId?: string;
   originalMessageId: string;
-  chunk: number;
   userId: string;
   readReceipts: ReadReceipt[] = [];
   reactions: Reaction[] = [];
@@ -38,7 +36,6 @@ export class Message {
       : [];
     this.mentionMessageId = data.mentionMessageId;
     this.originalMessageId = data.originalMessageId ?? this.messageId;
-    this.chunk = data.chunk ?? 1;
     this.userId = data.userId;
     this.readReceipts = Array.isArray(data.readReceipts)
       ? data.readReceipts.map((readReceipt) => new ReadReceipt(readReceipt))
@@ -64,7 +61,6 @@ export class Message {
       files: this.files,
       mentionMessageId: this.mentionMessageId,
       originalMessageId: this.originalMessageId,
-      chunk: this.chunk,
       userId: this.userId,
     };
   }

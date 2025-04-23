@@ -8,7 +8,6 @@ export interface IMessage {
     files?: IFileDetails[];
     mentionMessageId?: string;
     originalMessageId?: string;
-    chunk?: number;
     userId: string;
     readReceipts?: IReadReceipt[];
     reactions?: IReaction[];
@@ -20,7 +19,6 @@ export declare class Message {
     files: FileDetails[];
     mentionMessageId?: string;
     originalMessageId: string;
-    chunk: number;
     userId: string;
     readReceipts: ReadReceipt[];
     reactions: Reaction[];
@@ -34,7 +32,6 @@ export declare class Message {
         files: FileDetails[];
         mentionMessageId: string | undefined;
         originalMessageId: string;
-        chunk: number;
         userId: string;
     };
 }

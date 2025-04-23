@@ -5,7 +5,7 @@ import { ITransport } from "../../shared/interfaces";
 import { Notification } from "./Notification";
 import { ITopic } from "../../shared/models/Topic";
 import { ISendMessage } from "./MessageSend";
-export interface IRooms {
+export interface IConversation {
     /**
      * RoomId of the Chat room
      */
@@ -31,7 +31,7 @@ export interface IRooms {
      */
     avatar?: IFileDetails;
 }
-export declare class Room implements IRooms {
+export declare class Conversation implements IConversation {
     roomId: string;
     tunnelId: string;
     projectId: string;
@@ -41,9 +41,9 @@ export declare class Room implements IRooms {
     messageNotificationCount: number;
     chatTopic: ITopic | undefined;
     _messages: Message[];
-    _notificationCallback?: (notification: Notification) => void;
+    _notificationCallback: ((notification: Notification) => void)[];
     _onMessages?: (message: Message[]) => void;
-    constructor(data: IRooms);
+    constructor(data: IConversation);
     setChatTopic(chatTopic: ITopic): void;
     get userId(): string | null | undefined;
     private setReadReceipt;
@@ -89,4 +89,4 @@ export declare class Room implements IRooms {
         avatar: IFileDetails | undefined;
     };
 }
-//# sourceMappingURL=Room.d.ts.map
+//# sourceMappingURL=Conversation.d.ts.map

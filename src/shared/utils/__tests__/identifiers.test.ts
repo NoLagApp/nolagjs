@@ -1,24 +1,19 @@
 import { uuid, regenerateUuid } from "../uuid";
+import { findIdentifierId, setIdentifierId } from "../identifiers";
 
-describe("UUID Generator", () => {
-  test("should generate a valid UUID v4", () => {
-    const uuid = uuid();
+const key = "some:key:";
+const value = "someValue";
 
-    // UUID v4 regex pattern
-    const uuidV4Regex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+describe("Identifiers", () => {
+  test("Find key ID", () => {
+    const foundKeyValue = findIdentifierId(key, `${key}${value}`)
 
-    expect(uuid).toMatch(uuidV4Regex);
+    expect(value).toBe(foundKeyValue);
   });
 
-  test("should generate unique UUIDs", () => {
-    const UUIDList: string[] = [];
-    for (let i = 0; i < 1000; i++) {
-      UUIDList.push(uuid());
-    }
+  test("Set key ID", () => {
+    const foundKeyValue = setIdentifierId(key, value)
 
-    const regeneratedUUID = regenerateUuid(UUIDList);
-
-    expect(UUIDList.includes(regeneratedUUID)).toBeFalsy();
+    expect(`${key}${value}`).toBe(foundKeyValue);
   });
 });

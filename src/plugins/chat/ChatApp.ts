@@ -1,4 +1,4 @@
-import { Room } from "./Room";
+import { Conversation } from "./Conversation";
 import { ITunnel } from "../../client";
 import { ITopic } from "../../shared/models/Topic";
 import { ITransport } from "../../shared/interfaces";
@@ -8,25 +8,28 @@ import {
 } from "../../shared/utils/identifiers";
 import { ISendMessage } from "./MessageSend";
 import { chatTag, messageTag, notificationTag } from "./Tags";
+import { ERoomType } from "../../shared/enum/ERoomType";
+import { Message } from "./Message";
+import { Notification } from "./Notification";
 
 export interface IChat {
   /**
    * Retrieve a list of rooms a user has joined, or was invited to.
    * The user's access token will be used to retrieve the list
    */
-  retrieveRooms(): Promise<Room[]>;
+  retrieveRooms(): Promise<Conversation[]>;
 
   /**
    * Join a single chat room
    * @param roomId
    */
-  joinRoom(roomId: string): Room | undefined;
+  joinRoom(roomId: string): Conversation | undefined;
 
   /**
    * Leave a single chat room
    * @param roomId
    */
-  leaveRoom(roomId: string): string | undefined;
+  leaveRoom(roomId: string): ChatApp;
 
   /**
    * Join a list of rooms based on selected roomsIds
@@ -34,7 +37,7 @@ export interface IChat {
    * some of them for messages
    * @param roomIds
    */
-  joinRooms(roomIds: string[]): void;
+  joinRooms(roomIds: string[]): ChatApp;
 
   /**
    * Can leave joined rooms
@@ -48,12 +51,12 @@ export interface IChat {
    * but they can only send a message in one room
    * @param roomId
    */
-  setActiveRoom(roomId: string): Room | undefined;
+  setActiveRoom(roomId: string): Conversation | undefined;
 
   /**
    * Get the current active room context
    */
-  activeRoom(): Room | undefined;
+  get activeRoom(): Conversation | undefined;
 
   /**
    * Send a new message in the context of the active Room
@@ -64,12 +67,24 @@ export interface IChat {
   /**
    * Send user interaction like keystrokes
    */
-  sendKeyStroke(): void
+  sendKeyStroke(): void;
 
   /**
    * List joined rooms
    */
-  joinedRooms: Room[];
+  joinedRooms: Conversation[];
+
+  /**
+   * Active room messages received
+   * @param callback
+   */
+  onRoomMessages(callback: (messages: Message[]) => void): void;
+
+  /**
+   * Active room notification received
+   * @param callback
+   */
+  onConversationNotifications(callback: (notification: Notification) => void): void;
 }
 
 export class ChatApp implements IChat {
@@ -77,10 +92,10 @@ export class ChatApp implements IChat {
   private tunnel: ITunnel;
   private chatTopic: ITopic;
   private notificationIdentifier?: string;
-  private userRooms: Room[] = [];
-  private _joinedRooms: Record<string, Room | null> = {};
+  private userRooms: Conversation[] = [];
+  private _joinedRooms: Record<string, Conversation | null> = {};
   private activeRoomId?: string;
-  private _activeRoom?: Room;
+  private _activeRoom?: Conversation;
 
   constructor(chatAppName: string, tunnel: ITunnel) {
     this.chatAppName = chatAppName;
@@ -109,6 +124,7 @@ export class ChatApp implements IChat {
    */
   private roomIdFromIdentifier(identifiers: string[]): string | undefined {
     if (!identifiers?.[0]) return;
+
     return (
       findIdentifierId(notificationTag, identifiers[0]) ??
       findIdentifierId(messageTag, identifiers[0])
@@ -141,18 +157,28 @@ export class ChatApp implements IChat {
   }
 
   get joinedRooms() {
-    return Object.values(this._joinedRooms).filter((i) => i) as Room[];
+    return Object.values(this._joinedRooms).filter((i) => i) as Conversation[];
   }
 
-  public retrieveRooms(): Promise<Room[]> {
+  public retrieveRooms(): Promise<Conversation[]> {
     // Use API call to retrieve a list of rooms
-    this.userRooms = [];
+    // IS FAKE
+    this.userRooms = [
+      new Conversation({
+        roomId: "1",
+        tunnelId: "29a3d020-0f31-498b-9e41-ee90f14d84b7",
+        projectId: "849ea6bf-1f49-46e6-a7b5-9365abe17a87",
+        type: ERoomType.GROUP,
+        privateRoom: true,
+      }),
+    ];
+
     return new Promise((resolve, reject) => {
       resolve(this.userRooms);
     });
   }
 
-  public joinRoom(roomId: string): Room | undefined {
+  public joinRoom(roomId: string): Conversation | undefined {
     const foundLocalUserRoom = this.userRooms.find((i) => i.roomId === roomId);
     if (!foundLocalUserRoom) {
       console.error(
@@ -161,33 +187,35 @@ export class ChatApp implements IChat {
       return;
     }
 
-    this._joinedRooms[roomId] = new Room(foundLocalUserRoom.serialize(), this.chatTopic, this.tunnel.deviceTokenId ?? "");
+    this._joinedRooms[roomId] = new Conversation(foundLocalUserRoom.serialize());
+    this._joinedRooms[roomId].setChatTopic(this.chatTopic);
+
+    this.chatTopic.addIdentifiers({
+      OR: this.generateRoomIdentifiers([roomId]),
+    });
 
     return this._joinedRooms[roomId];
   }
 
-  public joinRooms(roomIds: string[]) {
+  public joinRooms(roomIds: string[]): ChatApp {
     // set all joined rooms
-    const joinedRooms = roomIds
-      .map((roomId) => this.joinRoom(roomId))
-      .filter((i) => i) as Room[];
+    roomIds.forEach((roomId) => this.joinRoom(roomId));
 
-    // only add identifiers of found joined rooms
-    this.chatTopic.addIdentifiers({
-      OR: this.generateRoomIdentifiers(joinedRooms.map((i) => i?.roomId)),
-    });
+    return this;
   }
 
-  public leaveRoom(roomId: string): string | undefined {
+  public leaveRoom(roomId: string): ChatApp {
     if (!this._joinedRooms[roomId]) {
       console.error(`User never joined room ${roomId}.`);
-      return;
+      return this;
     }
 
     this._joinedRooms[roomId] = null;
     delete this._joinedRooms[roomId];
 
-    return roomId;
+    this.chatTopic.removeIdentifiers(this.generateRoomIdentifiers([roomId]));
+
+    return this;
   }
 
   /**
@@ -195,18 +223,12 @@ export class ChatApp implements IChat {
    * @param roomIds
    */
   public leaveRooms(roomIds: string[]): ChatApp {
-    const filteredRoomIds = roomIds
-      .map((roomId) => this.leaveRoom(roomId))
-      .filter((i) => i) as string[];
-
-    this.chatTopic.removeIdentifiers(
-      this.generateRoomIdentifiers(filteredRoomIds),
-    );
+    roomIds.forEach((roomId) => this.leaveRoom(roomId));
 
     return this;
   }
 
-  setActiveRoom(roomId: string): Room | undefined {
+  setActiveRoom(roomId: string): Conversation | undefined {
     this.activeRoomId = roomId;
 
     if (this._joinedRooms[roomId]) {
@@ -216,7 +238,7 @@ export class ChatApp implements IChat {
     return this._activeRoom;
   }
 
-  activeRoom(): Room | undefined {
+  get activeRoom(): Conversation | undefined {
     return this._activeRoom;
   }
 
@@ -226,5 +248,13 @@ export class ChatApp implements IChat {
 
   sendKeyStroke() {
     this._activeRoom?.sendKeyStroke();
+  }
+
+  onRoomMessages(callback: (messages: Message[]) => void) {
+    this._activeRoom?.onMessagesCallback(callback);
+  }
+
+  onConversationNotifications(callback: (notification: Notification) => void) {
+    this._activeRoom?.onNotificationCallback(callback);
   }
 }

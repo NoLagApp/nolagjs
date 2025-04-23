@@ -1,8 +1,7 @@
-export const findIdentifierId = (key: string, identifiers?: string): string | undefined => {
-  if (!identifiers) return;
-  if (!identifiers[0]) return;
-  if (identifiers[0].includes(key)) return;
-  return identifiers[0].replace(key, "");
+export const findIdentifierId = (key: string, identifier?: string): string | undefined => {
+  if (!identifier) return;
+  if (!identifier.includes(key)) return;
+  return identifier.replace(key, "");
 }
 
 export const setIdentifierId = (prefixTag: string, idToSet: string) => {

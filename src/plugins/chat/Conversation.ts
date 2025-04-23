@@ -15,7 +15,7 @@ import { ITopic } from "../../shared/models/Topic";
 import { ISendMessage } from "./MessageSend";
 import { messageTag, notificationTag } from "./Tags";
 
-export interface IRooms {
+export interface IConversation {
   /**
    * RoomId of the Chat room
    */
@@ -47,7 +47,7 @@ export interface IRooms {
   avatar?: IFileDetails;
 }
 
-export class Room implements IRooms {
+export class Conversation implements IConversation {
   roomId: string;
   tunnelId: string;
   projectId: string;
@@ -57,10 +57,10 @@ export class Room implements IRooms {
   messageNotificationCount = 0;
   chatTopic: ITopic | undefined;
   _messages: Message[] = [];
-  _notificationCallback?: (notification: Notification) => void;
+  _notificationCallback: ((notification: Notification) => void)[] = [];
   _onMessages?: (message: Message[]) => void;
 
-  constructor(data: IRooms) {
+  constructor(data: IConversation) {
     this.roomId = data.roomId;
     this.tunnelId = data.tunnelId;
     this.projectId = data.projectId;
@@ -102,8 +102,11 @@ export class Room implements IRooms {
   }
 
   private actionNotificationCallback(notification: Notification) {
-    console.log(notification);
-    if (this._notificationCallback) this._notificationCallback(notification);
+    this._notificationCallback.forEach((callback) => {
+      console.log(notification);
+      console.log(callback);
+      callback(notification);
+    })
   }
 
   private notificationHandler(data: ArrayBuffer) {
@@ -113,7 +116,7 @@ export class Room implements IRooms {
         this.messageNotificationCount = this.messageNotificationCount++;
         break;
       case ENotificationType.KeyStroke:
-        this.actionNotificationCallback(notification);
+        // maybe have a keystroke-specific notification?
         break;
       case ENotificationType.Reaction:
         if (!notification.reaction) return;
@@ -124,6 +127,7 @@ export class Room implements IRooms {
         this.setReadReceipt(notification.readReceipt);
         break;
     }
+    this.actionNotificationCallback(notification);
   }
 
   private messageHandler(data: ArrayBuffer) {
@@ -185,7 +189,8 @@ export class Room implements IRooms {
    */
   onNotificationCallback(callback?: (notification: Notification) => void) {
     if (callback) {
-      this._notificationCallback = callback;
+      console.log("notificationcallback", callback);
+      this._notificationCallback.push(callback);
     }
   }
 
