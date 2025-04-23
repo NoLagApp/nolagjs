@@ -1,3 +1,3 @@
 export const chatTag = "notification:chat:";
-export const notificationTag = "notification:room:";
-export const messageTag = "message:room:";
+export const notificationTag = "notification:conversation:";
+export const messageTag = "message:conversation:";

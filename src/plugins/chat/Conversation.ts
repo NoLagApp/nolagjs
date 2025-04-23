@@ -1,5 +1,5 @@
 import { FileDetails, IFileDetails } from "./FileDetails";
-import { ERoomType } from "../../shared/enum/ERoomType";
+import { EConversationType } from "../../shared/enum/EConversationType";
 import { Message } from "./Message";
 import { ReadReceipt } from "./ReadReceipt";
 import { Reaction } from "./Reaction";
@@ -17,42 +17,42 @@ import { messageTag, notificationTag } from "./Tags";
 
 export interface IConversation {
   /**
-   * RoomId of the Chat room
+   * ConversationId of the Chat conversation
    */
-  roomId: string;
+  conversationId: string;
 
   /**
-   * The Tunnel the Room is attached to
+   * The Tunnel the Conversation is attached to
    */
   tunnelId: string;
 
   /**
-   * The Project this room is attached to
+   * The Project this conversation is attached to
    */
   projectId: string;
 
   /**
-   * Room Type, DM or GROUP
+   * Conversation Type, DM or GROUP
    */
-  type: ERoomType;
+  type: EConversationType;
 
   /**
-   * Is this room private?
+   * Is this conversation private?
    */
-  privateRoom: boolean;
+  privateConversation: boolean;
 
   /**
-   * Room avatar
+   * Conversation avatar
    */
   avatar?: IFileDetails;
 }
 
 export class Conversation implements IConversation {
-  roomId: string;
+  conversationId: string;
   tunnelId: string;
   projectId: string;
-  type: ERoomType;
-  privateRoom: boolean;
+  type: EConversationType;
+  privateConversation: boolean;
   avatar?: IFileDetails;
   messageNotificationCount = 0;
   chatTopic: ITopic | undefined;
@@ -61,11 +61,11 @@ export class Conversation implements IConversation {
   _onMessages?: (message: Message[]) => void;
 
   constructor(data: IConversation) {
-    this.roomId = data.roomId;
+    this.conversationId = data.conversationId;
     this.tunnelId = data.tunnelId;
     this.projectId = data.projectId;
     this.type = data.type;
-    this.privateRoom = data.privateRoom;
+    this.privateConversation = data.privateConversation;
     this.avatar = data.avatar ? new FileDetails(data.avatar) : undefined;
   }
 
@@ -136,7 +136,7 @@ export class Conversation implements IConversation {
   }
 
   /**
-   * Send a new message in the context of the active Room
+   * Send a new message in the context of the active Conversation
    * @param sendMessage
    */
   sendMessage(sendMessage: ISendMessage) {
@@ -147,11 +147,11 @@ export class Conversation implements IConversation {
       ...sendMessage,
     });
 
-    // send a message to all users in the room
+    // send a message to all users in the conversation
     this.chatTopic.publish(message.serialize(), [
-      setIdentifierId(messageTag, this.roomId ?? ""),
+      setIdentifierId(messageTag, this.conversationId ?? ""),
     ]);
-    // add a sent message to room messages
+    // add a sent message to conversation messages
     this._messages.push(message);
     if (this._onMessages) this._onMessages(this._messages);
 
@@ -160,9 +160,9 @@ export class Conversation implements IConversation {
       userId: this.userId,
     });
 
-    // send notification that there is a new message sent in this room
+    // send notification that there is a new message sent in this conversation
     this.chatTopic.publish(notification.serialize(), [
-      setIdentifierId(notificationTag, this.roomId ?? ""),
+      setIdentifierId(notificationTag, this.conversationId ?? ""),
     ]);
   }
 
@@ -176,15 +176,15 @@ export class Conversation implements IConversation {
       type: ENotificationType.KeyStroke,
       userId: this.userId,
     });
-    // send notification that there is a new message sent in this room
+    // send notification that there is a new message sent in this conversation
     this.chatTopic.publish(notification.serialize(), [
-      setIdentifierId(notificationTag, this.roomId ?? ""),
+      setIdentifierId(notificationTag, this.conversationId ?? ""),
     ]);
   }
 
   /**
-   * Rooms user KeyStroke Callback
-   * This callback will fire when any of the user in the room sends a keyStroke
+   * Conversations user KeyStroke Callback
+   * This callback will fire when any of the user in the conversation sends a keyStroke
    * @param callback
    */
   onNotificationCallback(callback?: (notification: Notification) => void) {
@@ -220,23 +220,23 @@ export class Conversation implements IConversation {
   }
 
   /**
-   * When the room comes into view, reset the message received count
+   * When the conversation comes into view, reset the message received count
    */
   clearMessageReceivedCount() {
     this.messageNotificationCount = 0;
   }
 
-  get roomMessages() {
+  get conversationMessages() {
     return this._messages;
   }
 
   serialize() {
     return {
-      roomId: this.roomId,
+      conversationId: this.conversationId,
       tunnelId: this.tunnelId,
       projectId: this.projectId,
       type: this.type,
-      privateRoom: this.privateRoom,
+      privateConversation: this.privateConversation,
       avatar: this.avatar,
     };
   }

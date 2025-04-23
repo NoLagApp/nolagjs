@@ -1,5 +1,5 @@
 import { IFileDetails } from "./FileDetails";
-import { ERoomType } from "../../shared/enum/ERoomType";
+import { EConversationType } from "../../shared/enum/EConversationType";
 import { Message } from "./Message";
 import { ITransport } from "../../shared/interfaces";
 import { Notification } from "./Notification";
@@ -7,36 +7,36 @@ import { ITopic } from "../../shared/models/Topic";
 import { ISendMessage } from "./MessageSend";
 export interface IConversation {
     /**
-     * RoomId of the Chat room
+     * ConversationId of the Chat conversation
      */
-    roomId: string;
+    conversationId: string;
     /**
-     * The Tunnel the Room is attached to
+     * The Tunnel the Conversation is attached to
      */
     tunnelId: string;
     /**
-     * The Project this room is attached to
+     * The Project this conversation is attached to
      */
     projectId: string;
     /**
-     * Room Type, DM or GROUP
+     * Conversation Type, DM or GROUP
      */
-    type: ERoomType;
+    type: EConversationType;
     /**
-     * Is this room private?
+     * Is this conversation private?
      */
-    privateRoom: boolean;
+    privateConversation: boolean;
     /**
-     * Room avatar
+     * Conversation avatar
      */
     avatar?: IFileDetails;
 }
 export declare class Conversation implements IConversation {
-    roomId: string;
+    conversationId: string;
     tunnelId: string;
     projectId: string;
-    type: ERoomType;
-    privateRoom: boolean;
+    type: EConversationType;
+    privateConversation: boolean;
     avatar?: IFileDetails;
     messageNotificationCount: number;
     chatTopic: ITopic | undefined;
@@ -53,7 +53,7 @@ export declare class Conversation implements IConversation {
     private notificationHandler;
     private messageHandler;
     /**
-     * Send a new message in the context of the active Room
+     * Send a new message in the context of the active Conversation
      * @param sendMessage
      */
     sendMessage(sendMessage: ISendMessage): void;
@@ -62,8 +62,8 @@ export declare class Conversation implements IConversation {
      */
     sendKeyStroke(): void;
     /**
-     * Rooms user KeyStroke Callback
-     * This callback will fire when any of the user in the room sends a keyStroke
+     * Conversations user KeyStroke Callback
+     * This callback will fire when any of the user in the conversation sends a keyStroke
      * @param callback
      */
     onNotificationCallback(callback?: (notification: Notification) => void): void;
@@ -76,16 +76,16 @@ export declare class Conversation implements IConversation {
      */
     transportHandler({ identifiers, data, presences }: ITransport): void;
     /**
-     * When the room comes into view, reset the message received count
+     * When the conversation comes into view, reset the message received count
      */
     clearMessageReceivedCount(): void;
-    get roomMessages(): Message[];
+    get conversationMessages(): Message[];
     serialize(): {
-        roomId: string;
+        conversationId: string;
         tunnelId: string;
         projectId: string;
-        type: ERoomType;
-        privateRoom: boolean;
+        type: EConversationType;
+        privateConversation: boolean;
         avatar: IFileDetails | undefined;
     };
 }

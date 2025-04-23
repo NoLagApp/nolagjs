@@ -1,4 +1,4 @@
 export declare const chatTag = "notification:chat:";
-export declare const notificationTag = "notification:room:";
-export declare const messageTag = "message:room:";
+export declare const notificationTag = "notification:conversation:";
+export declare const messageTag = "message:conversation:";
 //# sourceMappingURL=Tags.d.ts.map

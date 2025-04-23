@@ -1,1 +1,1 @@
-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/chat/index.ts"],"names":[],"mappings":"AAAA,cAAc,WAAW,CAAC;AAC1B,cAAc,gBAAgB,CAAA;AAC9B,cAAc,eAAe,CAAA;AAC7B,cAAc,WAAW,CAAA;AACzB,cAAc,eAAe,CAAA;AAC7B,cAAc,gBAAgB,CAAA;AAC9B,cAAc,YAAY,CAAA;AAC1B,cAAc,eAAe,CAAA;AAC7B,cAAc,QAAQ,CAAC"}
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/chat/index.ts"],"names":[],"mappings":"AAAA,cAAc,WAAW,CAAC"}

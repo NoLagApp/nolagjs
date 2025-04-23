@@ -1,4 +1,4 @@
-export enum ERoomType {
+export enum EConversationType {
   DM = "dm",
   GROUP = "group",
 }

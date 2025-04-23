@@ -10,4 +10,12 @@ export * from "./shared/enum";
 export * from "./shared/interfaces";
 export * from "./shared/models/Topic";
 export * from "./shared/utils";
+export * from "./plugins/chat/Conversation"
+export * from "./plugins/chat/FileDetails"
+export * from "./plugins/chat/Message"
+export * from "./plugins/chat/MessageSend"
+export * from "./plugins/chat/Notification"
+export * from "./plugins/chat/Reaction"
+export * from "./plugins/chat/ReadReceipt"
+export * from "./plugins/chat/Tags";
 export * from "./plugins/chat";
