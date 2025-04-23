@@ -1,49 +1,49 @@
-import { Conversation } from "./Conversation";
+import { Space } from "./Space";
 import { ITunnel } from "../../client";
 import { ISendMessage } from "./MessageSend";
 import { Message } from "./Message";
-import { Notification } from "./Notification";
+import { ChatNotification } from "./ChatNotification";
 export interface IChat {
     /**
-     * Retrieve a list of conversations a user has joined, or was invited to.
+     * Retrieve a list of spaces a user has joined, or was invited to.
      * The user's access token will be used to retrieve the list
      */
-    retrieveConversations(): Promise<Conversation[]>;
+    retrieveSpaces(): Promise<Space[]>;
     /**
-     * Join a single chat conversation
-     * @param conversationId
+     * Join a single chat space
+     * @param space
      */
-    joinConversation(conversationId: string): Conversation | undefined;
+    joinSpace(space: Space): Space;
     /**
-     * Leave a single chat conversation
-     * @param conversationId
+     * Leave a single chat space
+     * @param spaceId
      */
-    leaveConversation(conversationId: string): ChatApp;
+    leaveSpace(spaceId: string): ChatApp;
     /**
-     * Join a list of conversations based on selected conversationsIds
-     * A user might have access to multiple Conversations, but they only want to join
+     * Join a list of spaces based on selected spacesIds
+     * A user might have access to multiple Spaces, but they only want to join
      * some of them for messages
-     * @param conversationIds
+     * @param spaceIds
      */
-    joinConversations(conversationIds: string[]): ChatApp;
+    joinSpaces(spaceIds: Space[]): ChatApp;
     /**
-     * Can leave joined conversations
-     * @param conversationIds
+     * Can leave joined spaces
+     * @param spaceIds
      */
-    leaveConversations(conversationIds: string[]): ChatApp;
+    leaveSpaces(spaceIds: string[]): ChatApp;
     /**
-     * Set the current active conversation view,
-     * a user might view multiple conversations at the same time,
-     * but they can only send a message in one conversation
-     * @param conversationId
+     * Set the current active space view,
+     * a user might view multiple spaces at the same time,
+     * but they can only send a message in one space
+     * @param spaceId
      */
-    setActiveConversation(conversationId: string): Conversation | undefined;
+    setActiveSpace(spaceId: string): Space | undefined;
     /**
-     * Get the current active conversation context
+     * Get the current active space context
      */
-    get activeConversation(): Conversation | undefined;
+    get activeSpace(): Space | undefined;
     /**
-     * Send a new message in the context of the active Conversation
+     * Send a new message in the context of the active Space
      * @param sendMessage
      */
     sendMessage(sendMessage: ISendMessage): void;
@@ -52,66 +52,79 @@ export interface IChat {
      */
     sendKeyStroke(): void;
     /**
-     * List joined conversations
+     * List joined spaces
      */
-    joinedConversations: Conversation[];
+    joinedSpaces: Space[];
     /**
-     * Active conversation messages received
+     * Active space messages received
      * @param callback
      */
-    onConversationMessages(callback: (messages: Message[]) => void): void;
+    onSpaceMessagesEvent(callback: (messages: Message[]) => void): void;
     /**
-     * Active conversation notification received
+     * Remove callback
+     */
+    removeSpaceMessagesEvent(): void;
+    /**
+     * Active space notification received
      * @param callback
      */
-    onConversationNotifications(callback: (notification: Notification) => void): void;
+    onSpaceNotificationEvent(callback: (notification: ChatNotification) => void): void;
+    /**
+     * Remove Notification events
+     */
+    removeNotificationEvent(): void;
 }
 export declare class ChatApp implements IChat {
     private chatAppName;
     private tunnel;
     private chatTopic;
     private notificationIdentifier?;
-    private userConversations;
-    private _joinedConversations;
-    private activeConversationId?;
-    private _activeConversation?;
+    private userSpaces;
+    private _joinedSpaces;
+    private activeSpaceId?;
+    private _activeSpace?;
+    private _onSpaceMessagesEvent?;
+    private _onSpaceNotificationEvent?;
     constructor(chatAppName: string, tunnel: ITunnel);
     private onReceive;
     /**
-     * Get the conversation ID from received Identifiers
-     * We use the ID to pass the transport to the transportHandler attached to the conversation
+     * Get the space ID from received Identifiers
+     * We use the ID to pass the transport to the transportHandler attached to the space
      * @param identifiers
      * @private
      */
-    private conversationIdFromIdentifier;
+    private spaceIdFromIdentifier;
     /**
-     * Helper to quickly generate conversation identifiers
-     * @param conversationIds
+     * Helper to quickly generate space identifiers
+     * @param spaceIds
      * @private
      */
-    private generateConversationIdentifiers;
+    private generateSpaceIdentifiers;
     /**
      * Set the chat app notification identifier
      * This allows us to send notifications to users that are part of the chat App.
-     * Notification could be something like "new invite to conversation"
+     * Notification could be something like "new invite to space"
      * @private
      */
     private setChatAppNotificationIdentifier;
-    get joinedConversations(): Conversation[];
-    retrieveConversations(): Promise<Conversation[]>;
-    joinConversation(conversationId: string): Conversation | undefined;
-    joinConversations(conversationIds: string[]): ChatApp;
-    leaveConversation(conversationId: string): ChatApp;
+    get joinedSpaces(): Space[];
+    retrieveSpaceById(spaceId: string): Promise<Space | undefined>;
+    retrieveSpaces(): Promise<Space[]>;
+    joinSpace(space: Space): Space;
+    joinSpaces(spaceIds: Space[]): ChatApp;
+    leaveSpace(spaceId: string): ChatApp;
     /**
-     * Leave a list of conversations, and stop notifications for each conversation
-     * @param conversationIds
+     * Leave a list of spaces, and stop notifications for each space
+     * @param spaceIds
      */
-    leaveConversations(conversationIds: string[]): ChatApp;
-    setActiveConversation(conversationId: string): Conversation | undefined;
-    get activeConversation(): Conversation | undefined;
+    leaveSpaces(spaceIds: string[]): ChatApp;
+    setActiveSpace(spaceId: string): Space | undefined;
+    get activeSpace(): Space | undefined;
     sendMessage(sendMessage: ISendMessage): void;
     sendKeyStroke(): void;
-    onConversationMessages(callback: (messages: Message[]) => void): void;
-    onConversationNotifications(callback: (notification: Notification) => void): void;
+    onSpaceMessagesEvent(callback: (messages: Message[]) => void): void;
+    removeSpaceMessagesEvent(): void;
+    onSpaceNotificationEvent(callback: (notification: ChatNotification) => void): void;
+    removeNotificationEvent(): void;
 }
 //# sourceMappingURL=ChatApp.d.ts.map

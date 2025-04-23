@@ -1,5 +1,5 @@
 import { FileDetails, IFileDetails } from "./FileDetails";
-import { EConversationType } from "../../shared/enum/EConversationType";
+import { ESpaceType } from "../../shared/enum/ESpaceType";
 import { Message } from "./Message";
 import { ReadReceipt } from "./ReadReceipt";
 import { Reaction } from "./Reaction";
@@ -9,63 +9,77 @@ import {
   setIdentifierId,
 } from "../../shared/utils/identifiers";
 import { bufferToString } from "../../shared/utils";
-import { Notification } from "./Notification";
+import { ChatNotification } from "./ChatNotification";
 import { ENotificationType } from "../../shared/enum/ENotificationType";
 import { ITopic } from "../../shared/models/Topic";
 import { ISendMessage } from "./MessageSend";
 import { messageTag, notificationTag } from "./Tags";
 
-export interface IConversation {
+export interface ISpace {
   /**
-   * ConversationId of the Chat conversation
+   * SpaceId of the Chat space
    */
-  conversationId: string;
+  spaceId: string;
 
   /**
-   * The Tunnel the Conversation is attached to
+   * The Tunnel the Space is attached to
    */
   tunnelId: string;
 
   /**
-   * The Project this conversation is attached to
+   * The Project this space is attached to
    */
   projectId: string;
 
   /**
-   * Conversation Type, DM or GROUP
+   * Space Type, DM or GROUP
    */
-  type: EConversationType;
+  type: ESpaceType;
 
   /**
-   * Is this conversation private?
+   * Is this space private?
    */
-  privateConversation: boolean;
+  privateSpace: boolean;
 
   /**
-   * Conversation avatar
+   * Name of the space
+   */
+  name: string;
+
+  /**
+   * What this space is all about
+   */
+  description: string;
+
+  /**
+   * Space avatar
    */
   avatar?: IFileDetails;
 }
 
-export class Conversation implements IConversation {
-  conversationId: string;
+export class Space implements ISpace {
+  spaceId: string;
   tunnelId: string;
   projectId: string;
-  type: EConversationType;
-  privateConversation: boolean;
+  type: ESpaceType;
+  privateSpace: boolean;
+  name: string;
+  description: string;
   avatar?: IFileDetails;
   messageNotificationCount = 0;
   chatTopic: ITopic | undefined;
   _messages: Message[] = [];
-  _notificationCallback: ((notification: Notification) => void)[] = [];
+  _notificationCallback: ((notification: ChatNotification) => void)[] = [];
   _onMessages?: (message: Message[]) => void;
 
-  constructor(data: IConversation) {
-    this.conversationId = data.conversationId;
+  constructor(data: ISpace) {
+    this.spaceId = data.spaceId;
     this.tunnelId = data.tunnelId;
     this.projectId = data.projectId;
+    this.name = data.name;
+    this.description = data.description;
     this.type = data.type;
-    this.privateConversation = data.privateConversation;
+    this.privateSpace = data.privateSpace;
     this.avatar = data.avatar ? new FileDetails(data.avatar) : undefined;
   }
 
@@ -101,16 +115,14 @@ export class Conversation implements IConversation {
     if (this._onMessages) this._onMessages(this._messages);
   }
 
-  private actionNotificationCallback(notification: Notification) {
+  private actionNotificationCallback(notification: ChatNotification) {
     this._notificationCallback.forEach((callback) => {
-      console.log(notification);
-      console.log(callback);
       callback(notification);
     })
   }
 
   private notificationHandler(data: ArrayBuffer) {
-    const notification = new Notification(JSON.parse(bufferToString(data)));
+    const notification = new ChatNotification(JSON.parse(bufferToString(data)));
     switch (notification.type) {
       case ENotificationType.NewMessage:
         this.messageNotificationCount = this.messageNotificationCount++;
@@ -136,7 +148,7 @@ export class Conversation implements IConversation {
   }
 
   /**
-   * Send a new message in the context of the active Conversation
+   * Send a new message in the context of the active Space
    * @param sendMessage
    */
   sendMessage(sendMessage: ISendMessage) {
@@ -147,22 +159,22 @@ export class Conversation implements IConversation {
       ...sendMessage,
     });
 
-    // send a message to all users in the conversation
+    // send a message to all users in the space
     this.chatTopic.publish(message.serialize(), [
-      setIdentifierId(messageTag, this.conversationId ?? ""),
+      setIdentifierId(messageTag, this.spaceId ?? ""),
     ]);
-    // add a sent message to conversation messages
+    // add a sent message to space messages
     this._messages.push(message);
     if (this._onMessages) this._onMessages(this._messages);
 
-    const notification = new Notification({
+    const notification = new ChatNotification({
       type: ENotificationType.NewMessage,
       userId: this.userId,
     });
 
-    // send notification that there is a new message sent in this conversation
+    // send notification that there is a new message sent in this space
     this.chatTopic.publish(notification.serialize(), [
-      setIdentifierId(notificationTag, this.conversationId ?? ""),
+      setIdentifierId(notificationTag, this.spaceId ?? ""),
     ]);
   }
 
@@ -172,32 +184,45 @@ export class Conversation implements IConversation {
   sendKeyStroke() {
     if (!this.chatTopic || !this.userId) return;
 
-    const notification = new Notification({
+    const notification = new ChatNotification({
       type: ENotificationType.KeyStroke,
       userId: this.userId,
     });
-    // send notification that there is a new message sent in this conversation
+    // send notification that there is a new message sent in this space
     this.chatTopic.publish(notification.serialize(), [
-      setIdentifierId(notificationTag, this.conversationId ?? ""),
+      setIdentifierId(notificationTag, this.spaceId ?? ""),
     ]);
   }
 
   /**
-   * Conversations user KeyStroke Callback
-   * This callback will fire when any of the user in the conversation sends a keyStroke
+   * Notification callback will fire on all notification types
    * @param callback
    */
-  onNotificationCallback(callback?: (notification: Notification) => void) {
-    if (callback) {
-      console.log("notificationcallback", callback);
+  onNotificationCallback(callback?: (notification: ChatNotification) => void) {
+    if(callback) {
       this._notificationCallback.push(callback);
     }
   }
 
+  removeNotificationCallback() {
+    this._notificationCallback = [];
+  }
+
+  /**
+   * Will fire on messages received
+   * @param callback
+   */
   onMessagesCallback(callback?: (message: Message[]) => void) {
-    if (callback) {
+    if(callback) {
       this._onMessages = callback;
     }
+  }
+
+  /**
+   * Remove message callback
+   */
+  removeMessagesCallback() {
+    this._onMessages = undefined;
   }
 
   /**
@@ -220,23 +245,25 @@ export class Conversation implements IConversation {
   }
 
   /**
-   * When the conversation comes into view, reset the message received count
+   * When the space comes into view, reset the message received count
    */
   clearMessageReceivedCount() {
     this.messageNotificationCount = 0;
   }
 
-  get conversationMessages() {
+  get spaceMessages() {
     return this._messages;
   }
 
   serialize() {
     return {
-      conversationId: this.conversationId,
+      spaceId: this.spaceId,
       tunnelId: this.tunnelId,
       projectId: this.projectId,
+      name: this.name,
+      description: this.description,
       type: this.type,
-      privateConversation: this.privateConversation,
+      privateSpace: this.privateSpace,
       avatar: this.avatar,
     };
   }

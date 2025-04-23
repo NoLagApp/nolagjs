@@ -2,7 +2,7 @@ import { ENotificationType } from "../../shared/enum/ENotificationType";
 import { ReadReceipt } from "./ReadReceipt";
 import { Reaction } from "./Reaction";
 
-export interface INotification {
+export interface IChatNotification {
   type: ENotificationType,
   userId: string,
   message?: string,
@@ -10,14 +10,14 @@ export interface INotification {
   reaction?: Reaction
 }
 
-export class Notification implements INotification {
+export class ChatNotification implements IChatNotification {
   type: ENotificationType;
   userId: string;
   message?: string;
   readReceipt?: ReadReceipt;
   reaction?: Reaction
 
-  constructor(data: INotification) {
+  constructor(data: IChatNotification) {
     this.type = data.type;
     this.userId = data.userId;
     this.message = data.message;
