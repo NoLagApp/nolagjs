@@ -4,7 +4,10 @@ import { Message } from "./Message";
 import { ReadReceipt } from "./ReadReceipt";
 import { Reaction } from "./Reaction";
 import { ITransport } from "../../shared/interfaces";
-import { findIdentifierId, setIdentifierId } from "../../shared/utils/identifiers";
+import {
+  findIdentifierId,
+  setIdentifierId,
+} from "../../shared/utils/identifiers";
 import { bufferToString } from "../../shared/utils";
 import { Notification } from "./Notification";
 import { ENotificationType } from "../../shared/enum/ENotificationType";
@@ -52,14 +55,12 @@ export class Room implements IRooms {
   privateRoom: boolean;
   avatar?: IFileDetails;
   messageNotificationCount = 0;
-  chatTopic: ITopic;
-  userId: string;
+  chatTopic: ITopic | undefined;
   _messages: Message[] = [];
-  _keyStrokeCallback?: (notification: Notification) => void;
+  _notificationCallback?: (notification: Notification) => void;
+  _onMessages?: (message: Message[]) => void;
 
-  constructor(data: IRooms, chatTopic: ITopic, userId: string) {
-    this.chatTopic = chatTopic;
-    this.userId = userId;
+  constructor(data: IRooms) {
     this.roomId = data.roomId;
     this.tunnelId = data.tunnelId;
     this.projectId = data.projectId;
@@ -68,18 +69,20 @@ export class Room implements IRooms {
     this.avatar = data.avatar ? new FileDetails(data.avatar) : undefined;
   }
 
+  setChatTopic(chatTopic: ITopic) {
+    this.chatTopic = chatTopic;
+  }
+
+  get userId() {
+    return this.chatTopic?.tunnel().deviceTokenId;
+  }
+
   private setReadReceipt(readReceipt: ReadReceipt) {
     const message = this._messages.find(
       (message) => message.messageId === readReceipt.messageId,
     );
     if (message) {
       message.setReadReceipt(readReceipt);
-    }
-  }
-
-  private sendReadReceipt(message: Message) {
-    if (message) {
-     //
     }
   }
 
@@ -95,6 +98,12 @@ export class Room implements IRooms {
   private addMessage(message: Message) {
     // TODO if when we support CHUNKS, this will need to be updated
     this._messages.push(message);
+    if (this._onMessages) this._onMessages(this._messages);
+  }
+
+  private actionNotificationCallback(notification: Notification) {
+    console.log(notification);
+    if (this._notificationCallback) this._notificationCallback(notification);
   }
 
   private notificationHandler(data: ArrayBuffer) {
@@ -104,14 +113,14 @@ export class Room implements IRooms {
         this.messageNotificationCount = this.messageNotificationCount++;
         break;
       case ENotificationType.KeyStroke:
-        if(this._keyStrokeCallback) this._keyStrokeCallback(notification);
+        this.actionNotificationCallback(notification);
         break;
       case ENotificationType.Reaction:
-        if(!notification.reaction) return;
+        if (!notification.reaction) return;
         this.setReaction(notification.reaction);
         break;
       case ENotificationType.ReadReceipt:
-        if(!notification.readReceipt) return;
+        if (!notification.readReceipt) return;
         this.setReadReceipt(notification.readReceipt);
         break;
     }
@@ -127,6 +136,8 @@ export class Room implements IRooms {
    * @param sendMessage
    */
   sendMessage(sendMessage: ISendMessage) {
+    if (!this.chatTopic || !this.userId) return;
+
     const message = new Message({
       userId: this.userId,
       ...sendMessage,
@@ -138,6 +149,7 @@ export class Room implements IRooms {
     ]);
     // add a sent message to room messages
     this._messages.push(message);
+    if (this._onMessages) this._onMessages(this._messages);
 
     const notification = new Notification({
       type: ENotificationType.NewMessage,
@@ -154,6 +166,8 @@ export class Room implements IRooms {
    * Send user interaction like keystrokes
    */
   sendKeyStroke() {
+    if (!this.chatTopic || !this.userId) return;
+
     const notification = new Notification({
       type: ENotificationType.KeyStroke,
       userId: this.userId,
@@ -169,9 +183,15 @@ export class Room implements IRooms {
    * This callback will fire when any of the user in the room sends a keyStroke
    * @param callback
    */
-  keyStrokeCallback(callback?: (notification: Notification) => void) {
-    if(callback) {
-      this._keyStrokeCallback = callback;
+  onNotificationCallback(callback?: (notification: Notification) => void) {
+    if (callback) {
+      this._notificationCallback = callback;
+    }
+  }
+
+  onMessagesCallback(callback?: (message: Message[]) => void) {
+    if (callback) {
+      this._onMessages = callback;
     }
   }
 
@@ -199,6 +219,10 @@ export class Room implements IRooms {
    */
   clearMessageReceivedCount() {
     this.messageNotificationCount = 0;
+  }
+
+  get roomMessages() {
+    return this._messages;
   }
 
   serialize() {
