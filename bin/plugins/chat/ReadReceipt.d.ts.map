@@ -1,1 +1,0 @@
-{"version":3,"file":"ReadReceipt.d.ts","sourceRoot":"","sources":["../../../src/plugins/chat/ReadReceipt.ts"],"names":[],"mappings":"AAEA,MAAM,WAAW,YAAY;IAC3B,SAAS,EAAE,MAAM,CAAC;IAClB,QAAQ,CAAC,EAAE,MAAM,CAAC;IAClB,MAAM,EAAE,MAAM,CAAC;CAChB;AAED,qBAAa,WAAY,YAAW,YAAY;IAC9C,SAAS,EAAE,MAAM,CAAC;IAClB,QAAQ,EAAE,MAAM,CAAC;IACjB,MAAM,EAAE,MAAM,CAAC;gBAEH,IAAI,EAAE,YAAY;CAK/B"}

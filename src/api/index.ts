@@ -13,3 +13,7 @@ export const Api = (
 ): IApiTunnel => {
   return new ApiTunnel(apiKey, connectOptions);
 };
+
+export const Actor = (accessToken: string) => {
+
+}
