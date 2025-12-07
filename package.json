@@ -31,6 +31,8 @@
     "playwright:test": "playwright test",
     "build:app:mac": "yarn build && rm -rf node_modules/ && yarn",
     "build:app:windows": "yarn build && rmdir /s /q node_modules\\ && yarn",
+    "build:sdk:mac": "rm -rf bin/ && yarn build",
+    "build:sdk:windows": "&& rmdir /s /q bin\\ && yarn build",
     "frontEndHost": "cd examples/e2e/frontEndHost && yarn dev"
   },
   "repository": {
